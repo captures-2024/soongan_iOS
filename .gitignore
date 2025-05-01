@@ -138,4 +138,15 @@ iOSInjectionProject/
 ### Firebase
 GoogleService-Info.plist
 
+# Tuist
+Tuist/Dependencies/
+Tuist/GeneratedProjects/
+Tuist/Cache/
+TuistConfig.swift        # ← 있는 경우
+ProjectDescriptionHelpers/.build/
+
+# Tuist가 생성해주는 Xcode 프로젝트/워크스페이스
+*.xcodeproj
+*.xcworkspace
+
 # End of https://www.toptal.com/developers/gitignore/api/swift,xcode,macos
