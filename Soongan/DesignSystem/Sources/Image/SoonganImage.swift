@@ -1,6 +1,6 @@
 //
 //  SoonganImage.swift
-//  Studing
+//  Soongan
 //
 //  Created by ParkJunHyuk on 5/1/25.
 //
@@ -27,6 +27,46 @@ public extension Image {
     
     static var deletePost: Image {
         return ResourceAsset.Image.deletePost.swiftUIImage
+    }
+    
+    static var loginBackground: Image {
+        return ResourceAsset.Image.loginBackgroundImage.swiftUIImage
+    }
+    
+    static var arrowBack: Image {
+        return ResourceAsset.Image.arrowBack.swiftUIImage
+    }
+}
+
+// MARK: - Logo Image
+
+public extension Image {
+    static var appleLogo: Image {
+        return ResourceAsset.Image.appleLogo.swiftUIImage
+    }
+    
+    static var kakaoLogo: Image {
+        return ResourceAsset.Image.kakaoLogo.swiftUIImage
+    }
+    
+    static var soonganLogo: Image {
+        return ResourceAsset.Image.soonganLogo.swiftUIImage
+    }
+}
+
+// MARK: - TextField RightButton Image
+
+public extension Image {
+    static var checkCircle: Image {
+        return ResourceAsset.Image.checkCircle.swiftUIImage
+    }
+    
+    static var completeCheckCircle: Image {
+        return ResourceAsset.Image.completeCheckCircle.swiftUIImage
+    }
+    
+    static var errorDeleteCircle: Image {
+        return ResourceAsset.Image.errorDeleteCircle.swiftUIImage
     }
 }
 

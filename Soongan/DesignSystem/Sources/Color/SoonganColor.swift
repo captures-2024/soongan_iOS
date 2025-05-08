@@ -1,6 +1,6 @@
 //
 //  SoonganColor.swift
-//  Studing
+//  Soongan
 //
 //  Created by ParkJunHyuk on 5/1/25.
 //
@@ -19,4 +19,8 @@ public extension Color {
     static let secondary = Color(asset: ResourceAsset.Color.secondary)
     static let backgroundGray = Color(asset: ResourceAsset.Color.bgGray)
     static let modalBackground = Color(asset: ResourceAsset.Color.bgModal)
+    static let kakaoBackground = Color(asset: ResourceAsset.Color.bgKakao)
+    static let loginBackground = Color(asset: ResourceAsset.Color.bgLogin)
+    static let disableButton = Color(asset: ResourceAsset.Color.disableButton)
+    static let textFieldBackground = Color(asset: ResourceAsset.Color.bgField)
 }
