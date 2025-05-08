@@ -30,7 +30,9 @@ let project = Project(
                 .external(name: "KakaoSDKUser"),
                 .external(name: "ComposableArchitecture"),
                 .project(target: "Resource", path: "Resource"),
-                .project(target: "DesignSystem", path: "DesignSystem")
+                .project(target: "Shared", path: "Shared"),
+                .project(target: "DesignSystem", path: "DesignSystem"),
+                .project(target: "AuthFeature", path: "Feature/AuthFeature")
             ]
         ),
         .target(
