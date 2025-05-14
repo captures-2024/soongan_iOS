@@ -1,6 +1,6 @@
 //
 //  Font+Soongan.swift
-//  Studing
+//  Soongan
 //
 //  Created by ParkJunHyuk on 5/1/25.
 //
@@ -8,7 +8,39 @@
 import SwiftUI
 import Resource
 
-extension Font {
+public extension Font {
+    static var title80: Font {
+        return ResourceFontFamily.Pretendard.medium.swiftUIFont(size: 80)
+    }
+    
+    static var semibold14: Font {
+        return ResourceFontFamily.Pretendard.semiBold.swiftUIFont(size: 14)
+    }
+    
+    static var semibold18: Font {
+        return ResourceFontFamily.Pretendard.semiBold.swiftUIFont(size: 18)
+    }
+    
+    static var semibold36: Font {
+        return ResourceFontFamily.Pretendard.semiBold.swiftUIFont(size: 36)
+    }
+    
+    static var medium24: Font {
+        return ResourceFontFamily.Pretendard.medium.swiftUIFont(size: 24)
+    }
+    
+    static var medium12: Font {
+        return ResourceFontFamily.Pretendard.medium.swiftUIFont(size: 12)
+    }
+    
+    static var regualr16: Font {
+        return ResourceFontFamily.Pretendard.regular.swiftUIFont(size: 16)
+    }
+    
+    static var regualr18: Font {
+        return ResourceFontFamily.Pretendard.regular.swiftUIFont(size: 18)
+    }
+    
     static var headline24: Font {
         return ResourceFontFamily.Pretendard.bold.swiftUIFont(size: 24)
     }

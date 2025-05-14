@@ -12,6 +12,8 @@ import PackageDescription
             "KakaoSDKCommon": .framework,
             "KakaoSDKAuth": .framework,
             "KakaoSDKUser": .framework,
+            "ComposableArchitecture": .framework,
+            "ComposableArchitectureMacros": .macro,
         ]
     )
 #endif
@@ -24,6 +26,6 @@ let package = Package(
         // You can read more about dependencies here: https://docs.tuist.io/documentation/tuist/dependencies
         
         .package(url: "https://github.com/kakao/kakao-ios-sdk", from: "2.24.0"),
-        .package(url: "https://github.com/pointfreeco/swift-composable-architecture.git", from: "1.17.0")
+        .package(url: "https://github.com/pointfreeco/swift-composable-architecture.git", from: "1.17.0"),
     ]
 )
