@@ -13,7 +13,7 @@ let project = Project(
             name: "AuthFeature",
             destinations: .iOS,
             product: .framework,
-            bundleId: "com.captures.Terbuck",
+            bundleId: "com.captures.AuthFeature.Soongan",
             deploymentTargets: .iOS("17.0"),
             infoPlist: .default,
             sources: ["Sources/**"],

@@ -18,17 +18,23 @@ public struct AppFeature {
     
     @ObservableState
     public struct State: Equatable {
-        @Shared(.appStorage("AuthState")) var authState: AuthType = .loggedOut
+        @Shared(.appStorage("AuthState")) var authState: AuthType = .loggedIn
         var login: LoginFeature.State = LoginFeature.State()
+        var mainTab: MainTabFeature.State = MainTabFeature.State()
     }
     
     public enum Action {
         case login(LoginFeature.Action)
+        case mainTab(MainTabFeature.Action)
     }
     
     public var body: some ReducerOf<Self> {
         Scope(state: \.login, action: \.login) {
             LoginFeature()
+        }
+        
+        Scope(state: \.mainTab, action: \.mainTab) {
+            MainTabFeature()
         }
         
         Reduce { state, action in
@@ -40,6 +46,9 @@ public struct AppFeature {
                 
             case .login(.delegate(.skippAuth)):
                 state.$authState.withLock { $0 = .skipped }
+                return .none
+            
+            case .mainTab:
                 return .none
                 
             default:
