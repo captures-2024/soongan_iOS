@@ -36,6 +36,22 @@ public extension Image {
     static var arrowBack: Image {
         return ResourceAsset.Image.arrowBack.swiftUIImage
     }
+    
+    static var rightArrow: Image {
+        return ResourceAsset.Image.rightArrow.swiftUIImage
+    }
+    
+    static var infoCircle: Image {
+        return ResourceAsset.Image.infoCircle.swiftUIImage
+    }
+    
+    static var mainBackground: Image {
+        return ResourceAsset.Image.mainBackgroundImage.swiftUIImage
+    }
+    
+    static var addPlus: Image {
+        return ResourceAsset.Image.addPlusImage.swiftUIImage
+    }
 }
 
 // MARK: - Logo Image
