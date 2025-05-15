@@ -1,7 +1,7 @@
 import ProjectDescription
 
 let project = Project(
-    name: "AuthFeature",
+    name: "HomeFeature",
     packages: [
       .package(
         url: "https://github.com/pointfreeco/swift-composable-architecture.git",
@@ -10,10 +10,10 @@ let project = Project(
     ],
     targets: [
         .target(
-            name: "AuthFeature",
+            name: "HomeFeature",
             destinations: .iOS,
             product: .framework,
-            bundleId: "com.captures.AuthFeature.Soongan",
+            bundleId: "com.captures.HomeFeature.Soongan",
             deploymentTargets: .iOS("17.0"),
             infoPlist: .default,
             sources: ["Sources/**"],
