@@ -9,6 +9,10 @@ import SwiftUI
 import Resource
 
 public extension Font {
+    static var bold12: Font {
+        return ResourceFontFamily.Pretendard.bold.swiftUIFont(size: 12)
+    }
+    
     static var bold16: Font {
         return ResourceFontFamily.Pretendard.bold.swiftUIFont(size: 16)
     }
@@ -47,6 +51,10 @@ public extension Font {
     
     static var medium24: Font {
         return ResourceFontFamily.Pretendard.medium.swiftUIFont(size: 24)
+    }
+    
+    static var medium16: Font {
+        return ResourceFontFamily.Pretendard.medium.swiftUIFont(size: 16)
     }
     
     static var medium14: Font {

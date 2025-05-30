@@ -54,6 +54,58 @@ public extension Image {
     }
 }
 
+// MARK: - Mypage Image
+
+public extension Image {
+    static var deleteList: Image {
+        return ResourceAsset.Image.listDelete.swiftUIImage
+    }
+    
+    static var myprofile: Image {
+        return ResourceAsset.Image.myProfile.swiftUIImage
+    }
+    
+    static var editProfile: Image {
+        return ResourceAsset.Image.editProfileImage.swiftUIImage
+    }
+    
+    static var addProfile: Image {
+        return ResourceAsset.Image.addProfileImage.swiftUIImage
+    }
+    
+    static var alarmIcon: Image {
+        return ResourceAsset.Image.alarmIcon.swiftUIImage
+    }
+    
+    static var optionIcon: Image {
+        return ResourceAsset.Image.optionIcon.swiftUIImage
+    }
+    
+    static var boardIcon: Image {
+        return ResourceAsset.Image.board.swiftUIImage
+    }
+    
+    static var drawIcon: Image {
+        return ResourceAsset.Image.draw.swiftUIImage
+    }
+    
+    static var exitIcon: Image {
+        return ResourceAsset.Image.exit.swiftUIImage
+    }
+    
+    static var questionIcon: Image {
+        return ResourceAsset.Image.question.swiftUIImage
+    }
+    
+    static var settingIcon: Image {
+        return ResourceAsset.Image.setting.swiftUIImage
+    }
+    
+    static var personIcon: Image {
+        return ResourceAsset.Image.person.swiftUIImage
+    }
+}
+
 // MARK: - Logo Image
 
 public extension Image {

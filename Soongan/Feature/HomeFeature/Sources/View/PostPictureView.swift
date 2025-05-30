@@ -96,7 +96,9 @@ public struct PostPictureView: View {
             .sheet(
                 isPresented: $store.isPostSheetPresented.sending(\.dismissPostSheet)
             ) {
-                CustomSheetView(type: .postPicture(name: store.postPictureName))
+                CustomSheetView(type: .postPicture(name: store.postPictureName)) {
+                    
+                }
             }
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {

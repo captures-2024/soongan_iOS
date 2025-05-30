@@ -17,13 +17,27 @@ public struct CustomSheetView: View {
     
     @Environment(\.dismiss) private var dismiss
     private let type: SheetContentType
+    private var action: (() -> Void)? = nil
+    private var optionAction: ((MyprofileOptionType) -> Void)? = nil
+    
+    @State private var inputText = ""
     
     // MARK: - Init
     
     public init(
-        type: SheetContentType
+        type: SheetContentType,
+        action: @escaping () -> Void
     ) {
         self.type = type
+        self.action = action
+    }
+    
+    public init(
+        type: SheetContentType,
+        optionAction: @escaping (MyprofileOptionType) -> Void
+    ) {
+        self.type = type
+        self.optionAction = optionAction
     }
     
     // MARK: - Body
@@ -32,7 +46,37 @@ public struct CustomSheetView: View {
         VStack(spacing: 0) {
             titleSection(type)
             
-            contentSection(type)
+            switch type {
+            case .contestInfo:
+                contestInfoContentSection(action: {})
+                    .padding(.top, 40)
+                
+            case .postPicture(let name):
+                postPictureContetnSection(name: name, action: {})
+                    .padding(.top, 40)
+                
+            case .logout:
+                logoutContentSection(action: {})
+                    .padding(.top, 40)
+            
+            case .withdraw:
+                withDrawContentSection(action: {})
+                    .padding(.top, 40)
+                
+            case .myprofileOption:
+                mypageOptionContentSection(action: { optionType in
+                    guard let optionAction else { return }
+                    optionAction(optionType)
+                })
+                .padding(.top, 30)
+                
+            case .alarmSetting:
+                pushAlarmSettingContentSection()
+                
+            case .completeWithdraw:
+                withDrawContentSection(action: {})
+                    .padding(.top, 40)
+            }
         }
         .frame(maxHeight: .infinity, alignment: .top)
         .presentationDetents(type.height)
@@ -51,29 +95,16 @@ private extension CustomSheetView {
                 .frame(width: 40, height: 4)
                 .padding(.top, 16)
             
-            Text(type.title)
-                .font(.bold16)
-                .foregroundStyle(Color.black100)
-            
-            Rectangle()
-                .fill(Color.init(red: 187/255, green: 187/255, blue: 187/255))
-                .frame(maxWidth: .infinity)
-                .frame(height: 1)
-        }
-    }
-    
-    func contentSection(_ type: SheetContentType) -> some View {
-        switch type {
-        case .contestInfo:
-            return AnyView(
-                contestInfoContentSection(action: {})
-                    .padding(.top, 40)
-            )
-        case .postPicture(let name):
-            return AnyView(
-                postPictureContetnSection(name: name, action: {})
-                    .padding(.top, 40)
-            )
+            if type != .myprofileOption {
+                Text(type.title)
+                    .font(.bold16)
+                    .foregroundStyle(Color.black100)
+                
+                Rectangle()
+                    .fill(Color.init(red: 187/255, green: 187/255, blue: 187/255))
+                    .frame(maxWidth: .infinity)
+                    .frame(height: 1)
+            }
         }
     }
     
@@ -170,10 +201,136 @@ private extension CustomSheetView {
         .foregroundStyle(Color.black)
         .padding(.horizontal, 20)
     }
+    
+    func mypageOptionContentSection(action: @escaping (MyprofileOptionType) -> Void) -> some View {
+        VStack(spacing: 0) {
+            ForEach(MyprofileOptionType.allCases, id: \.self) { option in
+                VStack(spacing: 0) {
+                    Button(action: {
+                        action(option)
+                    }) {
+                        HStack(alignment: .center) {
+                            Text(option.title)
+                                .font(.semibold16)
+                                .foregroundStyle(Color.black100)
+                            
+                            Spacer()
+                            
+                            option.image
+                        }
+                        .frame(height: 60)
+                        .padding(.horizontal, 40)
+                    }
+                    
+                    if option != MyprofileOptionType.allCases.last {
+                        Rectangle()
+                            .fill(Color(red: 187/255, green: 187/255, blue: 187/255))
+                            .frame(maxWidth: .infinity)
+                            .frame(height: 0.7)
+                            .padding(.horizontal, 24)
+                    }
+                }
+            }
+        }
+    }
+    
+    func withDrawContentSection(action: @escaping () -> Void) -> some View {
+        VStack {
+            VStack(alignment: .leading, spacing: 15) {
+                Text("정말 회원탈퇴를 하실 건가요?")
+                    .font(.regualr16)
+                    .foregroundStyle(Color.black100)
+                
+                Text("회원탈퇴를 위해 아래 입력창에\n'회원탈퇴'를 입력해주세요")
+                    .font(.regualr16)
+                    .foregroundStyle(Color.black100)
+                
+                TextField("", text: $inputText,
+                          prompt: Text("텍스트를 입력해주세요.").foregroundColor(Color.init(red: 187/255, green: 187/255, blue: 187/255)))
+                    .font(.regualr18)
+                    .padding()
+                    .frame(height: 48)
+                    .tint(.black100)
+                    .background(
+                        RoundedRectangle(cornerRadius: 8)
+                            .fill(Color.white)
+                            .stroke(Color.black100)
+                    )
+                    .padding(.top, 32)
+            }
+            .padding(.horizontal, 20)
+            
+            CustomBottomButton(
+                type: .complete,
+                action: {
+                    action()
+                    dismiss()
+                }
+            )
+            .padding(.top, 40)
+        }
+        .foregroundStyle(Color.black100)
+        .padding(.horizontal, 20)
+    }
+    
+    func logoutContentSection(action: @escaping () -> Void) -> some View {
+        VStack(alignment: .leading, spacing: 15) {
+            Text("정말 로그아웃 하실 건가요?")
+                .font(.regualr16)
+                .foregroundStyle(Color.black100)
+                .padding(.horizontal, 20)
+            
+            CustomBottomButton(
+                type: .logout,
+                action: {
+                    action()
+                    dismiss()
+                }
+            )
+            .padding(.top, 64)
+        }
+        .padding(.horizontal, 20)
+    }
+    
+    func pushAlarmSettingContentSection() -> some View {
+        @State var toggle1On = false
+        
+        return VStack {
+            ForEach(AlaramSettingOptionType.allCases, id: \.self) { option in
+                VStack(spacing: 0) {
+                    Toggle(isOn: $toggle1On) {
+                        VStack(alignment: .leading, spacing: 6) {
+                            Text(option.title)
+                                .font(.semibold16)
+                                .foregroundStyle(Color.black100)
+                            
+                            if !option.subTitle.isEmpty {
+                                Text(option.subTitle)
+                                    .font(.regualr12)
+                                    .foregroundStyle(Color.black100)
+                            }
+                        }
+                    }
+                    .padding(.vertical, 20)
+                    .padding(.leading, 40)
+                    .padding(.trailing, 24)
+                    .tint(.primary)
+                    
+                    if option != AlaramSettingOptionType.allCases.last {
+                        Rectangle()
+                            .fill(Color(red: 187/255, green: 187/255, blue: 187/255))
+                            .frame(maxWidth: .infinity)
+                            .frame(height: 0.7)
+                            .padding(.horizontal, 24)
+                    }
+                }
+            }
+        }
+    }
 }
 
 // MARK: - Preview
 
 #Preview {
-    CustomSheetView(type: .contestInfo)
+    CustomSheetView(type: .myprofileOption, action: {})
 }

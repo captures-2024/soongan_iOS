@@ -14,6 +14,7 @@ public enum BottomButtonType: Equatable {
     case logout
     case report
     case submit
+    case editComplete
     
     var title: String {
         switch self {
@@ -29,12 +30,14 @@ public enum BottomButtonType: Equatable {
             return "신고제출"
         case .submit:
             return "제출하기"
+        case .editComplete:
+            return "수정완료"
         }
     }
     
     var textColor: Color {
         switch self {
-        case .next:
+        case .next, .editComplete:
             return .white
         default:
             return .black100
