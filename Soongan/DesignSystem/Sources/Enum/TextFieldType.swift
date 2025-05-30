@@ -42,8 +42,14 @@ public enum TextFieldType: Equatable {
     /// 사용자의 닉네임을 입력받는 필드를 나타냅니다.
     case nickname
     
-    // 사용자의 생년월일을 입력받는 필드를 나타냅니다(4자리 연도, YYYY 형식).
+    /// 사용자의 생년월일을 입력받는 필드를 나타냅니다(4자리 연도, YYYY 형식).
     case birthday
+    
+    /// 프로필 편집에서 닉네임을 입력받는 필드를 나타냅니다.
+    case changeNickname
+    
+    /// 프로필 편집에서 자기소개를 입력받는 필드를 나타냅니다.
+    case introduce
     
     /// 입력 필드 상단의 제목을 반환합니다.
     var title: String {
@@ -52,6 +58,10 @@ public enum TextFieldType: Equatable {
             return "닉네임"
         case .birthday:
             return "출생연도"
+        case .changeNickname:
+            return "닉네임은 한글, 영문, 숫자만 입력해주세요"
+        case .introduce:
+            return "자기소개 입력"
         }
     }
     
@@ -62,6 +72,10 @@ public enum TextFieldType: Equatable {
             return "3-10자리 숫자, 영문, 한글로 기입해주세요"
         case .birthday:
             return "출생연도 숫자 4자리를 기입해주세요."
+        case .changeNickname:
+            return ""
+        case .introduce:
+            return ""
         }
     }
     
@@ -72,6 +86,10 @@ public enum TextFieldType: Equatable {
             return "사용자명을 입력해주세요."
         case .birthday:
             return "YYYY"
+        case .changeNickname:
+            return "닉네임을 입력해주세요"
+        case .introduce:
+            return "본인을 소개해주세요"
         }
     }
 }
