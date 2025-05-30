@@ -25,5 +25,7 @@ public enum DesignSystem {
         public static let loginBackground = SwiftUI.Color(asset: ResourceAsset.Color.bgLogin)
         public static let disableButton = SwiftUI.Color(asset: ResourceAsset.Color.disableButton)
         public static let textFieldBackground = SwiftUI.Color(asset: ResourceAsset.Color.bgField)
+        public static let soonganBG = SwiftUI.Color(asset: ResourceAsset.Color.bgView)
+        public static let gray55 = SwiftUI.Color(asset: ResourceAsset.Color.gray55)
     }
 }
