@@ -33,7 +33,8 @@ let project = Project(
                 .project(target: "Shared", path: "Shared"),
                 .project(target: "DesignSystem", path: "DesignSystem"),
                 .project(target: "AuthFeature", path: "Feature/AuthFeature"),
-                .project(target: "HomeFeature", path: "Feature/HomeFeature")
+                .project(target: "HomeFeature", path: "Feature/HomeFeature"),
+                .project(target: "MypageFeature", path: "Feature/MypageFeature")
             ]
         ),
         .target(

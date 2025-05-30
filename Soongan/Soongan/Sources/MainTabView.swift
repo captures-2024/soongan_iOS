@@ -9,6 +9,7 @@
 import SwiftUI
 
 import HomeFeature
+import MypageFeature
 
 import ComposableArchitecture
 
@@ -36,7 +37,7 @@ public struct MainTabView: View {
                 EmptyView()
                     .tag(MainTabFeature.State.Tab.pictureFeed)
                 
-                EmptyView()
+                MypageView(store: store.scope(state: \.mypage, action: \.mypage))
                     .tag(MainTabFeature.State.Tab.myPage)
             }
             .toolbar(.hidden, for: .tabBar)
