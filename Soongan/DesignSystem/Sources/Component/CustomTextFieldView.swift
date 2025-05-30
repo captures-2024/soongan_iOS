@@ -37,9 +37,18 @@ public struct CustomTextFieldView: View {
     // MARK: - Body
     
     public var body: some View {
+        let backgroundShape = RoundedRectangle(cornerRadius: 8)
+            .fill(Color.textFieldBackground)
+
+        let strokeColor = (type == .birthday || type == .nickname)
+            ? (isFocused.wrappedValue ? state.borderColor : .clear)
+            : DesignSystem.Color.black100
+        
+        let titleFont: Font = (type == .birthday || type == .nickname) ? .regualr16 : .regualr8
+        
         VStack(alignment: .leading, spacing: 0) {
             Text(type.title)
-                .font(.regualr16)
+                .font(titleFont)
                 .foregroundColor(.black100)
                 .padding(.leading, 12)
                 .padding(.bottom, 8)
@@ -50,9 +59,11 @@ public struct CustomTextFieldView: View {
                 .padding()
                 .tint(.black100)
                 .background(
-                    RoundedRectangle(cornerRadius: 8)
-                        .fill(Color.textFieldBackground)
-                        .stroke(isFocused.wrappedValue ? state.borderColor : .clear, lineWidth: 1)
+                    backgroundShape
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 8)
+                                .stroke(strokeColor, lineWidth: 1)
+                        )
                 )
                 .foregroundColor(.black100)
                 .overlay(
