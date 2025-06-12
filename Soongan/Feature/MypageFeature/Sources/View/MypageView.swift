@@ -43,12 +43,13 @@ public struct MypageView: View {
                     rightButtonsSection()
                         .padding(.bottom, 9)
                 }
-                .padding(EdgeInsets(top: 21, leading: 18, bottom: 37, trailing: 28))
+                .padding(EdgeInsets(top: 21, leading: 18, bottom: 26, trailing: 28))
                 
-                Rectangle()
-                    .frame(maxHeight: .infinity)
+                ImageGridView(onImageTap: { _ in })
             }
+            .frame(maxHeight: .infinity)
             .toolbar(.hidden, for: .tabBar)
+            .background(DesignSystem.Color.soonganBG)
             .sheet(
                 isPresented: $store.isOptionSheetPresented.sending(\.dismissOptionSheet)
             ) {
