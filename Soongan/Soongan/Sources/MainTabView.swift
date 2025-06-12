@@ -9,6 +9,7 @@
 import SwiftUI
 
 import HomeFeature
+import ContestFeature
 import MypageFeature
 
 import ComposableArchitecture
@@ -34,8 +35,8 @@ public struct MainTabView: View {
                 HomeView(store: store.scope(state: \.home, action: \.home))
                     .tag(MainTabFeature.State.Tab.home)
                 
-                EmptyView()
-                    .tag(MainTabFeature.State.Tab.pictureFeed)
+                ContestView(store: store.scope(state: \.contest, action: \.contest))
+                    .tag(MainTabFeature.State.Tab.contest)
                 
                 MypageView(store: store.scope(state: \.mypage, action: \.mypage))
                     .tag(MainTabFeature.State.Tab.myPage)
@@ -50,6 +51,7 @@ public struct MainTabView: View {
             }
             .animation(.easeInOut(duration: 0.05), value: store.isTabBarVisible) // 더 빠른 반응
         }
+
         .ignoresSafeArea(edges: .bottom)
     }
     
@@ -66,9 +68,9 @@ public struct MainTabView: View {
             Spacer()
             
             Button(action: {
-                store.send(.selectTab(.pictureFeed))
+                store.send(.selectTab(.contest))
             }) {
-                store.selectedTab == .pictureFeed ? Image.selectPictureIcon : Image.notSelectPictureIcon
+                store.selectedTab == .contest ? Image.selectPictureIcon : Image.notSelectPictureIcon
             }
 
             Spacer()
