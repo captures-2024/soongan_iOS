@@ -9,6 +9,7 @@ import SwiftUI
 import PhotosUI
 
 import DesignSystem
+import Shared
 
 import ComposableArchitecture
 
@@ -90,6 +91,7 @@ public struct PostPictureView: View {
             .frame(maxHeight: .infinity, alignment: .top)
             .toolbar(.hidden, for: .tabBar)
             .navigationBarBackButtonHidden(true)
+            .background(InteractivePopGestureEnabler())
             .onAppear {
                 store.send(.onAppear)
             }

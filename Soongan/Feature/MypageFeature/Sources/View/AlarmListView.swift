@@ -102,6 +102,7 @@ public struct AlarmListView: View {
             .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
         .background(DesignSystem.Color.soonganBG)
+        .background(InteractivePopGestureEnabler())
         .navigationBarBackButtonHidden(true)
         .toolbar {
             ToolbarItem(placement: .navigationBarLeading) {
