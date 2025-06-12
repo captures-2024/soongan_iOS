@@ -54,6 +54,22 @@ public extension Image {
     }
 }
 
+// MARK: - Contest Image
+
+public extension Image {
+    static var downArrow: Image {
+        return ResourceAsset.Image.downArrow.swiftUIImage
+    }
+    
+    static var sortOption: Image {
+        return ResourceAsset.Image.sortOption.swiftUIImage
+    }
+    
+    static var dotOption: Image {
+        return ResourceAsset.Image.dotOption.swiftUIImage
+    }
+}
+
 // MARK: - Mypage Image
 
 public extension Image {
@@ -135,6 +151,32 @@ public extension Image {
     
     static var errorDeleteCircle: Image {
         return ResourceAsset.Image.errorDeleteCircle.swiftUIImage
+    }
+    
+    static var dumy1: Image {
+        return ResourceAsset.Image.dumy1.swiftUIImage
+    }
+    
+    static var dumy2: Image {
+        return ResourceAsset.Image.dumy2.swiftUIImage
+    }
+    
+    static var dumy3: Image {
+        return ResourceAsset.Image.dumy3.swiftUIImage
+    }
+    
+    static var dumy4: Image {
+        return ResourceAsset.Image.dumy4.swiftUIImage
+    }
+    
+    static var dumy5: Image {
+        return ResourceAsset.Image.dumy5.swiftUIImage
+    }
+    static var dumy6: Image {
+        return ResourceAsset.Image.dumy6.swiftUIImage
+    }
+    static var dumy7: Image {
+        return ResourceAsset.Image.dumy7.swiftUIImage
     }
 }
 

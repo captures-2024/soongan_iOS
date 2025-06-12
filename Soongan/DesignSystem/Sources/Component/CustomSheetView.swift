@@ -76,6 +76,17 @@ public struct CustomSheetView: View {
             case .completeWithdraw:
                 withDrawContentSection(action: {})
                     .padding(.top, 40)
+                
+            case .contestReport:
+                contestReportContentSection(action: { _ in })
+                    .padding(.top, 12)
+                
+            case .spam:
+                reportContentSection(reportType: .spam, action: {})
+                
+            case .reportComplete:
+                reportCompleteContentSection(action: {})
+                    .padding(.top, 40)
             }
         }
         .frame(maxHeight: .infinity, alignment: .top)
@@ -85,7 +96,7 @@ public struct CustomSheetView: View {
     }
 }
 
-// MARK: - Private Extension View
+// MARK: - Mypage Section Private Extension View
 
 private extension CustomSheetView {
     func titleSection(_ type: SheetContentType) -> some View {
@@ -99,11 +110,6 @@ private extension CustomSheetView {
                 Text(type.title)
                     .font(.bold16)
                     .foregroundStyle(Color.black100)
-                
-                Rectangle()
-                    .fill(Color.init(red: 187/255, green: 187/255, blue: 187/255))
-                    .frame(maxWidth: .infinity)
-                    .frame(height: 1)
             }
         }
     }
@@ -329,8 +335,97 @@ private extension CustomSheetView {
     }
 }
 
+
+// MARK: - Contest Section Private Extension View
+
+private extension CustomSheetView {
+    func contestReportContentSection(action: @escaping (ContestReportReasonType) -> Void) -> some View {
+        VStack(spacing: 0) {
+            ForEach(ContestReportReasonType.allCases, id: \.self) { option in
+                VStack(spacing: 0) {
+                    Text(option.title)
+                        .font(.semibold16)
+                        .foregroundStyle(Color.black100)
+                        .padding(.vertical, 20)
+                        .padding(.horizontal, 40)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                    
+                    if option != ContestReportReasonType.allCases.last {
+                        Rectangle()
+                            .fill(Color(red: 187/255, green: 187/255, blue: 187/255))
+                            .frame(maxWidth: .infinity)
+                            .frame(height: 0.7)
+                            .padding(.horizontal, 24)
+                    }
+                }
+            }
+        }
+    }
+    
+    func reportContentSection(reportType: ContestReportReasonType, action: @escaping () -> Void) -> some View {
+        VStack(spacing: 0) {
+            VStack(alignment: .leading, spacing: 4) {
+                Text("이 댓글을")
+                    .font(.regualr16)
+                
+                HStack(spacing: 0) {
+                    Text(reportType.title)
+                        .font(.bold16)
+                    
+                    Text("(으)로")
+                        .font(.regualr16)
+                }
+                
+                Text("정말 신고하겠습니까?")
+                    .font(.regualr16)
+            }
+            .padding(.horizontal, 4)
+            .foregroundStyle(Color.black100)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(.horizontal, 4)
+            
+            CustomBottomButton(
+                type: .comfirm,
+                action: {
+                    action()
+                    dismiss()
+                }
+            )
+            .padding(.top, 45)
+        }
+        .padding(.horizontal, 36)
+    }
+    
+    func reportCompleteContentSection(action: @escaping () -> Void) -> some View {
+        VStack(spacing: 0) {
+            VStack(alignment: .leading, spacing: 0) {
+                Text("신고가 완료됐습니다.\n\n해당 게시물은 숨김처리되었습니다.\n\n3일 이내로 검토 후 조치가 이뤄질 예정입니다. 결과가 나오면 알림으로 알려드리겠습니다.")
+                    .padding(.bottom, 20)
+                
+                Text("신고 내용의 구체적인 확인이 더 필요한 경우\n이메일로 연락드릴 예정입니다.")
+                Text("감사합니다")
+                
+            }
+            .font(.regualr16)
+            .foregroundStyle(Color.black100)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(.horizontal, 4)
+            
+            CustomBottomButton(
+                type: .comfirm,
+                action: {
+                    action()
+                    dismiss()
+                }
+            )
+            .padding(.top, 45)
+        }
+        .padding(.horizontal, 36)
+    }
+}
+
 // MARK: - Preview
 
 #Preview {
-    CustomSheetView(type: .myprofileOption, action: {})
+    CustomSheetView(type: .contestReport, action: {})
 }

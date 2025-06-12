@@ -29,67 +29,83 @@ public struct HomeView: View {
         NavigationStack(
             path: $store.scope(state: \.path, action: \.path)
         ) {
-            VStack(spacing: 0) {
-                HStack(spacing: 207) {
-                    ZStack(alignment: .top) {
-                        Circle()
-                            .fill(DesignSystem.Color.primary)
-                            .frame(width: 40, height: 40)
-                            .offset(x: -35, y: -16)
-                        
-                        Text(store.weekTopic)
-                            .font(.bold42)
-                            .foregroundStyle(Color.black100)
-                    }
-                    
-                    Image.soonganLogo
-                        .resizable()
-                        .frame(width: 33, height: 50)
-                }
-                .padding(.top, 74)
-                .padding(.bottom, 63)
+            ZStack {
+                DesignSystem.Color.soonganBG.ignoresSafeArea()
                 
-                Button(action: {
-                    store.send(.addPictureButtonTapped)
-                }) {
-                    ZStack(alignment: .center) {
-                        Rectangle()
-                            .fill(Color.white)
-                            .frame(width: 257, height: 257)
-                            .shadow(
-                                color: Color.black.opacity(0.25),
-                                radius: 5, x: 0, y: 4)
-                        
-                        VStack(spacing: 16) {
-                            Image.addPlus
-                                .resizable()
-                                .scaledToFit()
+                VStack(spacing: 0) {
+                    HStack {
+                        ZStack(alignment: .top) {
+                            Circle()
+                                .fill(DesignSystem.Color.primary)
                                 .frame(width: 40, height: 40)
+                                .offset(x: -35, y: -16)
                             
-                            Text("출품하기")
-                                .font(.regualr14)
+                            Text(store.weekTopic)
+                                .font(.bold42)
                                 .foregroundStyle(Color.black100)
                         }
+                        
+                        Spacer()
+                        
+                        Image.soonganLogo
+                            .resizable()
+                            .frame(width: 33, height: 50)
                     }
-                }
-                .padding(.bottom, 100)
-                
-                periodSection(startPeriod: store.startPeriod, endPeriod: store.endPeriod)
-                    .padding(.bottom, 32)
-                
-                HStack(spacing: 233) {
-                    CircleButton(type: .info) {
-                        store.send(.infoButtonTapped)
+                    .frame(height: 65)
+                    .padding(.top, 74)
+                    .padding(.horizontal, 36)
+                    
+                    Spacer(minLength: 63)
+                    
+                    Button(action: {
+                        store.send(.addPictureButtonTapped)
+                    }) {
+                        ZStack(alignment: .center) {
+                            Rectangle()
+                                .fill(Color.white)
+                                .frame(width: 257, height: 257)
+                                .shadow(
+                                    color: Color.black.opacity(0.25),
+                                    radius: 5, x: 0, y: 4)
+                            
+                            VStack(spacing: 16) {
+                                Image.addPlus
+                                    .resizable()
+                                    .scaledToFit()
+                                    .frame(width: 40, height: 40)
+                                
+                                Text("출품하기")
+                                    .font(.regualr14)
+                                    .foregroundStyle(Color.black100)
+                            }
+                        }
                     }
                     
-                    CircleButton(type: .rightArrow) {
+                    Spacer(minLength: 100)
+
+                    periodSection(startPeriod: store.startPeriod, endPeriod: store.endPeriod)
+                        .padding(.bottom, 32)
+                    
+                    HStack {
+                        CircleButton(type: .info) {
+                            store.send(.infoButtonTapped)
+                        }
                         
+                        Spacer()
+                        
+                        CircleButton(type: .rightArrow) {
+                            
+                        }
                     }
+                    .padding(.horizontal, 28)
+                    
+                    Spacer(minLength: 40)
                 }
-                .padding(.horizontal, 28)
+                .toolbar(.hidden, for: .tabBar)
+                .safeAreaInset(edge: .bottom, spacing: 0) {
+                    Color.clear.frame(height: 83)
+                }
             }
-            .padding(.bottom, 99)
-            .background(DesignSystem.Color.soonganBG)
             .onAppear {
                 store.send(.onAppear)
             }

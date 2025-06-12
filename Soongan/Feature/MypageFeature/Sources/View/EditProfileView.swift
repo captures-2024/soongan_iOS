@@ -78,6 +78,7 @@ public struct EditProfileView: View {
             }
             .frame(maxHeight: .infinity)
             .background(DesignSystem.Color.soonganBG)
+            .background(InteractivePopGestureEnabler())
         }
         .navigationBarBackButtonHidden(true)
         .toolbar {

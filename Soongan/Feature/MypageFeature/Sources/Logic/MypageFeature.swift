@@ -90,9 +90,9 @@ public struct MypageFeature {
                 state.isOptionSheetPresented = true
                 return .none
                 
-            case .presentSheet(let type):
-                state.activeSheet = type
-                return .none
+//            case .presentSheet(let type):
+//                state.activeSheet = type
+//                return .none
                 
             case .optionSheetIsPresented(let tappedOption):
                 state.isOptionSheetPresented = false

@@ -15,6 +15,9 @@ public enum SheetContentType: Identifiable, Equatable {
     case completeWithdraw
     case myprofileOption
     case alarmSetting
+    case contestReport
+    case spam
+    case reportComplete
     
     public var id: String {
         switch self {
@@ -25,6 +28,9 @@ public enum SheetContentType: Identifiable, Equatable {
         case .completeWithdraw: return "completeWithdraw"
         case .myprofileOption: return "myprofileOption"
         case .alarmSetting: return "alarmSetting"
+        case .contestReport: return "contestReport"
+        case .spam: return "spam"
+        case .reportComplete: return "reportComplete"
         }
     }
     
@@ -36,6 +42,7 @@ public enum SheetContentType: Identifiable, Equatable {
         case .withdraw, .completeWithdraw: return "회원탈퇴"
         case .myprofileOption: return ""
         case .alarmSetting: return "푸시 알림 설정"
+        case .contestReport, .reportComplete, .spam: return "신고"
         }
     }
     
@@ -48,6 +55,9 @@ public enum SheetContentType: Identifiable, Equatable {
         case .completeWithdraw: return [.height(264)]
         case .myprofileOption: return [.height(420)]
         case .alarmSetting: return [.height(380)]
+        case .contestReport: return [.height(432)]
+        case .spam: return [.height(288)]
+        case .reportComplete: return [.height(456)]
         }
     }
 }
