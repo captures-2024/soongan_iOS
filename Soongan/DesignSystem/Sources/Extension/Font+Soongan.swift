@@ -57,6 +57,10 @@ public extension Font {
         return ResourceFontFamily.Pretendard.medium.swiftUIFont(size: 24)
     }
     
+    static var medium20: Font {
+        return ResourceFontFamily.Pretendard.medium.swiftUIFont(size: 20)
+    }
+    
     static var medium16: Font {
         return ResourceFontFamily.Pretendard.medium.swiftUIFont(size: 16)
     }
