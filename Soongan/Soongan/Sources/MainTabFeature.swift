@@ -10,6 +10,7 @@ import SwiftUI
 
 import HomeFeature
 import ContestFeature
+import AllTimeContestFeature
 import MypageFeature
 import Shared
 
@@ -25,10 +26,11 @@ public struct MainTabFeature {
         var selectedTab: Tab = .home
         var home: HomeFeature.State = .init(weekTopic: "평화", startPeriod: "2024.05.10 09:00:00", endPeriod: "2024.05.16 23:59:59")
         var contest: ContestFeature.State = .init()
+        var allTimeContest: AllTimeContestFeature.State = .init()
         var mypage: MypageFeature.State = .init()
         
         public enum Tab {
-           case home, contest, myPage
+           case home, contest, allTimeContest, myPage
         }
         
         var isTabBarVisible: Bool {
@@ -37,6 +39,8 @@ public struct MainTabFeature {
                 return home.isTabBarVisible
             case .contest:
                 return contest.isTabBarVisible
+            case .allTimeContest:
+                return allTimeContest.isTabBarVisible
             case .myPage:
                 return mypage.isTabBarVisible
             }
@@ -53,6 +57,7 @@ public struct MainTabFeature {
         case selectTab(State.Tab)
         case home(HomeFeature.Action)
         case contest(ContestFeature.Action)
+        case allTimeContest(AllTimeContestFeature.Action)
         case mypage(MypageFeature.Action)
     }
     
@@ -67,6 +72,10 @@ public struct MainTabFeature {
             ContestFeature()
         }
         
+        Scope(state: \.allTimeContest, action: \.allTimeContest) {
+            AllTimeContestFeature()
+        }
+        
         Scope(state: \.mypage, action: \.mypage) {
             MypageFeature()
         }
@@ -79,6 +88,8 @@ public struct MainTabFeature {
             case .home:
                 return .none
             case .contest:
+                return .none
+            case .allTimeContest:
                 return .none
             case .mypage:
                 return .none
