@@ -154,8 +154,8 @@ public struct ImageGridView: View {
 
 public struct ContestImageModel: Identifiable, Hashable {
     public let id = UUID()
-    let imageName: String // 원본 이미지 이름 추가
-    let contestImage: Image
+    public let imageName: String // 원본 이미지 이름 추가
+    public let contestImage: Image
     
     public init(imageName: String, contestImage: Image) {
         self.imageName = imageName

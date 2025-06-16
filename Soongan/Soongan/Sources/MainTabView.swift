@@ -10,6 +10,7 @@ import SwiftUI
 
 import HomeFeature
 import ContestFeature
+import AllTimeContestFeature
 import MypageFeature
 
 import ComposableArchitecture
@@ -31,12 +32,14 @@ public struct MainTabView: View {
     public var body: some View {
         ZStack(alignment: .bottom) {
             TabView(selection: $store.selectedTab.sending(\.selectTab)) {
-                
                 HomeView(store: store.scope(state: \.home, action: \.home))
                     .tag(MainTabFeature.State.Tab.home)
                 
                 ContestView(store: store.scope(state: \.contest, action: \.contest))
                     .tag(MainTabFeature.State.Tab.contest)
+                
+                AllTimeContestView(store: store.scope(state: \.allTimeContest, action: \.allTimeContest))
+                    .tag(MainTabFeature.State.Tab.allTimeContest)
                 
                 MypageView(store: store.scope(state: \.mypage, action: \.mypage))
                     .tag(MainTabFeature.State.Tab.myPage)
@@ -51,14 +54,11 @@ public struct MainTabView: View {
             }
             .animation(.easeInOut(duration: 0.05), value: store.isTabBarVisible) // 더 빠른 반응
         }
-
         .ignoresSafeArea(edges: .bottom)
     }
     
     var customTabBar: some View {
         HStack(spacing: 0) {
-            Spacer()
-            
             Button(action: {
                 store.send(.selectTab(.home))
             }) {
@@ -76,13 +76,20 @@ public struct MainTabView: View {
             Spacer()
             
             Button(action: {
+                store.send(.selectTab(.allTimeContest))
+            }) {
+                store.selectedTab == .allTimeContest ? Image.selectAwardIcon : Image.notSelectAwardIcon
+            }
+            
+            Spacer()
+            
+            Button(action: {
                 store.send(.selectTab(.myPage))
             }) {
                 store.selectedTab == .myPage ? Image.selectMypageIcon : Image.notSelectMypageIcon
             }
-            
-            Spacer()
         }
+        .padding(.horizontal, 40)
         .padding(.bottom, 43)
         .padding(.top, 16)
         .frame(height: 83)
