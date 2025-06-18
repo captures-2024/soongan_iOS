@@ -20,6 +20,14 @@ let project = Project(
                         "UIColorName": "",
                         "UIImageName": "",
                     ],
+                    "BASE_URL": "$(BASE_URL)",
+                    "ACCESS_TOKEN_KEY": "$(ACCESS_TOKEN_KEY)",
+                    "REFRESH_TOKEN_KEY": "$(REFRESH_TOKEN_KEY)",
+                    "KAKAO_NATIVE_APP_KEY": "$(KAKAO_NATIVE_APP_KEY)",
+                    "LSApplicationQueriesSchemes": [
+                      "kakaokompassauth",
+                      "kakaolink"
+                    ],
                 ]
             ),
             sources: ["Soongan/Sources/**"],
@@ -29,6 +37,7 @@ let project = Project(
                 .external(name: "KakaoSDKAuth"),
                 .external(name: "KakaoSDKUser"),
                 .external(name: "ComposableArchitecture"),
+                .external(name: "FirebaseMessaging"),
                 .project(target: "Resource", path: "Resource"),
                 .project(target: "Shared", path: "Shared"),
                 .project(target: "DesignSystem", path: "DesignSystem"),
@@ -36,7 +45,8 @@ let project = Project(
                 .project(target: "HomeFeature", path: "Feature/HomeFeature"),
                 .project(target: "ContestFeature", path: "Feature/ContestFeature"),
                 .project(target: "AllTimeContestFeature", path: "Feature/AllTimeContestFeature"),
-                .project(target: "MypageFeature", path: "Feature/MypageFeature")
+                .project(target: "MypageFeature", path: "Feature/MypageFeature"),
+                .project(target: "CoreNetwork", path: "Core/CoreNetwork")
             ]
         ),
         .target(

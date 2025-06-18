@@ -14,6 +14,7 @@ import PackageDescription
             "KakaoSDKUser": .framework,
             "ComposableArchitecture": .framework,
             "ComposableArchitectureMacros": .macro,
+            "Alamofire": .framework,
         ]
     )
 #endif
@@ -27,5 +28,7 @@ let package = Package(
         
         .package(url: "https://github.com/kakao/kakao-ios-sdk", from: "2.24.0"),
         .package(url: "https://github.com/pointfreeco/swift-composable-architecture.git", from: "1.17.0"),
+        .package(url: "https://github.com/Alamofire/Alamofire.git", from: "5.8.1"),
+        .package(url: "https://github.com/firebase/firebase-ios-sdk.git", from: "10.24.0")
     ]
 )

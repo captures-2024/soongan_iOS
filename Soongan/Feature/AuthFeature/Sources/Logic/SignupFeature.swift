@@ -7,6 +7,7 @@
 
 import SwiftUI
 
+import CoreNetwork
 import DesignSystem
 import Shared
 
@@ -46,6 +47,12 @@ public struct SignupFeature {
         case nextButtonTapped
         case showSignupView
         case backButtonTapped
+        
+        case checkNicknameResult
+        case editBirthDayResult
+        
+        case nickNameError
+        case birhDayError
         
         // Delegate - SignupFeature -> LoginFeature
         case delegate(Delegate)
@@ -97,20 +104,59 @@ public struct SignupFeature {
             case .nextButtonTapped:
                 switch state.signupState {
                 case .inputNickname:
-                    state.signupState = .inputBirthday
-                    state.isButtonEnabled = false
+                    let dto = CheckNickNameRequestDTO(nickname: state.nickname)
                     
+                    return .run { send in
+                        let result: Result<Bool, NetworkError> = await NetworkManager.shared.request(MemberEndpoint.getCheckNickname(dto))
+                        
+                        switch result {
+                        case .success(let nickNameResult):
+                            await send(.checkNicknameResult)
+                            
+                        case .failure(let error):
+                            await send(.nickNameError)
+                        }
+                    }
                 case .inputBirthday:
                     if birthdayValidationState(state.birthday) {
-                        // TODO: - 다음화면으로 진행
-                        print("SignupFeature 로 데이터 옴")
-                        return .send(.delegate(.didCompleteSignup(nickname: state.nickname)))
-                        
+                        guard let birthdayToInt = Int(state.birthday) else {
+                            return .send(.editBirthDayResult)
+                        }
+
+                        let dto = EditMyBirthYearRequestDTO(birthYear: birthdayToInt)
+
+                        return .run { send in
+                            let result: Result<EditMyBirthYearResponseDTO, NetworkError> = await NetworkManager.shared.request(
+                                MemberEndpoint.patchBirthYear(dto)
+                            )
+
+                            switch result {
+                            case .success(let result):
+                                await send(.editBirthDayResult)
+                                
+                            case .failure(let error):
+                                await send(.birhDayError)
+                            }
+                        }
                     } else {
-                        // TODO: - 잘못된 기입
-                        state.birthdayState = .error(message: .condition(type: .birthday))
+                        return .send(.birhDayError)
                     }
                 }
+                
+            case .checkNicknameResult:
+                state.signupState = .inputBirthday
+                state.isButtonEnabled = false
+                
+                return .none
+                
+            case .editBirthDayResult:
+                return .send(.delegate(.didCompleteSignup(nickname: state.nickname)))
+                
+            case .nickNameError:
+                
+                return .none
+                
+            case .birhDayError:
                 
                 return .none
                 

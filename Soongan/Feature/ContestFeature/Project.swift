@@ -20,7 +20,8 @@ let project = Project(
             resources: [],
             dependencies: [
                 .external(name: "ComposableArchitecture"),
-                .project(target: "DesignSystem", path: "../../DesignSystem")
+                .project(target: "DesignSystem", path: "../../DesignSystem"),
+                .project(target: "CoreNetwork", path: "../../Core/CoreNetwork")
             ]
         )
     ]
