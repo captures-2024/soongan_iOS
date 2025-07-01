@@ -12,7 +12,7 @@ let project = Project(
         .target(
             name: "ContestFeature",
             destinations: .iOS,
-            product: .framework,
+            product: .staticFramework,
             bundleId: "com.captures.ContestFeature.Soongan",
             deploymentTargets: .iOS("17.0"),
             infoPlist: .default,

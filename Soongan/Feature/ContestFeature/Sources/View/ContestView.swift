@@ -39,6 +39,9 @@ public struct ContestView: View {
             }
             .background(DesignSystem.Color.soonganBG)
             .toolbar(.hidden, for: .tabBar)
+            .onAppear {
+                store.send(.onAppear)
+            }
             .sheet(
                 isPresented: $store.isContestSheetPresented.sending(\.dismissContestSheet)
             ) {
