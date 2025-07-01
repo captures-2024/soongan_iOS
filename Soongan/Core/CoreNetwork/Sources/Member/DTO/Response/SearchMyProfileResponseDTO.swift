@@ -8,16 +8,16 @@
 import Foundation
 
 public struct SearchMyProfileResponseDTO: Decodable {
-    let email: String
-    let nickname: String
-    let birthYear: Int
-    let profileImageUrl: String
-    let selfIntroduction: String
-    let reportHistories: [ReportHistoryData]
+    public let email: String
+    public let nickname: String?
+    public let birthYear: Int
+    public let profileImageUrl: String?
+    public let selfIntroduction: String?
+    public let reportHistories: [ReportHistoryData?]
 }
 
 public struct ReportHistoryData: Decodable {
-    let id: Int
-    let targetId: Int
-    let targetType: String
+    public let id: Int
+    public let targetId: Int
+    public let targetType: String
 }

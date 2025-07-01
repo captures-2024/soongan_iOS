@@ -12,4 +12,11 @@ public struct EditMyProfileRequestDTO: Encodable {
     let selfIntroduction: String
     let profileImage: String
     let isDefaultProfileImage: Bool
+    
+    public init(nickname: String, selfIntroduction: String, profileImage: String, isDefaultProfileImage: Bool) {
+        self.nickname = nickname
+        self.selfIntroduction = selfIntroduction
+        self.profileImage = profileImage
+        self.isDefaultProfileImage = isDefaultProfileImage
+    }
 }

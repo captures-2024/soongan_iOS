@@ -7,7 +7,7 @@
 
 import Foundation
 
-public struct EditMyBirthYearRequestDTO: Encodable {
+public struct EditMyBirthYearRequestDTO: Encodable, QueryParameterConvertible {
     let birthYear: Int
     
     public init(birthYear: Int) {

@@ -7,7 +7,7 @@
 
 import Foundation
 
-public struct CheckNickNameRequestDTO: Encodable {
+public struct CheckNickNameRequestDTO: Encodable, QueryParameterConvertible {
     let nickname: String
     
     public init(nickname: String) {

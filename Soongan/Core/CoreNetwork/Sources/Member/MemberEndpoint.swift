@@ -6,9 +6,10 @@
 //
 
 import Alamofire
+import Foundation
 
 public enum MemberEndpoint {
-    case patchProfile
+    case patchProfile(EditMyProfileRequestDTO)
     case patchBirthYear(EditMyBirthYearRequestDTO)
     case getMembers
     case getCheckNickname(CheckNickNameRequestDTO)
@@ -45,11 +46,20 @@ extension MemberEndpoint: APIEndpoint {
         return .accessTokenHeader
     }
     
-    public var parameters: (any Encodable)? {
+    public var queryParameters: [URLQueryItem]? {
         switch self {
-        case .getCheckNickname(let dto):
-            return dto
         case .patchBirthYear(let dto):
+            return dto.toQueryItems()
+        case .getCheckNickname(let dto):
+            return dto.toQueryItems()
+        default:
+            return nil
+        }
+    }
+    
+    public var body: (any Encodable)? {
+        switch self {
+        case .patchProfile(let dto):
             return dto
         default:
             return nil
