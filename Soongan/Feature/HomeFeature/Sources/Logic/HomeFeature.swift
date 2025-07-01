@@ -7,6 +7,7 @@
 
 import SwiftUI
 
+import CoreNetwork
 import DesignSystem
 import Shared
 
@@ -61,6 +62,8 @@ public struct HomeFeature {
         case addPictureButtonTapped
         case infoButtonTapped
         case dismissInfoSheet(Bool)
+        
+        case homeInfoSuccess(SearchHomeInfoResponseDTO)
     }
     
     // MARK: - Body
@@ -69,7 +72,25 @@ public struct HomeFeature {
         Reduce { state, action in
             switch action {
             case .onAppear:
-                print("Home Appear")
+                return .run { send in
+                    let result: Result<SearchHomeInfoResponseDTO, NetworkError> = await NetworkManager.shared.request(HomeEndpoint.getHomeInfo)
+                    
+                    switch result {
+                    case .success(let responseResult):
+                        return await send(.homeInfoSuccess(responseResult))
+                    case .failure(let error):
+                        print(error.localizedDescription)
+                    }
+                }
+            
+            case .homeInfoSuccess(let result):
+                let contestData = result.contestInfo
+                let postData = result.postInfo
+            
+                state.startPeriod = contestData.startAt.toFormattedDateString()
+                state.endPeriod = contestData.endAt.toFormattedDateString()
+                state.weekTopic = contestData.subject
+            
                 return .none
                 
             case .addPictureButtonTapped:
