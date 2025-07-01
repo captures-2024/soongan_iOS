@@ -8,13 +8,14 @@
 import Foundation
 
 public struct APIResponse<T: Decodable>: Decodable {
-    let status: Int
+    let statusCode: Int
     let message: String
     let responseData: T
+    let detailMessage: String?
 }
 
 public struct APIErrorResponse: Decodable {
-    let status: Int
+    let statusCode: Int
     let message: String
     let detailMessage: String
 }

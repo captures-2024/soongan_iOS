@@ -19,8 +19,12 @@ final class AuthInterceptor: RequestInterceptor {
         
         var urlRequest = urlRequest
         
-        if let token = KeychainManager.shared.load(key: .accessToken) {
-            urlRequest.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        if let headerType = urlRequest.value(forHTTPHeaderField: "X-Header-Type") {
+            if headerType == "accessToken" {
+                if let token = KeychainManager.shared.load(key: .accessToken) {
+                    urlRequest.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+                }
+            }
         }
         
         completion(.success(urlRequest))
@@ -65,21 +69,8 @@ private extension AuthInterceptor {
         }
         
         let endpoint = AuthEndpoint.patchRefresh(RefreshRequestDTO(accessToken: accessToken, refreshToken: refreshToken))
-        
-        let parameters = try? endpoint.parameters.flatMap { encodable -> [String: Any]? in
-            let data = try JSONEncoder().encode(encodable)
-            return try JSONSerialization.jsonObject(with: data) as? [String: Any]
-        }
-        
-        let session = Session.default
-        
-        let dataTask = session.request(
-               endpoint.baseURL.appendingPathComponent(endpoint.path),
-               method: endpoint.method,
-               parameters: parameters,
-               encoding: endpoint.method == .get ? URLEncoding.default : JSONEncoding.default,
-               headers: endpoint.headers
-           )
+
+        let dataTask = Session.default.request(APIRouter(endpoint: endpoint))
            .validate(statusCode: 200..<300)
            .serializingDecodable(APIResponse<AuthedResponseDTO>.self)
         

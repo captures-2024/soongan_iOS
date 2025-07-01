@@ -8,7 +8,35 @@
 import Alamofire
 import Foundation
 
-struct EmptyResponseDTO: Decodable {}
+public struct EmptyResponseDTO: Decodable {}
+
+public struct APIRouter: URLRequestConvertible {
+    public let endpoint: APIEndpoint
+
+    public init(endpoint: APIEndpoint) {
+        self.endpoint = endpoint
+    }
+    
+    public func asURLRequest() throws -> URLRequest {
+        var urlRequest = URLRequest(url: endpoint.baseURL.appendingPathComponent(endpoint.path))
+        urlRequest.method = endpoint.method
+        urlRequest.headers = endpoint.headerType.headers
+
+        // Body
+        if let body = endpoint.body {
+            urlRequest.httpBody = try JSONEncoder().encode(body)
+        }
+
+        // QueryParameters
+        if let queryParameters = endpoint.queryParameters, !queryParameters.isEmpty {
+            var components = URLComponents(url: urlRequest.url!, resolvingAgainstBaseURL: false)!
+            components.queryItems = queryParameters
+            urlRequest.url = components.url
+        }
+
+        return urlRequest
+    }
+}
 
 public final actor NetworkManager {
     
@@ -18,50 +46,24 @@ public final actor NetworkManager {
     
     private init() {
         let interceptor = AuthInterceptor()
-        self.session = Session(interceptor: interceptor)
+        self.session = Session(interceptor: interceptor, eventMonitors: [NetworkLogger()])
     }
     
     public func request<T: Decodable>(_ endpoint: APIEndpoint) async -> Result<T, NetworkError> {
-        let url = endpoint.baseURL.appendingPathComponent(endpoint.path)
-        
-        let parameters = try? endpoint.parameters.flatMap { encodable -> [String: Any]? in
-            let data = try JSONEncoder().encode(encodable)
-            return try JSONSerialization.jsonObject(with: data) as? [String: Any]
-        }
-
-        let dataTask = session.request(
-            url,
-            method: endpoint.method,
-            parameters: parameters,
-            encoding: endpoint.method == .get ? URLEncoding.default : JSONEncoding.default,
-            headers: endpoint.headers
-        )
-        .validate(statusCode: 200..<300)
-        .serializingData()
+        let dataTask = session.request(APIRouter(endpoint: endpoint))
+            .validate(statusCode: 200..<300)
+            .serializingDecodable(APIResponse<T>.self)
         
         print("🚀 \(T.self) API 호출 ==========================")
         let response = await dataTask.response
         
-        print("➡️ StatusCode: \(String(describing: response.response?.statusCode))")
-        
         switch response.result {
-        case .success(let data):
+        case .success(let decodedResponse):
+            // EmptyResponseDTO 인 경우 처리
             if T.self == EmptyResponseDTO.self {
                 return .success(EmptyResponseDTO() as! T)
             } else {
-                do {
-                    let decoded = try JSONDecoder().decode(APIResponse<T>.self, from: data)
-                    print("➡️ \(T.self) API 결과 디코딩 성공 ==========================")
-                    print(decoded.responseData)
-                    
-                    
-                    print("✅ \(T.self) API 성공 ==========================")
-                    return .success(decoded.responseData)
-                } catch {
-                    print("⚠️ \(T.self) API decodingFailed 에러 발생 ==========================")
-                    print(error.localizedDescription)
-                    return .failure(.decodingFailed(error))
-                }
+                return .success(decodedResponse.responseData)
             }
             
         case .failure(let error):
@@ -71,13 +73,14 @@ public final actor NetworkManager {
                     print("⚠️ \(T.self) API unAuthorizedError 에러 발생 ==========================")
                     return .failure(.unAuthorizedError)
                 case 400..<500, 500..<600:
+                    print("⚠️ \(T.self) API httpResponseNotOK 에러 발생 ==========================")
                     return .failure(.httpResponseNotOK(statusCode: statusCode))
                 default:
-                    return .failure(.requestFailed(description: error.localizedDescription))
+                    break
                 }
             }
             
-            print("❌ API 에러 발생: ==========================")
+            print("❌ \(T.self) API 에러 발생 ==========================")
             print(error.localizedDescription)
             return .failure(.requestFailed(description: error.localizedDescription))
         }

@@ -36,7 +36,8 @@ public protocol APIEndpoint {
     var method: HTTPMethod { get }
     var requestBodyType: RequestBodyType { get }
     var headerType: HeaderType { get }
-    var parameters: Encodable? { get }
+    var queryParameters: [URLQueryItem]? { get }
+    var body: Encodable? { get }
 }
 
 extension APIEndpoint {
@@ -53,30 +54,6 @@ extension APIEndpoint {
     
     /// 각 케이스에 맞는 HTTPHeaders 반환
     public var headers: HTTPHeaders {
-        var headers: HTTPHeaders = [:]
-        
-        switch requestBodyType {
-        case .json:
-            headers["Content-Type"] = "application/json"
-        case .formData:
-            headers["Content-Type"] = "multipart/form-data"
-        }
-        
-        switch headerType {
-        case .accessTokenHeader:
-            if let token = KeychainManager.shared.load(key: .accessToken) {
-                headers["Authorization"] = "Bearer \(token)"
-            }
-        case .refreshTokenHeader:
-            if let token = KeychainManager.shared.load(key: .refreshToken) {
-                headers["Authorization"] = "Bearer \(token)"
-            }
-        case .defaultHeader:
-            break
-        case .userAgentHeader(let type):
-            headers["User-Agent"] = type
-        }
-        
-        return headers
+        return headerType.headers
     }
 }

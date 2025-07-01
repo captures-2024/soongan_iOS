@@ -40,11 +40,12 @@ public enum HeaderType {
     case defaultHeader
     case accessTokenHeader
     case refreshTokenHeader
-    case userAgentHeader(String)
+    case userAgentHeader
     
     public var headers: HTTPHeaders {
         var headers: HTTPHeaders = [
-            "Content-Type": "application/json"
+            "Content-Type": "application/json",
+            "Soongan-Api-Key": "\(Config.projectKey)"
         ]
         
         switch self {
@@ -58,8 +59,8 @@ public enum HeaderType {
                 headers["Authorization"] = "Bearer \(token)"
             }
             
-        case .userAgentHeader(let userAgent):
-            headers["User-Agent"] = userAgent
+        case .userAgentHeader:
+            headers["User-Agent"] = "IOS"
             
         case .defaultHeader:
             break
