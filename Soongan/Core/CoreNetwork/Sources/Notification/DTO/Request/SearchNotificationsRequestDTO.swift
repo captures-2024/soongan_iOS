@@ -7,6 +7,10 @@
 
 import Foundation
 
-public struct SearchNotificationsRequestDTO: Encodable {
+public struct SearchNotificationsRequestDTO: Encodable, QueryParameterConvertible {
     let type: String
+    
+    public init(type: String) {
+        self.type = type
+    }
 }

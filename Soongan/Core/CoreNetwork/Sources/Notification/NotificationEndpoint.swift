@@ -6,9 +6,10 @@
 //
 
 import Alamofire
+import Foundation
 
 public enum NotificationEndpoint {
-    case postReadNotification(notificationId: Int)
+    case postReadNotification(ReadNotificationsRequestDTO)
     case getNotifications(SearchNotificationsRequestDTO)
     case getUnreadNotificationCount
     case deleteNotification(notificationId: Int)
@@ -47,12 +48,18 @@ extension NotificationEndpoint: APIEndpoint {
         return .accessTokenHeader
     }
     
-    public var parameters: (any Encodable)? {
+    public var queryParameters: [URLQueryItem]? {
         switch self {
+        case .postReadNotification(let dto):
+            return dto.toQueryItems()
         case .getNotifications(let dto):
-            return dto
+            return dto.toQueryItems()
         default:
             return nil
         }
+    }
+    
+    public var body: (any Encodable)? {
+        return nil
     }
 }

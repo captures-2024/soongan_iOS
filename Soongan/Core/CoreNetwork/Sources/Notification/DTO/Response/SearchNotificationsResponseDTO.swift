@@ -8,16 +8,16 @@
 import Foundation
 
 public struct SearchNotificationsResponseDTO: Decodable {
-    let type: String
-    let notifications: NotificationsInfoData
+    public let type: String
+    public let notifications: [NotificationsInfoData]
 }
 
 public struct NotificationsInfoData: Decodable {
-    let id: Int
-    let title: String
-    let body: String
-    let subType: String
-    let isRead: Bool
-    let redirectUrl: String
-    let createdAt: String
+    public let id: Int
+    public let title: String
+    public let body: String
+    public let subType: String
+    public let isRead: Bool
+    public let redirectUrl: String
+    public let createdAt: String
 }
