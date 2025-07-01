@@ -11,6 +11,7 @@ enum Config {
     enum Keys {
         enum Plist {
             static let baseURL = "BASE_URL"
+            static let projectHeader = "PROJECT_KEY"
         }
         
         enum Keychain: String {
@@ -45,6 +46,13 @@ extension Config {
     static let refreshTokenKey: String = {
         guard let key = Config.infoDictionary[Keys.Keychain.refreshToken.rawValue] as? String else {
             fatalError("⛔️REFRESH_TOKEN_KEY is not set in plist for this configuration⛔️")
+        }
+        return key
+    }()
+    
+    static let projectKey: String = {
+        guard let key = Config.infoDictionary[Keys.Plist.projectHeader] as? String else {
+            fatalError("⛔️PROJECT_KEY is not set in plist for this configuration⛔️")
         }
         return key
     }()

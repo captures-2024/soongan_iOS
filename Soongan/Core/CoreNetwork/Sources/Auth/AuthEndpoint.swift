@@ -6,6 +6,7 @@
 //
 
 import Alamofire
+import Foundation
 
 public enum AuthEndpoint {
     case postLogin(LoginRequestDTO)
@@ -44,7 +45,7 @@ extension AuthEndpoint: APIEndpoint {
     public var headerType: HeaderType {
         switch self {
         case .postLogin:
-            return .userAgentHeader("IOS")
+            return .userAgentHeader
         case .patchRefresh:
             return .defaultHeader
         case .postLogout, .postWithdraw:
@@ -52,7 +53,11 @@ extension AuthEndpoint: APIEndpoint {
         }
     }
     
-    public var parameters: (any Encodable)? {
+    public var queryParameters: [URLQueryItem]? {
+        return nil
+    }
+    
+    public var body: (any Encodable)? {
         switch self {
         case .postLogin(let dto):
             return dto

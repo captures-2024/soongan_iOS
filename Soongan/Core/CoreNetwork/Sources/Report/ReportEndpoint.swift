@@ -6,6 +6,7 @@
 //
 
 import Alamofire
+import Foundation
 
 public enum ReportEndpoint {
     case postReport(ReportRequestDTO)
@@ -28,7 +29,11 @@ extension ReportEndpoint: APIEndpoint {
         return .accessTokenHeader
     }
     
-    public var parameters: (any Encodable)? {
+    public var queryParameters: [URLQueryItem]? {
+        return nil
+    }
+    
+    public var body: (any Encodable)? {
         switch self {
         case .postReport(let dto):
             return dto

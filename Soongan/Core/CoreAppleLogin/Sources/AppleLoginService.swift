@@ -19,7 +19,8 @@ public final class AppleLoginService: NSObject, AppleLoginServiceProtocol {
            self.continuation = continuation
            let provider = ASAuthorizationAppleIDProvider()
            let request = provider.createRequest()
-           request.requestedScopes = [.fullName]
+           request.requestedScopes = []
+           
            let controller = ASAuthorizationController(authorizationRequests: [request])
            controller.delegate = self
            controller.presentationContextProvider = self

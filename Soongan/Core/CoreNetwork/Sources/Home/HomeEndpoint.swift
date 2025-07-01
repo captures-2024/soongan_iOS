@@ -6,6 +6,7 @@
 //
 
 import Alamofire
+import Foundation
 
 public enum HomeEndpoint {
     case getHomeInfo
@@ -28,7 +29,11 @@ extension HomeEndpoint: APIEndpoint {
         return .accessTokenHeader
     }
     
-    public var parameters: (any Encodable)? {
+    public var queryParameters: [URLQueryItem]? {
+        return nil
+    }
+    
+    public var body: (any Encodable)? {
         return nil
     }
 }

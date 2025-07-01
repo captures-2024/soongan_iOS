@@ -8,20 +8,20 @@
 import Foundation
 
 public struct SearchHomeInfoResponseDTO: Decodable {
-    let contestInfo: ContestInfoData
-    let postInfo: [HomePostInfoData]
+    public let contestInfo: ContestInfoData
+    public let postInfo: [HomePostInfoData]
 }
 
 public struct ContestInfoData: Decodable {
-    let contestType: String
-    let subject: String
-    let startAt: String
-    let endAt: String
+    public let contestType: String
+    public let subject: String
+    public let startAt: String
+    public let endAt: String
 }
 
 public struct HomePostInfoData: Decodable {
-    let postId: Int
-    let imageUrl: String
-    let likeCount: Int
-    let commentCount: Int
+    public let postId: Int
+    public let imageUrl: String
+    public let likeCount: Int
+    public let commentCount: Int
 }
