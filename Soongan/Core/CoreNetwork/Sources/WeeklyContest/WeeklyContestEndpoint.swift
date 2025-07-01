@@ -6,6 +6,7 @@
 //
 
 import Alamofire
+import Foundation
 
 public enum WeeklyContestEndpoint {
     case getContest(SearchWeeklyContestRequestDTO)
@@ -60,13 +61,20 @@ extension WeeklyContestEndpoint: APIEndpoint {
         }
     }
     
-    public var parameters: (any Encodable)? {
+    public var queryParameters: [URLQueryItem]? {
         switch self {
         case .getContest(let dto):
-            return dto
-        case .postContest(let dto):
-            return dto
+            return dto.toQueryItems()
         case .getMyContest(let dto):
+            return dto.toQueryItems()
+        default:
+            return nil
+        }
+    }
+    
+    public var body: (any Encodable)? {
+        switch self {
+        case .postContest(let dto):
             return dto
         default:
             return nil

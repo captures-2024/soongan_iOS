@@ -8,15 +8,15 @@
 import Foundation
 
 public struct SearchHistoriesContestResponseDTO: Decodable {
-    let contests: [SearchHistoriesContestData]
+    public let contests: [SearchHistoriesContestData]
 }
 
-public struct SearchHistoriesContestData: Decodable {
-    let id: Int
-    let round: Int
-    let subject: String
-    let startAt: String
-    let endAt: String
-    let announcedAt: String
-    let thumbnailImageUrl: String
+public struct SearchHistoriesContestData: Decodable, Equatable, Hashable {
+    public let id: Int
+    public let round: Int
+    public let subject: String
+    public let startAt: String
+    public let endAt: String
+    public let announcedAt: String
+    public let thumbnailImageUrl: String
 }

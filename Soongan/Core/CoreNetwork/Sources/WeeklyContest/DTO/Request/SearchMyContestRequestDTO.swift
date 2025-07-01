@@ -7,7 +7,7 @@
 
 import Foundation
 
-public struct SearchMyContestRequestDTO: Encodable {
+public struct SearchMyContestRequestDTO: Encodable, QueryParameterConvertible {
     let page: Int
     let pageSize: Int
     

@@ -8,21 +8,21 @@
 import Foundation
 
 public struct SearchWeeklyContestResponseDTO: Decodable {
-    let round: Int
-    let subject: String
-    let posts: [PostInfoData]
-    let pageInfo: PageInfoData
+    public let round: Int
+    public let subject: String
+    public let posts: [PostInfoData]
+    public let pageInfo: PageInfoData
 }
 
 public struct PostInfoData: Decodable {
-    let nickname: String
-    let profileImageUrl: String
-    let postId: Int
-    let imageUrl: String
+    public let nickname: String
+    public let profileImageUrl: String
+    public let postId: Int
+    public let imageUrl: String
 }
 
 public struct PageInfoData: Decodable {
-    let page: Int
-    let size: Int
-    let hasNext: Bool
+    public let page: Int
+    public let size: Int
+    public let hasNext: Bool
 }
