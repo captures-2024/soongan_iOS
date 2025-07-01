@@ -110,10 +110,10 @@ public struct SignupFeature {
                         let result: Result<Bool, NetworkError> = await NetworkManager.shared.request(MemberEndpoint.getCheckNickname(dto))
                         
                         switch result {
-                        case .success(let nickNameResult):
+                        case .success:
                             await send(.checkNicknameResult)
                             
-                        case .failure(let error):
+                        case .failure:
                             await send(.nickNameError)
                         }
                     }
@@ -131,10 +131,10 @@ public struct SignupFeature {
                             )
 
                             switch result {
-                            case .success(let result):
+                            case .success:
                                 await send(.editBirthDayResult)
                                 
-                            case .failure(let error):
+                            case .failure:
                                 await send(.birhDayError)
                             }
                         }
@@ -157,6 +157,7 @@ public struct SignupFeature {
                 return .none
                 
             case .birhDayError:
+                state.birthdayState = .error(message: .condition(type: .birthday))
                 
                 return .none
                 

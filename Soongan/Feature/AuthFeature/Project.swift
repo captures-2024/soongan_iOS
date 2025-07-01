@@ -12,7 +12,7 @@ let project = Project(
         .target(
             name: "AuthFeature",
             destinations: .iOS,
-            product: .framework,
+            product: .staticFramework,
             bundleId: "com.captures.AuthFeature.Soongan",
             deploymentTargets: .iOS("17.0"),
             infoPlist: .default,

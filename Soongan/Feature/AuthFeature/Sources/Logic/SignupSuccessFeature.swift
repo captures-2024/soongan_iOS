@@ -30,6 +30,12 @@ public struct SignupSuccessFeature {
     
     public enum Action {
         case onAppear
+        
+        case delegate(Delegate)
+        
+        public enum Delegate {
+            case showMainTab
+        }
     }
     
     // MARK: - Body
@@ -38,7 +44,13 @@ public struct SignupSuccessFeature {
         Reduce { state, action in
             switch action {
             case .onAppear:
-                print("Appear")
+                return .run { send in
+                    try await Task.sleep(for: .seconds(1))
+                    print("SignupSuccessFeature 로 데이터 옴")
+                    await send(.delegate(.showMainTab))
+                }
+
+            case .delegate(_):
                 return .none
             }
         }

@@ -69,7 +69,7 @@ public struct LoginFeature {
         case skippLoginButtonTapped
         case termsOfUseButtonTapped
         
-        // Delegate - LoginFeature -> AppFeature 
+        // Delegate - LoginFeature -> AppFeature
         case delegate(Delegate)
         
         public enum Delegate {
@@ -91,8 +91,8 @@ public struct LoginFeature {
             case .appleButtonTapped:
                 return .run { send in
                     do {
-                        let idToken = try await appleLoginService.login()
-                        await send(.socialLoginSuccessResponse(type: .kakao, token: idToken))
+                        let oauthToken = try await appleLoginService.login()
+                        await send(.socialLoginSuccessResponse(type: .apple, token: oauthToken))
                     } catch {
                         await send(.socialLoginFailureResponse(error))
                     }
@@ -101,8 +101,8 @@ public struct LoginFeature {
             case .kakaoButtonTapped:
                 return .run { send in
                     do {
-                        let oauthToken = try await kakaoLoginService.login()
-                        await send(.socialLoginSuccessResponse(type: .apple, token: oauthToken))
+                        let idToken = try await kakaoLoginService.login()
+                        await send(.socialLoginSuccessResponse(type: .kakao, token: idToken))
                     } catch {
                         await send(.socialLoginFailureResponse(error))
                     }
@@ -124,6 +124,9 @@ public struct LoginFeature {
                     
                     switch result {
                     case .success(let authedResult):
+                        KeychainManager.shared.save(key: .accessToken, value: authedResult.accessToken)
+                        KeychainManager.shared.save(key: .refreshToken, value: authedResult.refreshToken)
+                        
                         await send(.loginSuccess)
                         
                     case .failure(let error):
@@ -153,10 +156,14 @@ public struct LoginFeature {
             case .path(.element(id: _, action: .signup(.delegate(.didCompleteSignup(let nickname))))):
                 state.path.append(.signupSuccess(SignupSuccessFeature.State(nickname: nickname)))
                 return .none
-                
-            case .path(.element(id: _, action: .signup(.showSignupView))):
-                state.path.append(.signup(SignupFeature.State()))
-                return .none
+            
+            case .path(.element(id: _, action: .signupSuccess(.delegate(.showMainTab)))):
+                print("LoginFeature 로 데이터 옴")
+                return .send(.delegate(.loginSuccess))
+//            case .path(.element(id: _, action: .signupSuccess(T##SignupSuccessFeature.Action)))
+//            case .path(.element(id: _, action: .signup(.showSignupView))):
+//                state.path.append(.signup(SignupFeature.State()))
+//                return .none
                 
             case .path(.element(id: _, action: .signup(.backButtonTapped))):
                 state.path.removeLast()
