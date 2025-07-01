@@ -71,7 +71,7 @@ public struct EditProfileView: View {
                 Spacer()
                 
                 CustomBottomButton(type: .editComplete, isEnable: $store.editButtonState) {
-                    
+                    store.send(.editMyProfile)
                 }
                 .padding(.horizontal, 136)
                 .padding(.bottom, 93)

@@ -7,15 +7,11 @@
 
 import Foundation
 
-struct AlarmListModel: Identifiable, Hashable {
-    let id = UUID()
-    let title: String
-    let content: String
-    let time: String
-    
-    init(title: String, content: String, time: String) {
-        self.title = title
-        self.content = content
-        self.time = time
-    }
+public struct AlarmListModel: Identifiable, Hashable {
+    public let id: Int
+    public let title: String
+    public let content: String
+    public let isRead: Bool
+    public let redirectUrl: String
+    public let time: String
 }

@@ -58,11 +58,14 @@ public struct MypageView: View {
                 }
             }
             .sheet(item: $store.activeSheet) { sheetType in
-                CustomSheetView(type: sheetType) { optionType in
+                CustomSheetView<MyprofileOptionType>(type: sheetType) { optionType in
 //                    if let optionType = optionType as? MyprofileOptionType {
 //                        store.send(.optionSelected(optionType))
 //                    }
                 }
+            }
+            .onAppear {
+                store.send(.onAppear)
             }
         } destination: { store in
             switch store.case {
@@ -82,11 +85,11 @@ public struct MypageView: View {
 private extension MypageView {
     func profileHeaderSection() -> some View {
         VStack(alignment: .leading, spacing: 10) {
-            Text("user1")
+            Text(store.userName)
                 .font(.medium16)
             
-            Text("본인을 소개해주세요")
-                .font(.regualr12)
+            Text(store.userIntroduce)
+                .font(.regular12)
         }
         .foregroundStyle(Color.black100)
     }

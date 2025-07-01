@@ -7,6 +7,7 @@
 
 import SwiftUI
 
+import CoreNetwork
 import DesignSystem
 import Shared
 
@@ -35,6 +36,10 @@ public struct MypageFeature {
         var shouldNavigateToEditProfile: Bool = false
         var shouldNavigateToQuestionsList: Bool = false
         
+        var userName = ""
+        var userIntroduce = ""
+        
+        
         var activeSheet: SheetContentType?
         
         // CustomTabBar 가시성
@@ -55,12 +60,17 @@ public struct MypageFeature {
         case path(StackActionOf<MypagePath>)
         
         case binding(BindingAction<State>)
+        
+        case onAppear
         case alarmButtonTapped
         case optionButtonTapped
         case optionSheetIsPresented(MyprofileOptionType)
         case presentSheet(SheetContentType)
         case dismissOptionSheet(Bool)
         case dismissSheet
+        
+        case myInfoSuccess(SearchMyProfileResponseDTO)
+        case myContestInfoSuccess(SearchMyContestResponseDTO)
     }
     
     // MARK: - Body
@@ -70,6 +80,46 @@ public struct MypageFeature {
         
         Reduce { state, action in
             switch action {
+            case .onAppear:
+                let dto = SearchMyContestRequestDTO(page: 0, pageSize: 50)
+                
+                return .run { send in
+                    async let myInfoResult: Result<SearchMyProfileResponseDTO, NetworkError> = NetworkManager.shared.request(MemberEndpoint.getMembers)
+                    
+                    async let myContestInfoResult: Result<SearchMyContestResponseDTO, NetworkError> = NetworkManager.shared.request(WeeklyContestEndpoint.getMyContest(dto))
+                    
+                    // await 둘 다 병렬로 완료
+                    let (infoResult, contestResult) = await (myInfoResult, myContestInfoResult)
+                    
+                    // 개별 처리
+                    switch infoResult {
+                    case .success(let info):
+                        await send(.myInfoSuccess(info))
+                    case .failure(let error):
+                        print("Profile Error: \(error.localizedDescription)")
+//                        await send(.myInfoFailure(error))
+                    }
+
+                    switch contestResult {
+                    case .success(let contest):
+                        await send(.myContestInfoSuccess(contest))
+                    case .failure(let error):
+                        print("Contest Error: \(error.localizedDescription)")
+//                        await send(.myContestFailure(error))
+                    }
+                }
+                
+            case .myInfoSuccess(let response):
+                state.userName = response.nickname ?? "정보없음"
+                state.userIntroduce = response.selfIntroduction ?? "정보없음"
+                
+                return .none
+                
+            case .myContestInfoSuccess(let response):
+                
+                // TODO: - 나의 콘테스트 게시글 보여주기
+                return .none
+                
             case let .path(.element(id: _, action: action)):
                 switch action {
                 case .editProfile(.backButtonTapped), .alarmList(.backButtonTapped), .questionsList(.backButtonTapped):

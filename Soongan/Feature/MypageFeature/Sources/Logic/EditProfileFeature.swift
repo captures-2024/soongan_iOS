@@ -7,6 +7,7 @@
 
 import SwiftUI
 
+import CoreNetwork
 import DesignSystem
 import Shared
 
@@ -37,6 +38,8 @@ public struct EditProfileFeature {
     public enum Action: BindableAction {
         case binding(BindingAction<State>)
         
+        case editMyProfile
+        case editMyProfileSuccess(EditMyProfileResponseDTO)
         case backButtonTapped
     }
     
@@ -45,5 +48,38 @@ public struct EditProfileFeature {
     public var body: some ReducerOf<Self> {
         BindingReducer()
         
+        Reduce { state, action in
+            switch action {
+            case .editMyProfile:
+                let dto = EditMyProfileRequestDTO(
+                    nickname: state.nickname,
+                    selfIntroduction: state.introduce,
+                    profileImage: "",
+                    isDefaultProfileImage: false
+                )
+                
+                return .run { send in
+                    let result: Result<EditMyProfileResponseDTO, NetworkError> = await NetworkManager.shared.request(MemberEndpoint.patchProfile(dto))
+                    
+                    switch result {
+                    case .success(let responseResult):
+                        await send(.editMyProfileSuccess(responseResult))
+                    case .failure(let error):
+                        print(error)
+                    }
+                }
+                
+            case .editMyProfileSuccess(let response):
+
+                return .none
+            
+            case .backButtonTapped:
+                
+                return .none
+                
+            default:
+                return .none
+            }
+        }
     }
 }

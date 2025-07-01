@@ -16,13 +16,6 @@ public struct AlarmListView: View {
     
     @Bindable var store: StoreOf<AlarmListFeature>
     
-    private var alarmListModels = [
-        AlarmListModel(title: "<위클리 콘> 새로운 주제가 발표됐어요~", content: "이번 콘테스트의 주제는 무엇일까요?\n지금 바로 확인해보세요!", time: "2일 전"),
-        AlarmListModel(title: "<위클리 콘> 새로운 주제가 발표됐어요~", content: "이번 콘테스트의 주제는 무엇일까요?\n지금 바로 확인해보세요!", time: "3일 전"),
-        AlarmListModel(title: "<위클리 콘> 새로운 주제가 발표됐어요~", content: "이번 콘테스트의 주제는 무엇일까요?\n지금 바로 확인해보세요!\n콘테스트의 주제는 무엇일까요?\n지금 바로 확인해보세요!", time: "5일전"),
-        AlarmListModel(title: "<위클리 콘> 새로운 주제가 발표됐어요~", content: "이번 콘테스트의 주제는 무엇일까요?\n지금 바로 확인해보세요!", time: "10일전")
-    ]
-    
     // MARK: - Init
     
     public init(
@@ -37,21 +30,21 @@ public struct AlarmListView: View {
         VStack(spacing: 0) {
             HStack(spacing: 18) {
                 TopTabButtonView(
-                    title: "대회 알림",
-                    isSelected: store.selectedTab == .home,
-                    action: { store.send(.topMenuButtonTapped(.home)) }
+                    title: "대회 알림" + (store.unreadNotificationCount[.contest].flatMap { $0 > 0 ? " \($0)" : nil } ?? ""),
+                    isSelected: store.selectedTab == .contest,
+                    action: { store.send(.topMenuButtonTapped(.contest)) }
                 )
                 
                 TopTabButtonView(
-                    title: "활동 알림",
-                    isSelected: store.selectedTab == .search,
-                    action: { store.send(.topMenuButtonTapped(.search)) }
+                    title: "활동 알림" + (store.unreadNotificationCount[.activity].flatMap { $0 > 0 ? " \($0)" : nil } ?? ""),
+                    isSelected: store.selectedTab == .activity,
+                    action: { store.send(.topMenuButtonTapped(.activity)) }
                 )
 
                 TopTabButtonView(
-                    title: "공지 알림",
-                    isSelected: store.selectedTab == .profile,
-                    action: { store.send(.topMenuButtonTapped(.profile)) }
+                    title: "공지 알림" + (store.unreadNotificationCount[.notice].flatMap { $0 > 0 ? " \($0)" : nil } ?? ""),
+                    isSelected: store.selectedTab == .notice,
+                    action: { store.send(.topMenuButtonTapped(.notice)) }
                 )
             }
             .padding(.top, 26)
@@ -61,45 +54,14 @@ public struct AlarmListView: View {
                 .background(DesignSystem.Color.black80)
                 .frame(height: 2)
             
-            // 선택된 화면 보여주기
             Group {
-                switch store.selectedTab {
-                case .home:
-                    List {
-                        ForEach(alarmListModels) { alarmData in
-                            VStack(alignment: .leading, spacing: 0) {
-                                alarmListContent(data: alarmData)
-                                    .padding(.vertical, 20)
-                                    .padding(.horizontal, 12)
-                                
-                                Divider()
-                                    .frame(height: 0.7)
-                                    .background(DesignSystem.Color.black40)
-                            }
-                            .listRowSeparator(.hidden)
-                            .listRowInsets(EdgeInsets(top: 0, leading: 20, bottom: 0, trailing: 20))
-                            .swipeActions {
-                                Button(role: .destructive) {
-                                    // delete(item: item)
-                                } label: {
-                                    Image.deleteList
-                                }
-                            }
-                        }
-                        .listRowBackground(Color.clear)
-                        .scrollContentBackground(.hidden)
-                        .background(Color.clear)
-                    }
-                    .listStyle(.plain)
-                    
-                case .search:
-                    Text("asdfasdfasdfasdf")
-                    
-                case .profile:
-                    Text("asdfasdf")
-                }
+                alarmList(store.selectedTab)
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
+        }
+        .onAppear {
+            store.send(.onAppear)
+            store.send(.topMenuButtonTapped(.contest))
         }
         .background(DesignSystem.Color.soonganBG)
         .background(InteractivePopGestureEnabler())
@@ -126,10 +88,43 @@ public struct AlarmListView: View {
         }
     }
     
-    func delete(item: AlarmListModel) {
-//        if let index = items.firstIndex(where: { $0.id == item.id }) {
-//            items.remove(at: index)
-//        }
+    @ViewBuilder
+    func alarmList(_ tab: AlarmTab) -> some View {
+        if let alarmList = store.alarmListModels[store.selectedTab] {
+            List {
+                ForEach(alarmList) { alarmData in
+                    VStack(alignment: .leading, spacing: 0) {
+                        alarmListContent(data: alarmData)
+                            .padding(.leading, alarmData.isRead ? 20 : 12)
+                            .padding(.trailing, 20)
+                            .padding(.horizontal, 12)
+                        
+                        Divider()
+                            .frame(height: 0.7)
+                            .background(DesignSystem.Color.black40)
+                    }
+                    .listRowSeparator(.hidden)
+                    .listRowInsets(EdgeInsets(top: 0, leading: 20, bottom: 0, trailing: 20))
+                    .onTapGesture {
+                        store.send(.alarmCellTapped(alarmData)) // Action 추가
+                    }
+                    .swipeActions {
+                        Button(role: .destructive) {
+                            store.send(.deleteAlarmButtonTapped(alarmData.id))
+                        } label: {
+                            Image.deleteList
+                        }
+                    }
+                }
+                .listRowBackground(Color.clear)
+                .scrollContentBackground(.hidden)
+                .background(Color.clear)
+            }
+            .listStyle(.plain)
+        } else {
+            Text("알람이 없습니다.")
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+        }
     }
 }
 
@@ -137,18 +132,27 @@ public struct AlarmListView: View {
 
 private extension AlarmListView {
     private func alarmListContent(data: AlarmListModel) -> some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Text(data.title)
-                .font(.bold16)
-                .foregroundColor(DesignSystem.Color.black100)
+        HStack(spacing: 12) {
+            if !data.isRead {
+                Image(systemName: "circle.fill")
+                    .resizable()
+                    .frame(width: 8, height: 8)
+                    .foregroundColor(DesignSystem.Color.primary)
+            }
             
-            Text(data.content)
-                .font(.bold12)
-                .foregroundColor(DesignSystem.Color.black100)
-            
-            Text(data.time)
-                .font(.regualr12)
-                .foregroundColor(DesignSystem.Color.black100)
+            VStack(alignment: .leading, spacing: 8) {
+                Text(data.title)
+                    .font(.bold16)
+                    .foregroundColor(DesignSystem.Color.black100)
+                
+                Text(data.content)
+                    .font(.bold12)
+                    .foregroundColor(DesignSystem.Color.black100)
+                
+                Text(data.time)
+                    .font(.regular12)
+                    .foregroundColor(DesignSystem.Color.black100)
+            }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
     }
