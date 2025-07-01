@@ -6,10 +6,11 @@
 //
 
 import Alamofire
+import Foundation
 
 public enum FCMEndpoint {
-    case postFcmToken
-    case getFcmTest
+    case postFcmToken(RegisterFCMTokenRequestDTO)
+    case getFcmTest(FCMTokenRequestDTO)
 }
 
 extension FCMEndpoint: APIEndpoint {
@@ -38,13 +39,27 @@ extension FCMEndpoint: APIEndpoint {
     public var headerType: HeaderType {
         switch self {
         case .postFcmToken:
-            return .userAgentHeader("IOS")
+            return .userAgentHeader
         case .getFcmTest:
             return .defaultHeader
         }
     }
     
-    public var parameters: (any Encodable)? {
-        return nil
+    public var queryParameters: [URLQueryItem]? {
+        switch self {
+        case .getFcmTest(let dto):
+            return dto.toQueryItems()
+        default:
+            return nil
+        }
+    }
+    
+    public var body: (any Encodable)? {
+        switch self {
+        case .postFcmToken(let dto):
+            return dto
+        default:
+            return nil
+        }
     }
 }

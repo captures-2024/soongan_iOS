@@ -7,7 +7,7 @@
 
 import Foundation
 
-public struct RegisterFCMTokenResponseDTO: Encodable {
+public struct RegisterFCMTokenResponseDTO: Decodable {
     let id: Int
     let token: String
     let deviceId: String
