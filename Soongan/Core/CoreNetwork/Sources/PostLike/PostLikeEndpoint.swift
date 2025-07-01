@@ -6,6 +6,7 @@
 //
 
 import Alamofire
+import Foundation
 
 public enum PostLikeEndpoint {
     case putPostLike(PostLikeRequestDTO)
@@ -34,7 +35,11 @@ extension PostLikeEndpoint: APIEndpoint {
         return .accessTokenHeader
     }
     
-    public var parameters: (any Encodable)? {
+    public var queryParameters: [URLQueryItem]? {
+        return nil
+    }
+    
+    public var body: (any Encodable)? {
         switch self {
         case .putPostLike(let dto), .deletePostLike(let dto):
             return dto

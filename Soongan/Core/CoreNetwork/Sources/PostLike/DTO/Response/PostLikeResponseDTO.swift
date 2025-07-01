@@ -8,6 +8,6 @@
 import Foundation
 
 public struct PostLikeResponseDTO: Decodable {
-    let postId: String
-    let likeCount: String
+    public let postId: String
+    public let likeCount: String
 }
