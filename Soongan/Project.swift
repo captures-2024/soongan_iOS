@@ -5,7 +5,10 @@ let project = Project(
     organizationName: "Captures",
     settings: .settings(
         base: [
-            "DEVELOPMENT_TEAM": "9KHXTZ4SZ9"
+            "DEVELOPMENT_TEAM": "N3H27N59VG",
+        ],
+        configurations: [
+            .debug(name: "Debug", xcconfig: .relativeToRoot("Soongan/Configs/Debug.xcconfig")),
         ]
     ),
     targets: [
@@ -21,17 +24,30 @@ let project = Project(
                         "UIImageName": "",
                     ],
                     "BASE_URL": "$(BASE_URL)",
+                    "PROJECT_KEY": "$(PROJECT_KEY)",
                     "ACCESS_TOKEN_KEY": "$(ACCESS_TOKEN_KEY)",
                     "REFRESH_TOKEN_KEY": "$(REFRESH_TOKEN_KEY)",
                     "KAKAO_NATIVE_APP_KEY": "$(KAKAO_NATIVE_APP_KEY)",
+                    "CFBundleURLTypes": [
+                        [
+                            "CFBundleURLSchemes": [ "kakao$(KAKAO_NATIVE_APP_KEY)" ]
+                        ]
+                    ],
                     "LSApplicationQueriesSchemes": [
                       "kakaokompassauth",
                       "kakaolink"
                     ],
+                    "UIBackgroundModes": [
+                        "remote-notification"
+                    ],
                 ]
             ),
             sources: ["Soongan/Sources/**"],
-            resources: ["Soongan/Resources/**"],
+            resources: [
+                "Soongan/Resources/**",
+                "Soongan/GoogleService-Info.plist"
+            ],
+            entitlements: .file(path: "Soongan/Soongan.entitlements"),
             dependencies: [
                 .external(name: "KakaoSDKCommon"),
                 .external(name: "KakaoSDKAuth"),

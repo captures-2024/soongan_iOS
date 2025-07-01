@@ -11,7 +11,9 @@ import UserNotifications
 
 import AuthFeature
 import CoreKeyChain
+import CoreNetwork
 
+import Alamofire
 import ComposableArchitecture
 import Firebase
 import FirebaseMessaging
@@ -37,6 +39,11 @@ struct SoonganApp: App {
                     }
                 )
             )
+            .onOpenURL { url in
+                if (AuthApi.isKakaoTalkLoginUrl(url)) {
+                    _ = AuthController.handleOpenUrl(url: url)
+                }
+            }
         }
     }
 }
@@ -60,6 +67,16 @@ class AppDelegate: NSObject, UIApplicationDelegate {
         
         return true
     }
+    
+//    func application(_ app: UIApplication, open url: URL,
+//                     options: [UIApplication.OpenURLOptionsKey : Any] = [:]) -> Bool {
+//        
+//        if (AuthApi.isKakaoTalkLoginUrl(url)) {
+//            return AuthController.handleOpenUrl(url: url)
+//        }
+//        
+//        return false
+//    }
     
     // MARK: - 원격 알림 권한 요청
     
@@ -113,14 +130,56 @@ extension AppDelegate: MessagingDelegate {
         )
         
         // 서버에 토큰 전송 (필요시)
-        sendTokenToServer(fcmToken)
+        Task {
+            await sendTokenToServer(fcmToken)
+        }
     }
     
-    private func sendTokenToServer(_ token: String?) {
+    private func sendTokenToServer(_ token: String?) async {
         guard let token = token else { return }
         
+        let deviceId = UIDevice.current.identifierForVendor?.uuidString ?? ""
         // TODO: 서버에 FCM 토큰 전송하는 로직 구현
-        print("서버에 토큰 전송: \(token)")
+        print("🚀 FCM Token 등록 API 호출 ==========================")
+        print(deviceId)
+        let dto = RegisterFCMTokenRequestDTO(token: token, deviceId: deviceId)
+        
+        let endpoint = FCMEndpoint.postFcmToken(dto)
+//        let url = endpoint.baseURL.appendingPathComponent(endpoint.path)
+//        let parameters = try? endpoint.parameters.flatMap { encodable -> [String: Any]? in
+//            let data = try JSONEncoder().encode(encodable)
+//            return try JSONSerialization.jsonObject(with: data) as? [String: Any]
+//        }
+//        
+//        let dataTask = AF.request(
+//            url,
+//            method: endpoint.method,
+//            parameters: parameters,
+//            encoding: JSONEncoding.default,
+//            headers: endpoint.headers
+//        )
+        
+        let session = Session(eventMonitors: [NetworkLogger()])
+        
+        let dataTask = session.request(APIRouter(endpoint: endpoint))
+        .validate(statusCode: 200..<300)
+        .serializingDecodable(APIResponse<RegisterFCMTokenResponseDTO>.self)
+        
+        let response = await dataTask.response
+        
+//        print("➡️ URL: \(url)")
+//        print("➡️ Header: \(String(describing: endpoint.headers))")
+//        print("➡️ StatusCode: \(String(describing: response.response?.statusCode))")
+//        print("➡️ parameters: \(String(describing: parameters))")
+        
+        switch response.result {
+        case .success(let apiResponse):
+            print("✅ FCM Token 등록 API 성공 ==========================")
+//            print(apiResponse)
+        case .failure(let error):
+            print("⚠️ FCM Token 등록 API 에러 발생 ==========================")
+            print("\(error)")
+        }
     }
 }
 

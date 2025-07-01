@@ -18,7 +18,7 @@ public struct AppFeature {
     
     @ObservableState
     public struct State: Equatable {
-        @Shared(.appStorage("AuthState")) var authState: AuthType = .loggedIn
+        @Shared(.appStorage("AuthState")) var authState: AuthType = .loggedOut
         var login: LoginFeature.State = LoginFeature.State()
         var mainTab: MainTabFeature.State = MainTabFeature.State()
     }
@@ -40,6 +40,8 @@ public struct AppFeature {
         Reduce { state, action in
             switch action {
             case .login(.delegate(.loginSuccess)):
+                
+                print("AppFeature 로 데이터 옴")
                 state.$authState.withLock { $0 = .loggedIn }
                 
                 return .none

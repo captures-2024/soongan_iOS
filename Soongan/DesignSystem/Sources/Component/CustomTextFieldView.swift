@@ -44,7 +44,7 @@ public struct CustomTextFieldView: View {
             ? (isFocused.wrappedValue ? state.borderColor : .clear)
             : DesignSystem.Color.black100
         
-        let titleFont: Font = (type == .birthday || type == .nickname) ? .regualr16 : .regualr8
+        let titleFont: Font = (type == .birthday || type == .nickname) ? .regular16 : .regular8
         
         VStack(alignment: .leading, spacing: 0) {
             Text(type.title)
@@ -55,7 +55,7 @@ public struct CustomTextFieldView: View {
             
             TextField("", text: $text, prompt: Text(type.placeholder).foregroundColor(.black60))
                 .focused(isFocused)
-                .font(.regualr18)
+                .font(.regular18)
                 .padding()
                 .tint(.black100)
                 .background(

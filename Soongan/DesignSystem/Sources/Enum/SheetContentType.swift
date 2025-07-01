@@ -18,6 +18,7 @@ public enum SheetContentType: Identifiable, Equatable {
     case contestReport
     case spam
     case reportComplete
+    case detailContestOption
     
     public var id: String {
         switch self {
@@ -31,16 +32,17 @@ public enum SheetContentType: Identifiable, Equatable {
         case .contestReport: return "contestReport"
         case .spam: return "spam"
         case .reportComplete: return "reportComplete"
+        case .detailContestOption: return "detailContestOption"
         }
     }
     
     var title: String {
         switch self {
         case .contestInfo: return "대회정보"
-        case .postPicture: return "제목확인"
+        case .postPicture: return "제목 확인"
         case .logout: return "로그아웃"
         case .withdraw, .completeWithdraw: return "회원탈퇴"
-        case .myprofileOption: return ""
+        case .myprofileOption, .detailContestOption: return ""
         case .alarmSetting: return "푸시 알림 설정"
         case .contestReport, .reportComplete, .spam: return "신고"
         }
@@ -58,6 +60,7 @@ public enum SheetContentType: Identifiable, Equatable {
         case .contestReport: return [.height(432)]
         case .spam: return [.height(288)]
         case .reportComplete: return [.height(456)]
+        case .detailContestOption: return [.height(240)]
         }
     }
 }
@@ -126,7 +129,6 @@ public enum AlaramSettingOptionType: Equatable, CaseIterable {
     
     var title: String {
         switch self {
-            
         case .allAlarm: return "전체 알림"
         case .contestAlarm: return "대회 알림"
         case .activeAlarm: return "활동 알림"
@@ -140,6 +142,28 @@ public enum AlaramSettingOptionType: Equatable, CaseIterable {
         case .contestAlarm: return "대회 시작, 최종 투표 시작, 결과 발표 등"
         case .activeAlarm: return "(대)댓글 작성, 신고 접수 및 결과 안내 등"
         case .noticeAlarm: return "공지사항 알림"
+        }
+    }
+}
+
+public enum DetailContestOptionType: Equatable, CaseIterable {
+    case edit
+    case delete
+    case report
+    
+    var title: String {
+        switch self {
+        case .edit: return "수정하기"
+        case .delete: return "삭제하기"
+        case .report: return "신고하기"
+        }
+    }
+    
+    var rightImage: Image {
+        switch self {
+        case .edit: return .editPost
+        case .delete: return .deletePost
+        case .report: return .reportCard
         }
     }
 }

@@ -52,6 +52,10 @@ public extension Image {
     static var addPlus: Image {
         return ResourceAsset.Image.addPlusImage.swiftUIImage
     }
+    
+    static var checkIcon: Image {
+        return ResourceAsset.Image.checkIcon.swiftUIImage
+    }
 }
 
 // MARK: - Contest Image

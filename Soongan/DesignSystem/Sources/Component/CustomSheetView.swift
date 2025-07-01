@@ -9,16 +9,18 @@ import SwiftUI
 
 import Shared
 
-import ComposableArchitecture
+//import ComposableArchitecture
 
-public struct CustomSheetView: View {
+public enum NeverOption: Equatable, CaseIterable { }
+
+public struct CustomSheetView<T: Equatable & CaseIterable>: View {
     
     // MARK: - Properties
     
     @Environment(\.dismiss) private var dismiss
     private let type: SheetContentType
     private var action: (() -> Void)? = nil
-    private var optionAction: ((MyprofileOptionType) -> Void)? = nil
+    private var optionAction: ((T) -> Void)? = nil
     
     @State private var inputText = ""
     
@@ -34,7 +36,7 @@ public struct CustomSheetView: View {
     
     public init(
         type: SheetContentType,
-        optionAction: @escaping (MyprofileOptionType) -> Void
+        optionAction: @escaping (T) -> Void
     ) {
         self.type = type
         self.optionAction = optionAction
@@ -52,8 +54,8 @@ public struct CustomSheetView: View {
                     .padding(.top, 40)
                 
             case .postPicture(let name):
-                postPictureContetnSection(name: name, action: {})
-                    .padding(.top, 40)
+                PostPictureContentSectionView(name: name, action: action ?? {})
+                       .padding(.top, 14)
                 
             case .logout:
                 logoutContentSection(action: {})
@@ -66,7 +68,7 @@ public struct CustomSheetView: View {
             case .myprofileOption:
                 mypageOptionContentSection(action: { optionType in
                     guard let optionAction else { return }
-                    optionAction(optionType)
+                    optionAction(optionType as! T)
                 })
                 .padding(.top, 30)
                 
@@ -87,6 +89,14 @@ public struct CustomSheetView: View {
             case .reportComplete:
                 reportCompleteContentSection(action: {})
                     .padding(.top, 40)
+                
+            case .detailContestOption:
+                detailContestOptionSection(action: { optionType in
+                    guard let optionAction else { return }
+                    optionAction(optionType as! T)
+
+                })
+                .padding(.top, 30)
             }
         }
         .frame(maxHeight: .infinity, alignment: .top)
@@ -121,7 +131,7 @@ private extension CustomSheetView {
                 .padding(.bottom, 2)
             
             Text("작품 총 3개 출품 가능")
-                .font(.regualr16)
+                .font(.regular16)
                 .padding(.bottom, 10)
                 .padding(.leading, 16)
             
@@ -130,17 +140,17 @@ private extension CustomSheetView {
                 .padding(.bottom, 4)
             
             Text("투표: 좋아요 개수로 TOP 7 선정")
-                .font(.regualr16)
+                .font(.regular16)
                 .padding(.bottom, 4)
                 .padding(.leading, 16)
             
             Text("기간 : 1달")
-                .font(.regualr16)
+                .font(.regular16)
                 .padding(.bottom, 4)
                 .padding(.leading, 16)
             
             Text("매달 1일 오전 9시 ~ 다음 달 1일 00시")
-                .font(.regualr16)
+                .font(.regular16)
                 .padding(.bottom, 8)
                 .padding(.leading, 16)
             
@@ -149,12 +159,12 @@ private extension CustomSheetView {
                 .padding(.bottom, 4)
             
             Text("1. 직전 회차 참가자")
-                .font(.regualr16)
+                .font(.regular16)
                 .padding(.bottom, 4)
                 .padding(.leading, 16)
             
             Text("2. 업로드 시간을 비교해 더 일찍 참가한 작품")
-                .font(.regualr16)
+                .font(.regular16)
                 .padding(.bottom, 8)
                 .padding(.leading, 16)
             
@@ -163,12 +173,12 @@ private extension CustomSheetView {
                 .padding(.bottom, 4)
             
             Text("최종 1위한 작품은\n앱 접속 시 나오는 화면에 배경 사진으로 사용")
-                .font(.regualr16)
+                .font(.regular16)
                 .padding(.bottom, 4)
                 .padding(.leading, 16)
             
             Text("(차기 콘테스트 종료 시까지)")
-                .font(.regualr16)
+                .font(.regular16)
                 .padding(.leading, 16)
             
             CustomBottomButton(
@@ -185,25 +195,59 @@ private extension CustomSheetView {
         .padding(.horizontal, 38)
     }
     
-    func postPictureContetnSection(name: String, action: @escaping () -> Void) -> some View {
-        VStack(alignment: .leading, spacing: 0) {
-            
+    func postPictureContentSection(name: String, action: @escaping () -> Void) -> some View {
+        @State var isChecked = false
+        
+        return VStack(alignment: .leading, spacing: 0) {
             VStack(alignment: .leading, spacing: 5) {
                 Text("<\(name)>")
                 Text("(으)로 작품을 제출할까요?")
             }
             .padding(.horizontal, 20)
+            .padding(.bottom, 18)
+            
+            HStack(spacing: 0) {
+                Button(action: {
+                    isChecked.toggle()
+                    print("버튼 눌림", isChecked)
+                }) {
+                    ZStack {
+                        Rectangle()
+                            .stroke(Color.black, lineWidth: 2)
+                            .fill(isChecked ? Color.black : Color.clear)
+                            .frame(width: 24, height: 24)
+
+                        if isChecked {
+                            Image.checkIcon
+                                .frame(width: 12, height: 12)
+                        }
+                    }
+                }
+                .padding(.trailing, 16)
+
+                HStack(alignment: .top, spacing: 4) {
+                    Text("*")
+                        .foregroundStyle(DesignSystem.Color.primary)
+                        .offset(y: 2)
+
+                    Text("등록된 순간은 약관에 따라 관리되며,\nTOP 7에 선정된 순간은 역대 콘테스트에 기록됩니다")
+                        .foregroundStyle(DesignSystem.Color.black100)
+                }
+                .font(.regular12)
+            }
+            .padding(.horizontal, 20)
             
             CustomBottomButton(
                 type: .complete,
+                isEnable: $isChecked,
                 action: {
                     action()
                     dismiss()
                 }
             )
-            .padding(.top, 40)
+            .padding(.top, 16)
         }
-        .font(.regualr16)
+        .font(.regular16)
         .foregroundStyle(Color.black)
         .padding(.horizontal, 20)
     }
@@ -244,16 +288,16 @@ private extension CustomSheetView {
         VStack {
             VStack(alignment: .leading, spacing: 15) {
                 Text("정말 회원탈퇴를 하실 건가요?")
-                    .font(.regualr16)
+                    .font(.regular16)
                     .foregroundStyle(Color.black100)
                 
                 Text("회원탈퇴를 위해 아래 입력창에\n'회원탈퇴'를 입력해주세요")
-                    .font(.regualr16)
+                    .font(.regular16)
                     .foregroundStyle(Color.black100)
                 
                 TextField("", text: $inputText,
                           prompt: Text("텍스트를 입력해주세요.").foregroundColor(Color.init(red: 187/255, green: 187/255, blue: 187/255)))
-                    .font(.regualr18)
+                    .font(.regular18)
                     .padding()
                     .frame(height: 48)
                     .tint(.black100)
@@ -282,7 +326,7 @@ private extension CustomSheetView {
     func logoutContentSection(action: @escaping () -> Void) -> some View {
         VStack(alignment: .leading, spacing: 15) {
             Text("정말 로그아웃 하실 건가요?")
-                .font(.regualr16)
+                .font(.regular16)
                 .foregroundStyle(Color.black100)
                 .padding(.horizontal, 20)
             
@@ -312,7 +356,7 @@ private extension CustomSheetView {
                             
                             if !option.subTitle.isEmpty {
                                 Text(option.subTitle)
-                                    .font(.regualr12)
+                                    .font(.regular12)
                                     .foregroundStyle(Color.black100)
                             }
                         }
@@ -323,6 +367,38 @@ private extension CustomSheetView {
                     .tint(.primary)
                     
                     if option != AlaramSettingOptionType.allCases.last {
+                        Rectangle()
+                            .fill(Color(red: 187/255, green: 187/255, blue: 187/255))
+                            .frame(maxWidth: .infinity)
+                            .frame(height: 0.7)
+                            .padding(.horizontal, 24)
+                    }
+                }
+            }
+        }
+    }
+    
+    func detailContestOptionSection(action: @escaping (DetailContestOptionType) -> Void) -> some View {
+        VStack(spacing: 0) {
+            ForEach(DetailContestOptionType.allCases, id: \.self) { option in
+                VStack(spacing: 0) {
+                    Button(action: {
+                        action(option)
+                    }) {
+                        HStack(alignment: .center) {
+                            Text(option.title)
+                                .font(.semibold16)
+                                .foregroundStyle(Color.black100)
+                            
+                            Spacer()
+                            
+                            option.rightImage
+                        }
+                        .frame(height: 56)
+                        .padding(.horizontal, 40)
+                    }
+                    
+                    if option != DetailContestOptionType.allCases.last {
                         Rectangle()
                             .fill(Color(red: 187/255, green: 187/255, blue: 187/255))
                             .frame(maxWidth: .infinity)
@@ -366,18 +442,18 @@ private extension CustomSheetView {
         VStack(spacing: 0) {
             VStack(alignment: .leading, spacing: 4) {
                 Text("이 댓글을")
-                    .font(.regualr16)
+                    .font(.regular16)
                 
                 HStack(spacing: 0) {
                     Text(reportType.title)
                         .font(.bold16)
                     
                     Text("(으)로")
-                        .font(.regualr16)
+                        .font(.regular16)
                 }
                 
                 Text("정말 신고하겠습니까?")
-                    .font(.regualr16)
+                    .font(.regular16)
             }
             .padding(.horizontal, 4)
             .foregroundStyle(Color.black100)
@@ -406,7 +482,7 @@ private extension CustomSheetView {
                 Text("감사합니다")
                 
             }
-            .font(.regualr16)
+            .font(.regular16)
             .foregroundStyle(Color.black100)
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(.horizontal, 4)
@@ -426,6 +502,68 @@ private extension CustomSheetView {
 
 // MARK: - Preview
 
-#Preview {
-    CustomSheetView(type: .contestReport, action: {})
+//#Preview {
+//    CustomSheetView(type: .postPicture(name: "테스트"), action: {})
+//}
+
+
+struct PostPictureContentSectionView: View {
+    let name: String
+    @Environment(\.dismiss) private var dismiss
+    @State var isChecked: Bool = false
+    let action: () -> Void
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            VStack(alignment: .leading, spacing: 5) {
+                Text("<\(name)>")
+                Text("(으)로 작품을 제출할까요?")
+            }
+            .padding(.horizontal, 20)
+            .padding(.bottom, 18)
+            
+            HStack(spacing: 0) {
+                Button(action: {
+                    isChecked.toggle()
+                    print("버튼 눌림", isChecked)
+                }) {
+                    ZStack {
+                        Rectangle()
+                            .stroke(Color.black, lineWidth: 2)
+                            .fill(isChecked ? Color.black : Color.clear)
+                            .frame(width: 20, height: 240)
+
+                        if isChecked {
+                            Image.checkIcon
+                                .frame(width: 12, height: 12)
+                        }
+                    }
+                }
+                .padding(.trailing, 16)
+
+                HStack(alignment: .top, spacing: 4) {
+                    Text("*")
+                        .foregroundStyle(DesignSystem.Color.primary)
+
+                    Text("등록된 순간은 약관에 따라 관리되며,\nTOP 7에 선정된 순간은 역대 콘테스트에 기록됩니다")
+                        .foregroundStyle(DesignSystem.Color.black100)
+                }
+                .font(.regular12)
+            }
+            .padding(.horizontal, 20)
+            
+            CustomBottomButton(
+                type: .complete,
+                isEnable: $isChecked,
+                action: {
+                    action()
+                    dismiss()
+                }
+            )
+            .padding(.top, 16)
+        }
+        .font(.regular16)
+        .foregroundStyle(Color.black)
+        .padding(.horizontal, 20)
+    }
 }

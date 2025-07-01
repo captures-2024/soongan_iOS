@@ -34,7 +34,7 @@ public struct TopTabButtonView: View {
             Button(action: action) {
                 Text(title)
                     .foregroundColor(isSelected ? DesignSystem.Color.black100 : .gray)
-                    .font(isSelected ? .bold12 : .regualr12)
+                    .font(isSelected ? .bold12 : .regular12)
             }
             .frame(width: 100, height: 24)
             .padding(.bottom, 12)

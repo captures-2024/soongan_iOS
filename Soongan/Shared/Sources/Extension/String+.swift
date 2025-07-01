@@ -45,4 +45,20 @@ public extension String {
 
         return .valid
     }
+    
+    func toFormattedDateString() -> String {
+        let isoFormatter = DateFormatter()
+        isoFormatter.locale = Locale(identifier: "en_US_POSIX")
+        isoFormatter.timeZone = TimeZone(secondsFromGMT: 0)
+        isoFormatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss"
+        
+        let outputFormatter = DateFormatter()
+        outputFormatter.locale = Locale(identifier: "ko_KR")
+        outputFormatter.dateFormat = "yyyy.MM.dd HH:mm:ss"
+        
+        guard let date = isoFormatter.date(from: self) else {
+            return "알수없음"
+        }
+        return outputFormatter.string(from: date)
+    }
 }
