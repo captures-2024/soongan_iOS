@@ -7,7 +7,8 @@
 
 import Foundation
 
-struct AllTimeContestModel: Equatable, Hashable {
+struct AllTimeContestModel: Identifiable, Equatable, Hashable {
+    let id: Int
     let title: String
     let backgroundImageURL: String
 }

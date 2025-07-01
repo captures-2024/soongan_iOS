@@ -44,7 +44,7 @@ public struct AllTimeContestView: View {
                             LazyVStack(spacing: 12) {
                                 ForEach(store.allTimeContestListData, id: \.self) { contestData in
                                     contestListView(data: contestData) {
-                                        store.send(.contestListTapped)
+                                        store.send(.contestListTapped(id: contestData.id))
                                     }
                                 }
                             }
@@ -63,6 +63,9 @@ public struct AllTimeContestView: View {
                         Spacer(minLength: 350)
                     }
                 }
+            }
+            .onAppear {
+                store.send(.onAppear)
             }
             .toolbar(.hidden, for: .tabBar)
         } destination: { store in

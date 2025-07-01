@@ -43,7 +43,6 @@ struct DetailContestView: View {
             
             ScrollView {
                 VStack(spacing: 0) {
-                    
                     Image.dumy6
                         .resizable()
                         .aspectRatio(contentMode: .fit)
@@ -129,18 +128,17 @@ struct DetailContestView: View {
     
     func contestTitleSection() -> some View {
         VStack(spacing: 0) {
-            Text("평화 (1회차)")
+            Text("\(store.contestInfoData.subject) (\(store.contestInfoData.round)회차")
                 .font(.semibold20)
                 .foregroundColor(DesignSystem.Color.black100)
                 .padding(.bottom, 20)
             
-            Text("2025.01.17 - 2025.01.20")
+            Text("\(store.contestInfoData.startAt) - \(store.contestInfoData.endAt)")
                 .font(.semibold14)
                 .foregroundColor(DesignSystem.Color.black100)
                 .padding(.bottom, 8)
             
-            
-            Text("총 참여작품 수 : 30")
+            Text("총 참여작품 수 : \(store.contestCount)")
                 .font(.semibold14)
                 .foregroundColor(DesignSystem.Color.black100)
         }
@@ -149,13 +147,13 @@ struct DetailContestView: View {
 
 // MARK: - Preview
 
-#Preview {
-    NavigationStack {
-        DetailContestView(
-            store: Store(initialState:
-                            DetailContestFeature.State()) {
-                                DetailContestFeature()
-                            }
-        )
-    }
-}
+//#Preview {
+//    NavigationStack {
+//        DetailContestView(
+//            store: Store(initialState:
+//                            DetailContestFeature.State()) {
+//                                DetailContestFeature()
+//                            }
+//        )
+//    }
+//}
