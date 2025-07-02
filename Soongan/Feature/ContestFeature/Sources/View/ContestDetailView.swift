@@ -39,10 +39,10 @@ struct ContestDetailView: View {
                 Spacer()
                 
                 VStack(alignment: .leading, spacing: 10) {
-                    Text(store.contestTitle)
+                    Text(store.contestTitle ?? "정보없음")
                         .font(.bold20)
                     
-                    Text(store.contestAuthor)
+                    Text("@" + (store.contestAuthor ?? "정보없음"))
                         .font(.medium14)
                         .padding(.leading, 4)
                 }
@@ -52,23 +52,40 @@ struct ContestDetailView: View {
             }
             .padding(.bottom, 83)
 
-            bottomOptionMenuBar()
+            bottomOptionMenuBar(isLiked: store.isLiked ?? false, likeCount: store.likeCount ?? 0)
+        }
+        .onAppear {
+            store.send(.onAppear)
         }
         .ignoresSafeArea(edges: .bottom)
         .background(DesignSystem.Color.soonganBG)
         .background(InteractivePopGestureEnabler())
+        .sheet(isPresented: $store.isContestOptionSheetPresented.sending(\.dismissOptionSheet)) {
+            CustomSheetView<DetailContestOptionType>(type: .detailContestOption) { type in
+                switch type {
+                case .edit:
+                    break
+                case .delete:
+                    store.send(.deleteButtonTapped)
+                case .report:
+                    store.send(.reportSheetIsPresented)
+                }
+            }
+        }
         .sheet(
-            isPresented: $store.isContestOptionSheetPresented.sending(\.dismissOptionSheet)
+            isPresented: $store.isReportOptionSheetPresented.sending(\.dismissOptionSheet)
         ) {
-            CustomSheetView(type: .contestReport) { _ in
-                
+            CustomSheetView<ContestReportReasonType>(type: .contestReport) { type in
+//                switch type {
+//                case .
+//                }
             }
         }
-        .sheet(item: $store.activeSheet) { sheetType in
-            CustomSheetView(type: sheetType) { optionType in
-                
-            }
-        }
+//        .sheet(item: $store.activeSheet) { sheetType in
+//            CustomSheetView(type: sheetType) { optionType in
+//                
+//            }
+//        }
         .toolbar(.hidden, for: .tabBar)
         .navigationBarBackButtonHidden(true)
         .toolbar {
@@ -86,7 +103,7 @@ struct ContestDetailView: View {
         }
     }
     
-    func bottomOptionMenuBar() -> some View {
+    func bottomOptionMenuBar(isLiked: Bool, likeCount: Int) -> some View {
         HStack(alignment: .top) {
             Button(action: {
                 store.send(.optionButtonTapped)
@@ -99,9 +116,9 @@ struct ContestDetailView: View {
             
             HStack(spacing: 0) {
                 Button(action: {
-                    
+                    store.send(.likeButtonTapped)
                 }) {
-                    if store.isLiked {
+                    if isLiked {
                         Image.selectLike
                     } else {
                         Image.notSelectLike
@@ -109,7 +126,7 @@ struct ContestDetailView: View {
                 }
                 .padding(.trailing, 8)
                 
-                Text("\(store.likeCount)")
+                Text("\(likeCount)")
                     .font(.info12)
                     .foregroundColor(DesignSystem.Color.black100)
                     .padding(.trailing, 32)
@@ -128,7 +145,7 @@ struct ContestDetailView: View {
     NavigationStack {
         ContestDetailView(
             store: Store(initialState:
-                            ContestDetailFeature.State()) {
+                            ContestDetailFeature.State(postId: String(10))) {
                                 ContestDetailFeature()
                             }
         )

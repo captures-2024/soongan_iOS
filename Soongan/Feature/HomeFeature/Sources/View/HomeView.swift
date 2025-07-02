@@ -75,7 +75,7 @@ public struct HomeView: View {
                                     .frame(width: 40, height: 40)
                                 
                                 Text("출품하기")
-                                    .font(.regualr14)
+                                    .font(.regular14)
                                     .foregroundStyle(Color.black100)
                             }
                         }
@@ -112,9 +112,7 @@ public struct HomeView: View {
             .sheet(
                 isPresented: $store.isInfoSheetPresented.sending(\.dismissInfoSheet)
             ) {
-                CustomSheetView(type: .contestInfo) {
-                    
-                }
+                CustomSheetView<NeverOption>(type: .contestInfo) { }
             }
         } destination: { store in
             switch store.case {

@@ -73,23 +73,23 @@ public extension Font {
         return ResourceFontFamily.Pretendard.medium.swiftUIFont(size: 12)
     }
     
-    static var regualr8: Font {
+    static var regular8: Font {
         return ResourceFontFamily.Pretendard.regular.swiftUIFont(size: 8)
     }
     
-    static var regualr12: Font {
+    static var regular12: Font {
         return ResourceFontFamily.Pretendard.regular.swiftUIFont(size: 12)
     }
     
-    static var regualr14: Font {
+    static var regular14: Font {
         return ResourceFontFamily.Pretendard.regular.swiftUIFont(size: 14)
     }
     
-    static var regualr16: Font {
+    static var regular16: Font {
         return ResourceFontFamily.Pretendard.regular.swiftUIFont(size: 16)
     }
     
-    static var regualr18: Font {
+    static var regular18: Font {
         return ResourceFontFamily.Pretendard.regular.swiftUIFont(size: 18)
     }
     

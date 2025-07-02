@@ -7,6 +7,7 @@
 
 import SwiftUI
 
+import CoreNetwork
 import DesignSystem
 import Shared
 
@@ -55,6 +56,9 @@ public struct ContestFeature {
         
         case binding(BindingAction<State>)
     
+        case onAppear
+        case getContestSuccess(SearchWeeklyContestResponseDTO)
+        
         case presentSheet
         case chagneContestIndex
         case dismissContestSheet(Bool)
@@ -69,6 +73,31 @@ public struct ContestFeature {
         
         Reduce { state, action in
             switch action {
+            case .onAppear:
+                return .run { send in
+                    let dto = SearchWeeklyContestRequestDTO(
+                        round: 1,
+                        orderCriteria: "LATEST",
+                        page: 0,
+                        pageSize: 50
+                    )
+                    
+                    let result: Result<SearchWeeklyContestResponseDTO, NetworkError> = await NetworkManager.shared.request(WeeklyContestEndpoint.getContest(dto))
+                    
+                    switch result {
+                    case .success(let responseResult):
+                        await send(.getContestSuccess(responseResult))
+                    case .failure(let error):
+                        print(error.localizedDescription)
+                    }
+                }
+                
+            case .getContestSuccess(let response):
+                createImageData(response.posts)
+                
+                return .none
+                
+                
             case let .path(.element(id: _, action: action)):
                 switch action {
                 case .contestDetail(.backButtonTapped):
@@ -81,8 +110,8 @@ public struct ContestFeature {
             case .binding(_):
                 return .none
             
-            case .contestDetailImageTapped:
-                state.path.append(.contestDetail(ContestDetailFeature.State()))
+            case .contestDetailImageTapped(let postId):
+                state.path.append(.contestDetail(ContestDetailFeature.State(postId: postId)))
                 return .none
                 
             case .sortContestContentTapped:
@@ -118,5 +147,11 @@ public struct ContestFeature {
         
         let splitContest = contest.split(separator: " ").map{ String($0) }
         return (splitContest[0], splitContest[1])
+    }
+}
+
+private extension ContestFeature {
+    func createImageData(_ data: [PostInfoData]) {
+        
     }
 }

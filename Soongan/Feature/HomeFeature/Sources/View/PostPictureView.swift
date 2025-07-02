@@ -67,7 +67,7 @@ public struct PostPictureView: View {
                         .foregroundColor(.black100)
                     
                     Text("\(store.textCount)/15")
-                        .font(.regualr8)
+                        .font(.regular8)
                         .foregroundColor(.black100)
                         .padding(.top, 8)
                         .padding(.trailing, 5)
@@ -82,7 +82,7 @@ public struct PostPictureView: View {
                 .padding(.horizontal, 136)
                 
                 Text("부적절한 사진은 삭제될 수 있습니다.")
-                    .font(.regualr12)
+                    .font(.regular12)
                     .foregroundColor(.black100)
                     .padding(.top, 12)
                     .padding(.bottom, 68)
@@ -98,9 +98,9 @@ public struct PostPictureView: View {
             .sheet(
                 isPresented: $store.isPostSheetPresented.sending(\.dismissPostSheet)
             ) {
-                CustomSheetView(type: .postPicture(name: store.postPictureName)) {
-                    
-                }
+//                CustomSheetView(type: .postPicture(name: store.postPictureName)) {
+//                    
+//                }
             }
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
@@ -157,7 +157,7 @@ private extension PostPictureView {
                                     .frame(width: 40, height: 40)
                                 
                                 Text("출품하기")
-                                    .font(.regualr14)
+                                    .font(.regular14)
                                     .foregroundStyle(Color.black100)
                             }
                         }
@@ -181,6 +181,7 @@ private extension PostPictureView {
             Text("\(round)회차")
             
             Text("|")
+                .font(.medium20)
             
             Text(weekTopic)
         }

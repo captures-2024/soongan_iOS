@@ -12,7 +12,7 @@ let project = Project(
         .target(
             name: "MypageFeature",
             destinations: .iOS,
-            product: .framework,
+            product: .staticFramework,
             bundleId: "com.captures.MypageFeature.Soongan",
             deploymentTargets: .iOS("17.0"),
             infoPlist: .default,
@@ -20,7 +20,9 @@ let project = Project(
             resources: [],
             dependencies: [
                 .external(name: "ComposableArchitecture"),
-                .project(target: "DesignSystem", path: "../../DesignSystem")
+                .project(target: "DesignSystem", path: "../../DesignSystem"),
+                .project(target: "Shared", path: "../../Shared"),
+                .project(target: "CoreNetwork", path: "../../Core/CoreNetwork")
             ]
         )
     ]

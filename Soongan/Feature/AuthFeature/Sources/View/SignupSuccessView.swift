@@ -39,6 +39,9 @@ public struct SignupSuccessView: View {
             .font(.semibold36)
             .foregroundStyle(Color.textFieldBackground)
         }
+        .onAppear {
+            store.send(.onAppear)
+        }
         .navigationBarBackButtonHidden(true)
     }
 }

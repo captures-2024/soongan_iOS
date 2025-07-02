@@ -12,7 +12,7 @@ let project = Project(
         .target(
             name: "AuthFeature",
             destinations: .iOS,
-            product: .framework,
+            product: .staticFramework,
             bundleId: "com.captures.AuthFeature.Soongan",
             deploymentTargets: .iOS("17.0"),
             infoPlist: .default,
@@ -20,7 +20,10 @@ let project = Project(
             resources: [],
             dependencies: [
                 .external(name: "ComposableArchitecture"),
-                .project(target: "DesignSystem", path: "../../DesignSystem")
+                .project(target: "DesignSystem", path: "../../DesignSystem"),
+                .project(target: "CoreKakaoLogin", path: "../../Core/CoreKakaoLogin"),
+                .project(target: "CoreAppleLogin", path: "../../Core/CoreAppleLogin"),
+                .project(target: "CoreNetwork", path: "../../Core/CoreNetwork")
             ]
         )
     ]

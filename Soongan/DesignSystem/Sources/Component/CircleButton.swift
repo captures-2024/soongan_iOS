@@ -43,7 +43,7 @@ public struct CircleButton: View {
             }
             
             Text(type.title)
-                .font(.regualr12)
+                .font(.regular12)
                 .foregroundStyle(Color.black100)
         }
     }

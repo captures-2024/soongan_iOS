@@ -7,6 +7,7 @@
 
 import SwiftUI
 
+import CoreNetwork
 import DesignSystem
 import Shared
 
@@ -28,7 +29,8 @@ public struct AllTimeContestFeature {
     public struct State: Equatable {
         var path = StackState<AllTimeContestPath.State>()
         
-        var allTimeContestListData = [AllTimeContestModel(title: "평화", backgroundImageURL: ""), AllTimeContestModel(title: "평화2", backgroundImageURL: ""), AllTimeContestModel(title: "평화3", backgroundImageURL: "")]
+        var allTimeDictionaryData = [Int: SearchHistoriesContestData]()
+        var allTimeContestListData = [AllTimeContestModel]()
         
         // CustomTabBar 가시성
         public var isTabBarVisible: Bool {
@@ -49,8 +51,10 @@ public struct AllTimeContestFeature {
         
         case binding(BindingAction<State>)
     
+        case onAppear
+        case historyContestSuccessResponse(SearchHistoriesContestResponseDTO)
         
-        case contestListTapped
+        case contestListTapped(id: Int)
 //        case presentSheet
 //        case chagneContestIndex
 //        case dismissContestSheet(Bool)
@@ -66,6 +70,27 @@ public struct AllTimeContestFeature {
         Reduce { state, action in
             switch action {
                 
+            case .onAppear:
+                return .run { send in
+                    let result: Result<SearchHistoriesContestResponseDTO, NetworkError> = await NetworkManager.shared.request(WeeklyContestEndpoint.getHistoriesContest)
+                    
+                    switch result {
+                    case .success(let responseResult):
+                        return await send(.historyContestSuccessResponse(responseResult))
+                    case .failure(let error):
+                        print(error.localizedDescription)
+                    }
+                }
+                
+            case .historyContestSuccessResponse(let response):
+                response.contests.forEach {
+                    state.allTimeDictionaryData[$0.id] = $0
+                }
+                
+                state.allTimeContestListData = convertAllTimeContestModel(response)
+                
+                return .none
+                
             case let .path(.element(id: _, action: action)):
                 switch action {
                 case .detailContest(.backButtonTapped):
@@ -75,9 +100,21 @@ public struct AllTimeContestFeature {
                     return .none
                 }
                 
-            case .contestListTapped:
-                state.path.append(.detailContest(DetailContestFeature.State()))
+            case .contestListTapped(let id):
+                if let data = state.allTimeDictionaryData[id] {
+                    let contestInfo = DetailContestInfoModel(
+                        id: id,
+                        round: data.round,
+                        subject: data.subject,
+                        startAt: data.startAt,
+                        endAt: data.endAt
+                    )
+                    
+                    state.path.append(.detailContest(DetailContestFeature.State(contestInfoData: contestInfo)))
+                }
+                
                 return .none
+                
 //            case let .path(.element(id: _, action: action)):
 //                switch action {
 //                case .contestDetail(.backButtonTapped):
@@ -121,5 +158,14 @@ public struct AllTimeContestFeature {
             }
         }
         .forEach(\.path, action: \.path)
+    }
+}
+
+
+private extension AllTimeContestFeature {
+    func convertAllTimeContestModel(_ data: SearchHistoriesContestResponseDTO) -> [AllTimeContestModel] {
+        return data.contests.map {
+            AllTimeContestModel(id: $0.id, title: $0.subject, backgroundImageURL: $0.thumbnailImageUrl)
+        }
     }
 }
