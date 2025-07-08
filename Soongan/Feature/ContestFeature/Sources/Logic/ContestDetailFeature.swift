@@ -7,6 +7,7 @@
 
 import SwiftUI
 
+import AppDependencies
 import CoreNetwork
 import DesignSystem
 import Shared
@@ -21,21 +22,31 @@ public struct ContestDetailFeature {
     @ObservableState
     public struct State: Equatable {
         var postId: String
+        var myNickname: String?
         
         var contestTitle: String?
+        var imageUrl: String?
         var contestAuthor: String?
         var isLiked: Bool?
-        var likeCount: Int?
+        var likeCount: String?
         
         var isContestOptionSheetPresented: Bool = false
         var isReportOptionSheetPresented: Bool = false
         
         var activeSheet: SheetContentType?
+        
+        var isWriter: Bool {
+            return myNickname == contestAuthor
+        }
     }
     
     // MARK: - Init
     
     public init() {}
+    
+    // MARK: - Dependency
+    
+    @Dependency(\.userDefaultsClient) var userDefaultsClient
     
     // MARK: - Action
     
@@ -52,13 +63,21 @@ public struct ContestDetailFeature {
         case optionSheetIsPresented(ContestReportReasonType)
         case dismissOptionSheet(Bool)
         case dismissSheet
+        case userDataLoaded(String?)
         
         case backButtonTapped
         
         case onAppearSuccess(SearchDetailContestResponseDTO)
         case likeButtonTappedSuccess(PostLikeResponseDTO)
+        case deleteActionResult(Bool)
         
         case contestDetailError(Error)
+        
+        case delegate(DelegateAction)
+
+        public enum DelegateAction {
+            case backConfirmed
+        }
     }
     
     // MARK: - Body
@@ -70,9 +89,15 @@ public struct ContestDetailFeature {
                 let postId = state.postId
                 
                 return .run { send in
-                    let result: Result<SearchDetailContestResponseDTO,NetworkError> = await NetworkManager.shared.request(WeeklyContestEndpoint.getDetailContest(postId: postId))
+                    async let loadedNickname = userDefaultsClient.getString(forKey: UserDefaultKeys.User.username.rawValue)
+
+                    async let postResult: Result<SearchDetailContestResponseDTO,NetworkError> = NetworkManager.shared.request(WeeklyContestEndpoint.getDetailContest(postId: postId))
                     
-                    switch result {
+                    let (myNicknameResult, contestResult) = await (loadedNickname, postResult)
+                    
+                    await send(.userDataLoaded(myNicknameResult))
+                    
+                    switch contestResult {
                     case .success(let responseResult):
                         await send(.onAppearSuccess(responseResult))
                     case .failure(let error):
@@ -83,8 +108,9 @@ public struct ContestDetailFeature {
             case .onAppearSuccess(let response):
                 state.contestTitle = response.title
                 state.contestAuthor = response.nickname
+                state.imageUrl = response.imageUrl
                 state.isLiked = response.isLiked
-                state.likeCount = response.likeCount
+                state.likeCount = formatLikeCount(response.likeCount)
                 
                 return .none
                 
@@ -136,7 +162,7 @@ public struct ContestDetailFeature {
                 }
             
             case .likeButtonTappedSuccess(let response):
-                state.likeCount = Int(response.likeCount)
+                state.likeCount = formatLikeCount(response.likeCount)
                 
                 return .none
                 
@@ -147,10 +173,18 @@ public struct ContestDetailFeature {
                     
                     switch result {
                     case .success:
-                        print("성공")
+                        await send(.deleteActionResult(true))
                     case .failure(let error):
                         print(error)
+                        await send(.deleteActionResult(false))
                     }
+                }
+                
+            case .deleteActionResult(let result):
+                if result {
+                    return .send(.delegate(.backConfirmed))
+                } else {
+                    return .none
                 }
                 
             case .dismissOptionSheet:
@@ -166,9 +200,32 @@ public struct ContestDetailFeature {
                 
                 return .none
                 
+            case .userDataLoaded(let nickname):
+                print("로드된 아이디", nickname)
+                state.myNickname = nickname
+                return .none
+                
             default:
                 return .none
             }
+        }
+    }
+}
+
+private extension ContestDetailFeature {
+    func formatLikeCount(_ count: Int) -> String {
+        let thousand = 1_000
+        let million = 1_000_000
+
+        switch count {
+        case 0..<thousand:
+            return "\(count)"
+        case thousand..<million:
+            let formatted = Double(count) / Double(thousand)
+            return String(format: formatted.truncatingRemainder(dividingBy: 1) == 0 ? "%.0fk" : "%.2fk", formatted)
+        default:
+            let formatted = Double(count) / Double(million)
+            return String(format: formatted.truncatingRemainder(dividingBy: 1) == 0 ? "%.0fm" : "%.2fm", formatted)
         }
     }
 }

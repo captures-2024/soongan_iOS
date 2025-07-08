@@ -33,8 +33,11 @@ public struct ContestView: View {
             VStack(spacing: 0) {
                 navigationTitle(contestIndex: store.contestIndex, weekTopic: store.weekTopic)
                 
-                ImageGridView(onImageTap: { tappedImage in
-                    store.send(.contestDetailImageTapped(""))
+                ImageGridView(
+                    leftImageList: store.leftContestImageList,
+                    rightImageList: store.rightContestImageList,
+                    onImageTap: { tappedImage in
+                        store.send(.contestDetailImageTapped(tappedImage.id))
                 })
             }
             .background(DesignSystem.Color.soonganBG)
@@ -45,8 +48,14 @@ public struct ContestView: View {
             .sheet(
                 isPresented: $store.isContestSheetPresented.sending(\.dismissContestSheet)
             ) {
-                chnageContestIndexSheet()
+                changeContestIndexSheet()
                     .presentationDetents([.height(280)])
+            }
+            .sheet(isPresented: $store.isSortSheetPresented.sending(\.dismissSortContestSheet)) {
+                CustomSheetView<SortContestDataType>(type: .sortContest, isSelectType: store.sortSelectType) { optionType in
+                    store.send(.changeSortContestType(optionType))
+                    store.send(.onAppear)
+                }
             }
         } destination: { store in
             switch store.case {
@@ -56,11 +65,11 @@ public struct ContestView: View {
         }
     }
     
-    func navigationTitle(contestIndex: String, weekTopic: String) -> some View {
+    func navigationTitle(contestIndex: Int, weekTopic: String) -> some View {
         ZStack(alignment: .trailing) {
             ZStack(alignment: .leading) {
                 HStack{
-                    Text(contestIndex)
+                    Text("\(contestIndex)회차")
                     
                     Text("|")
                     
@@ -92,7 +101,7 @@ public struct ContestView: View {
 }
 
 private extension ContestView {
-    func chnageContestIndexSheet() -> some View {
+    func changeContestIndexSheet() -> some View {
         VStack {
             HStack {
                 Button(action: {
@@ -121,9 +130,9 @@ private extension ContestView {
             .foregroundStyle(DesignSystem.Color.black100)
 
             Picker("", selection: $store.selectedContestIndex) {
-                ForEach(0..<store.contestOptions.count, id: \.self) { index in
-                    Text(store.contestOptions[index])
-                        .tag(index)
+                ForEach(store.contestOptions) { contest in
+                    Text("\(contest.round)회차 \(contest.subject)")
+                        .tag(contest.id)
                 }
             }
             .pickerStyle(.wheel)
