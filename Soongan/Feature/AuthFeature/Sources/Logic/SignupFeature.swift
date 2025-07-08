@@ -7,7 +7,9 @@
 
 import SwiftUI
 
+import AppDependencies
 import CoreNetwork
+import CoreUserDefault
 import DesignSystem
 import Shared
 
@@ -39,6 +41,10 @@ public struct SignupFeature {
     // MARK: - Init
     
     public init() {}
+    
+    // MARK: - Dependency
+    
+    @Dependency(\.userDefaultsClient) var userDefaultsClient
     
     // MARK: - Action
     
@@ -120,21 +126,32 @@ public struct SignupFeature {
                 case .inputBirthday:
                     if birthdayValidationState(state.birthday) {
                         guard let birthdayToInt = Int(state.birthday) else {
-                            return .send(.editBirthDayResult)
+                            return .send(.birhDayError)
                         }
 
+                        let editMyProfileDto = EditMyProfileRequestDTO(
+                            nickname: state.nickname,
+                            isDefaultProfileImage: true
+                        )
+                        
                         let dto = EditMyBirthYearRequestDTO(birthYear: birthdayToInt)
 
                         return .run { send in
-                            let result: Result<EditMyBirthYearResponseDTO, NetworkError> = await NetworkManager.shared.request(
+                            async let myBirthResult: Result<EditMyBirthYearResponseDTO, NetworkError> = await NetworkManager.shared.request(
                                 MemberEndpoint.patchBirthYear(dto)
                             )
+                            
+                            print("입력 받은 DTO", editMyProfileDto)
+                            
+                            async let myprofileResult: Result<EmptyResponseDTO, NetworkError> = await NetworkManager.shared.request(
+                                MemberEndpoint.patchProfile(editMyProfileDto)
+                            )
+                            
+                            let (birthResult, profileResult) = await (myBirthResult, myprofileResult)
 
-                            switch result {
-                            case .success:
+                            if case .success = birthResult, case .success = profileResult {
                                 await send(.editBirthDayResult)
-                                
-                            case .failure:
+                            } else {
                                 await send(.birhDayError)
                             }
                         }
@@ -150,7 +167,10 @@ public struct SignupFeature {
                 return .none
                 
             case .editBirthDayResult:
-                return .send(.delegate(.didCompleteSignup(nickname: state.nickname)))
+                return .run { [nickname = state.nickname] send in
+                    await userDefaultsClient.setString(nickname, forKey: UserDefaultKeys.User.username.rawValue)
+                    await send(.delegate(.didCompleteSignup(nickname: nickname)))
+                }
                 
             case .nickNameError:
                 

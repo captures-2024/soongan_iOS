@@ -50,6 +50,7 @@ public struct LoginFeature {
     
     @Dependency(\.appleLoginService) var appleLoginService
     @Dependency(\.kakaoLoginService) var kakaoLoginService
+    @Dependency(\.openURL) var openURL
     
     // MARK: - Action
     
@@ -64,10 +65,12 @@ public struct LoginFeature {
         case socialLoginFailureResponse(Error)
         
         case loginSuccess
+        case isSignupComplete(Bool)
         case loginFailure(Error)
 
         case skippLoginButtonTapped
         case termsOfUseButtonTapped
+        case personalInformationButtonTapped
         
         // Delegate - LoginFeature -> AppFeature
         case delegate(Delegate)
@@ -135,20 +138,54 @@ public struct LoginFeature {
                 }
                 
             case .loginSuccess:
-                state.path.append(.signup(SignupFeature.State()))
-                return .none
+                return .run { send in
+                    let reulst: Result<SearchMyProfileResponseDTO, NetworkError> = await NetworkManager.shared.request(MemberEndpoint.getMembers)
+                    
+                    switch reulst {
+                    case .success(let myResult):
+                        if myResult.nickname == nil && myResult.birthYear == nil {
+                            await send(.isSignupComplete(false))
+                        } else {
+                            await send(.isSignupComplete(true))
+                        }
+                        
+                    case .failure(let error):
+                        await send(.loginFailure(error))
+                    }
+                }
+
+            case .isSignupComplete(let isSignup):
+                if isSignup {
+                    return .send(.delegate(.loginSuccess))
+                } else {
+                    state.path.append(.signup(SignupFeature.State()))
+                    return .none
+                }
                 
             case .loginFailure(let error):
                 state.errorMessage = "로그인 실패: \(error.localizedDescription)"
                 return .none
 
             case .termsOfUseButtonTapped:
-                // TODO: - 이용 약관 웹 페이지
-                return .none
+                guard let url = URL(string: "https://www.notion.so/5724dc92a43c4e7e94fd5ccf8ab0608b?source=copy_link") else {
+                    return .none
+                }
+                        
+                return .run { _ in
+                    await openURL(url)
+                }
+            
+            case .personalInformationButtonTapped:
+                guard let url = URL(string: "https://www.notion.so/71392fc225bf47b69e353739a74829db?source=copy_link") else {
+                    return .none
+                }
+                        
+                return .run { _ in
+                    await openURL(url)
+                }
                 
             case .skippLoginButtonTapped:
-                // TODO: - 메인 화면
-                return .none
+                return .send(.delegate(.skippAuth))
                 
             case .delegate(_):
                 return .none
