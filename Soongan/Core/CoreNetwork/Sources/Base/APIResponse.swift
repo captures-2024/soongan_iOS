@@ -17,5 +17,5 @@ public struct APIResponse<T: Decodable>: Decodable {
 public struct APIErrorResponse: Decodable {
     let statusCode: Int
     let message: String
-    let detailMessage: String
+    let detailMessage: String?
 }

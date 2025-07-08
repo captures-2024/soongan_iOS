@@ -45,6 +45,10 @@ extension FCMEndpoint: APIEndpoint {
         }
     }
     
+    public var requestBodyType: RequestBodyType {
+        return .json
+    }
+    
     public var queryParameters: [URLQueryItem]? {
         switch self {
         case .getFcmTest(let dto):

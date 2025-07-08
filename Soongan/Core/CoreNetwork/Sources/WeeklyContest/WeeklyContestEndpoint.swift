@@ -14,9 +14,8 @@ public enum WeeklyContestEndpoint {
     case getDetailContest(postId: String)
     case deleteContest(postId: String)
     case patchContest(postId: String)
+    case getContestList
     case getMyContest(SearchMyContestRequestDTO)
-    case getHistoriesContest
-    case getDetailHistoriesContest(contestId: String)
 }
 
 extension WeeklyContestEndpoint: APIEndpoint {
@@ -30,18 +29,16 @@ extension WeeklyContestEndpoint: APIEndpoint {
             return basePath.rawValue + "/posts"
         case .getDetailContest(let postId), .deleteContest(let postId), .patchContest(let postId):
             return basePath.rawValue + "/posts/\(postId)"
+        case .getContestList:
+            return basePath.rawValue
         case .getMyContest:
-            return basePath.rawValue + "/posts/my-hisotry"
-        case .getHistoriesContest:
-            return basePath.rawValue + "/histories"
-        case .getDetailHistoriesContest(let contestId):
-            return basePath.rawValue + "/histories/\(contestId)"
+            return basePath.rawValue + "/posts/my-history"
         }
     }
     
     public var method: Alamofire.HTTPMethod {
         switch self {
-        case .getContest, .getDetailContest, .getMyContest, .getHistoriesContest, .getDetailHistoriesContest:
+        case .getContest, .getDetailContest, .getContestList, .getMyContest:
             return .get
         case .postContest:
             return .post
@@ -56,8 +53,17 @@ extension WeeklyContestEndpoint: APIEndpoint {
         switch self {
         case .postContest, .getDetailContest, .deleteContest, .patchContest, .getMyContest:
             return .accessTokenHeader
-        case .getContest, .getHistoriesContest, .getDetailHistoriesContest:
+        case .getContestList, .getContest:
             return .defaultHeader
+        }
+    }
+    
+    public var requestBodyType: RequestBodyType {
+        switch self {
+        case .postContest:
+            return .formData
+        default:
+            return .json
         }
     }
     

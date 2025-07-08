@@ -29,6 +29,10 @@ extension HomeEndpoint: APIEndpoint {
         return .accessTokenHeader
     }
     
+    public var requestBodyType: RequestBodyType {
+        return .json
+    }
+    
     public var queryParameters: [URLQueryItem]? {
         return nil
     }

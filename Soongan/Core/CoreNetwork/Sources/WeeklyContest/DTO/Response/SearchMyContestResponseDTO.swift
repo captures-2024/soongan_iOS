@@ -8,14 +8,14 @@
 import Foundation
 
 public struct SearchMyContestResponseDTO: Decodable {
-    let postInfo: [SearchMYContestInfoData]
-    let pageInfo: PageInfoData
+    public let postInfo: [SearchMyContestInfoData]
+    public let pageInfo: PageInfoData
 }
 
-public struct SearchMYContestInfoData: Decodable {
-    let round: Int
-    let subject: String
-    let postId: Int
-    let imageUrl: String
-    let likeCount: Int
+public struct SearchMyContestInfoData: Decodable {
+    public let round: Int
+    public let subject: String
+    public let postId: Int
+    public let imageUrl: String
+    public let likeCount: Int
 }

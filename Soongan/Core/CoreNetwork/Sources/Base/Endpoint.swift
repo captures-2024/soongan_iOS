@@ -23,11 +23,12 @@ public enum BasePath: String {
     case comment = "/comments"
     case member = "/members"
     case report = "/report"
-    case postLike = "/posts"
+    case postLike = "/posts/like"
     case commentLike = "/comments/like"
     case notification = "/notifications"
     case fcmController = "/fcm"
     case home = "/home"
+    case award = "/awards"
 }
 
 public protocol APIEndpoint {
@@ -46,10 +47,6 @@ extension APIEndpoint {
             fatalError("⛔️ Base URL이 없습니다 ⛔️")
         }
         return baseURL
-    }
-
-    public var requestBodyType: RequestBodyType {
-        return .json
     }
     
     /// 각 케이스에 맞는 HTTPHeaders 반환

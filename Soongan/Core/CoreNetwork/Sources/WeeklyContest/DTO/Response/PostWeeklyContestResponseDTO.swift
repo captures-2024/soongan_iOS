@@ -10,6 +10,6 @@ import Foundation
 public struct PostWeeklyContestResponseDTO: Decodable {
     let postId: Int
     let title: String
-    let imageurl: String
+    let imageUrl: String
     let registerNickname: String
 }

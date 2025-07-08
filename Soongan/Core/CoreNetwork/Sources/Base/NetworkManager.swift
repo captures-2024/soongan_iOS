@@ -22,7 +22,6 @@ public struct APIRouter: URLRequestConvertible {
         urlRequest.method = endpoint.method
         urlRequest.headers = endpoint.headerType.headers
 
-        // Body
         if let body = endpoint.body {
             urlRequest.httpBody = try JSONEncoder().encode(body)
         }
@@ -50,39 +49,70 @@ public final actor NetworkManager {
     }
     
     public func request<T: Decodable>(_ endpoint: APIEndpoint) async -> Result<T, NetworkError> {
-        let dataTask = session.request(APIRouter(endpoint: endpoint))
-            .validate(statusCode: 200..<300)
-            .serializingDecodable(APIResponse<T>.self)
         
         print("🚀 \(T.self) API 호출 ==========================")
-        let response = await dataTask.response
         
+        // requestBodyType에 따라 분기
+       switch endpoint.requestBodyType {
+       case .json:
+           let dataTask = session.request(APIRouter(endpoint: endpoint))
+               .validate(statusCode: 200..<300)
+               .serializingDecodable(APIResponse<T>.self)
+           
+           let response = await dataTask.response
+           return handleResponse(response)
+
+       case .formData:
+           guard let multipartBody = endpoint.body as? MultipartRequestable else {
+               return .failure(.requestFailed(description: "Multipart body is not configured correctly."))
+           }
+           
+           let url = endpoint.baseURL.appendingPathComponent(endpoint.path)
+           
+           let dataTask = session.upload(
+               multipartFormData: { formData in
+                   // 텍스트 파트 추가
+                   for (key, value) in multipartBody.textParts {
+                       formData.append("\(value)".data(using: .utf8)!, withName: key)
+                   }
+                   
+                   // 파일 파트 추가
+                   if let fileParts = multipartBody.fileParts {
+                       for (key, file) in fileParts {
+                           formData.append(file.data, withName: key, fileName: file.filename, mimeType: file.mimeType)
+                       }
+                   }
+               },
+               to: url,
+               method: endpoint.method,
+               headers: endpoint.headers
+           )
+           .validate(statusCode: 200..<300)
+           .serializingDecodable(APIResponse<T>.self)
+           
+           let response = await dataTask.response
+           return handleResponse(response)
+       }
+    }
+    
+    private func handleResponse<T: Decodable>(_ response: DataResponse<APIResponse<T>, AFError>) -> Result<T, NetworkError> {
         switch response.result {
         case .success(let decodedResponse):
-            // EmptyResponseDTO 인 경우 처리
             if T.self == EmptyResponseDTO.self {
                 return .success(EmptyResponseDTO() as! T)
             } else {
                 return .success(decodedResponse.responseData)
             }
-            
         case .failure(let error):
-            if let statusCode = response.response?.statusCode {
-                switch statusCode {
-                case 401:
-                    print("⚠️ \(T.self) API unAuthorizedError 에러 발생 ==========================")
-                    return .failure(.unAuthorizedError)
-                case 400..<500, 500..<600:
-                    print("⚠️ \(T.self) API httpResponseNotOK 에러 발생 ==========================")
-                    return .failure(.httpResponseNotOK(statusCode: statusCode))
-                default:
-                    break
-                }
-            }
-            
-            print("❌ \(T.self) API 에러 발생 ==========================")
-            print(error.localizedDescription)
             return .failure(.requestFailed(description: error.localizedDescription))
+        }
+    }
+}
+
+extension Data {
+    mutating func append(_ string: String) {
+        if let data = string.data(using: .utf8) {
+            append(data)
         }
     }
 }
