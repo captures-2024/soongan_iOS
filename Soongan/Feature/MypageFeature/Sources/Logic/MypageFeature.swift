@@ -8,6 +8,7 @@
 import SwiftUI
 
 import CoreNetwork
+import CoreKeyChain
 import DesignSystem
 import Shared
 
@@ -29,7 +30,11 @@ public struct MypageFeature {
     
     @ObservableState
     public struct State: Equatable {
+        @Shared(.appStorage("AuthState")) var authState: AuthType = .loggedOut
         var path = StackState<MypagePath.State>()
+        
+        var leftContestImageList = [ContestImageModel]()
+        var rightContestImageList = [ContestImageModel]()
         
         var drawInputText = ""
         var isOptionSheetPresented: Bool = false
@@ -38,9 +43,10 @@ public struct MypageFeature {
         
         var userName = ""
         var userIntroduce = ""
-        
+        var userProfileImageUrl: String?
         
         var activeSheet: SheetContentType?
+        var successSheet: SheetContentType?
         
         // CustomTabBar 가시성
         public var isTabBarVisible: Bool {
@@ -54,6 +60,10 @@ public struct MypageFeature {
     
     public init() {}
     
+    // MARK: - Dependency
+    
+    @Dependency(\.openURL) var openURL
+    
     // MARK: - Action
     
     public enum Action: BindableAction {
@@ -65,16 +75,25 @@ public struct MypageFeature {
         case alarmButtonTapped
         case optionButtonTapped
         case optionSheetIsPresented(MyprofileOptionType)
+        case profileOptionTapped(MyprofileOptionType)
         case presentSheet(SheetContentType)
         case dismissOptionSheet(Bool)
         case dismissSheet
         
         case myInfoSuccess(SearchMyProfileResponseDTO)
         case myContestInfoSuccess(SearchMyContestResponseDTO)
+        
+        case logoutSuccess
+        case withdrawSuccess
+        
+        case myInfoActionSuccess(MyprofileOptionType)
+        case successSheetComplete(MypageSuccessSheetType)
+        
+        case deleteMyInfomation
     }
     
     // MARK: - Body
-    
+     
     public var body: some ReducerOf<Self> {
         BindingReducer()
         
@@ -85,13 +104,10 @@ public struct MypageFeature {
                 
                 return .run { send in
                     async let myInfoResult: Result<SearchMyProfileResponseDTO, NetworkError> = NetworkManager.shared.request(MemberEndpoint.getMembers)
-                    
                     async let myContestInfoResult: Result<SearchMyContestResponseDTO, NetworkError> = NetworkManager.shared.request(WeeklyContestEndpoint.getMyContest(dto))
                     
-                    // await 둘 다 병렬로 완료
                     let (infoResult, contestResult) = await (myInfoResult, myContestInfoResult)
                     
-                    // 개별 처리
                     switch infoResult {
                     case .success(let info):
                         await send(.myInfoSuccess(info))
@@ -110,21 +126,33 @@ public struct MypageFeature {
                 }
                 
             case .myInfoSuccess(let response):
-                state.userName = response.nickname ?? "정보없음"
-                state.userIntroduce = response.selfIntroduction ?? "정보없음"
+                state.userName = response.nickname ?? ""
+                state.userIntroduce = response.selfIntroduction ?? "본인을 소개시켜주세요"
+                state.userProfileImageUrl = response.profileImageUrl
                 
                 return .none
                 
             case .myContestInfoSuccess(let response):
+                state.leftContestImageList.removeAll()
+                state.rightContestImageList.removeAll()
                 
-                // TODO: - 나의 콘테스트 게시글 보여주기
+                for (index, item) in response.postInfo.enumerated() {
+                    let model = ContestImageModel(id: String(item.postId), imageUrl: item.imageUrl)
+                    if index % 2 == 0 {
+                        state.leftContestImageList.append(model)
+                    } else {
+                        state.rightContestImageList.append(model)
+                    }
+                }
+
                 return .none
                 
             case let .path(.element(id: _, action: action)):
                 switch action {
-                case .editProfile(.backButtonTapped), .alarmList(.backButtonTapped), .questionsList(.backButtonTapped):
+                case .editProfile(.backButtonTapped), .editProfile(.delegate(.backButtonTapped)), .alarmList(.backButtonTapped), .questionsList(.backButtonTapped):
                     state.path.removeLast()
                     return .none
+                    
                 default:
                     return .none
                 }
@@ -140,10 +168,6 @@ public struct MypageFeature {
                 state.isOptionSheetPresented = true
                 return .none
                 
-//            case .presentSheet(let type):
-//                state.activeSheet = type
-//                return .none
-                
             case .optionSheetIsPresented(let tappedOption):
                 state.isOptionSheetPresented = false
                 
@@ -155,17 +179,75 @@ public struct MypageFeature {
                     state.activeSheet = .alarmSetting
                     
                 case .terms:
-                    break
+                    guard let url = URL(string: "https://www.notion.so/5724dc92a43c4e7e94fd5ccf8ab0608b?source=copy_link") else {
+                        return .none
+                    }
+                            
+                    return .run { _ in
+                        await openURL(url)
+                    }
                     
                 case .faq:
                     state.shouldNavigateToQuestionsList = true
                     
-                case .withDraw:
+                case .withdraw:
                     state.activeSheet = .withdraw
                     
                 case .logout:
                     state.activeSheet = .logout
                 }
+                
+                return .none
+            
+            case .profileOptionTapped(let tappedOption):
+                state.activeSheet = nil
+                
+                switch tappedOption {
+                case .withdraw:
+                    return .run { send in
+                        let result: Result<EmptyResponseDTO, NetworkError> = await NetworkManager.shared.request(AuthEndpoint.postWithdraw)
+                        
+                        switch result {
+                        case .success:
+                            await send(.myInfoActionSuccess(.withdraw))
+                        case .failure(let error):
+                            break
+                        }
+                    }
+                    
+                case .logout:
+                    return .run { send in
+                        let result: Result<EmptyResponseDTO, NetworkError> = await NetworkManager.shared.request(AuthEndpoint.postLogout)
+                        
+                        switch result {
+                        case .success:
+                            await send(.myInfoActionSuccess(.logout))
+                        case .failure(let error):
+                            break
+                        }
+                    }
+                    
+                default:
+                    break
+                }
+                
+                return .none
+                
+            case .myInfoActionSuccess(let type):
+                state.activeSheet = nil
+                return .run { send in
+                    try await Task.sleep(nanoseconds: 1000_000_000)
+                    await send(.successSheetComplete(type == .logout ? .logout : .withdraw))
+                }
+                
+            case .successSheetComplete(let type):
+                state.successSheet = type == .logout ? .logoutSuccess : .withdrawSuccess
+                
+                return .none
+                
+            case .deleteMyInfomation:
+                state.$authState.withLock { $0 = .loggedOut }
+                KeychainManager.shared.clearTokens()
                 
                 return .none
                 
@@ -174,14 +256,17 @@ public struct MypageFeature {
                 
                 if state.shouldNavigateToEditProfile {
                     state.shouldNavigateToEditProfile = false
-                    state.path.append(.editProfile(EditProfileFeature.State()))
+                    state.path.append(.editProfile(EditProfileFeature.State(
+                        baseNickname: state.userName,
+                        baseIntroduce: state.userIntroduce,
+                        baseProfileImageUrl: state.userProfileImageUrl))
+                    )
                 }
                 
                 if state.shouldNavigateToQuestionsList {
                     state.shouldNavigateToQuestionsList = false
                     state.path.append(.questionsList(QuestionsListFeature.State()))
                 }
-                
                 
                 return .none
                 
