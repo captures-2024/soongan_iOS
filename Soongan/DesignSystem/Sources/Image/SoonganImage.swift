@@ -9,24 +9,12 @@ import SwiftUI
 import Resource
 
 public extension Image {
-    static var reportCard: Image {
-        return ResourceAsset.Image.report.swiftUIImage
-    }
-    
     static var selectLike: Image {
         return ResourceAsset.Image.selectLike.swiftUIImage
     }
     
     static var notSelectLike: Image {
         return ResourceAsset.Image.notSelectLike.swiftUIImage
-    }
-    
-    static var editPost: Image {
-        return ResourceAsset.Image.editPost.swiftUIImage
-    }
-    
-    static var deletePost: Image {
-        return ResourceAsset.Image.deletePost.swiftUIImage
     }
     
     static var loginBackground: Image {
@@ -55,6 +43,62 @@ public extension Image {
     
     static var checkIcon: Image {
         return ResourceAsset.Image.checkIcon.swiftUIImage
+    }
+    
+    static var commentIcon: Image {
+        return ResourceAsset.Image.commentIcon.swiftUIImage
+    }
+}
+
+// MARK: - Sheet Icon Image
+
+public extension Image {
+    static var notSelectDeleteIcon: Image {
+        return ResourceAsset.Image.notSelectDeletePost.swiftUIImage
+    }
+    
+    static var selectDeleteIcon: Image {
+        return ResourceAsset.Image.selectDeletePost.swiftUIImage
+    }
+    
+    static var notSelectEditIcon: Image {
+        return ResourceAsset.Image.notSelectEditPost.swiftUIImage
+    }
+    
+    static var selectEditIcon: Image {
+        return ResourceAsset.Image.selectEditPost.swiftUIImage
+    }
+
+    static var notSelectReportIcon: Image {
+        return ResourceAsset.Image.notSelectReport.swiftUIImage
+    }
+    
+    static var selectReportIcon: Image {
+        return ResourceAsset.Image.selectReport.swiftUIImage
+    }
+    
+    static var notSelectSortLikeIcon: Image {
+        return ResourceAsset.Image.notSelectSortLike.swiftUIImage
+    }
+    
+    static var selectSortLikeIcon: Image {
+        return ResourceAsset.Image.selectSortLike.swiftUIImage
+    }
+    
+    static var notSelectSortNewestIcon: Image {
+        return ResourceAsset.Image.notSelectSortNewest.swiftUIImage
+    }
+    
+    static var selectSortNewestIcon: Image {
+        return ResourceAsset.Image.selectSortNewest.swiftUIImage
+    }
+    
+    static var notSelectSortOldestIcon: Image {
+        return ResourceAsset.Image.notSelectSortOldest.swiftUIImage
+    }
+    
+    static var selectSortOldestIcon: Image {
+        return ResourceAsset.Image.selectSortOldest.swiftUIImage
     }
 }
 
