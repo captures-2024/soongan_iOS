@@ -9,31 +9,13 @@ import SwiftUI
 
 import Resource
 
-public struct ImageGridView: View {
+import Kingfisher
 
-    let imageModels1 = [
-        ContestImageModel(imageName: "dumy2", contestImage: ResourceAsset.Image.dumy2.swiftUIImage),
-        ContestImageModel(imageName: "dumy1", contestImage: ResourceAsset.Image.dumy1.swiftUIImage),
-        ContestImageModel(imageName: "dumy4", contestImage: ResourceAsset.Image.dumy4.swiftUIImage),
-        ContestImageModel(imageName: "dumy3", contestImage: ResourceAsset.Image.dumy3.swiftUIImage),
-        ContestImageModel(imageName: "dumy9", contestImage: ResourceAsset.Image.dumy2.swiftUIImage),
-        ContestImageModel(imageName: "dumy10", contestImage: ResourceAsset.Image.dumy1.swiftUIImage),
-        ContestImageModel(imageName: "dumy11", contestImage: ResourceAsset.Image.dumy4.swiftUIImage),
-        ContestImageModel(imageName: "dumy12", contestImage: ResourceAsset.Image.dumy3.swiftUIImage)
-    ]
+public struct ImageGridView: View {
     
-    let imageModels2 = [
-        ContestImageModel(imageName: "dumy7", contestImage: ResourceAsset.Image.dumy7.swiftUIImage),
-        ContestImageModel(imageName: "dumy6", contestImage: ResourceAsset.Image.dumy6.swiftUIImage),
-        ContestImageModel(imageName: "dumy5", contestImage: ResourceAsset.Image.dumy5.swiftUIImage),
-        ContestImageModel(imageName: "dumy8", contestImage: ResourceAsset.Image.dumy8.swiftUIImage),
-        ContestImageModel(imageName: "dumy13", contestImage: ResourceAsset.Image.dumy7.swiftUIImage),
-        ContestImageModel(imageName: "dumy14", contestImage: ResourceAsset.Image.dumy6.swiftUIImage),
-        ContestImageModel(imageName: "dumy15", contestImage: ResourceAsset.Image.dumy5.swiftUIImage),
-        ContestImageModel(imageName: "dumy16", contestImage: ResourceAsset.Image.dumy8.swiftUIImage)
-    ]
-    
-    let onImageTap: (ContestImageModel) -> Void // ✅ 콜백 추가
+    private let leftImageList: [ContestImageModel]
+    private let rightImageList: [ContestImageModel]
+    private let onImageTap: (ContestImageModel) -> Void // ✅ 콜백 추가
     
     @State private var showScrollToTopButton = false
     @State private var initialScrollOffset: CGFloat = 0
@@ -45,8 +27,12 @@ public struct ImageGridView: View {
     // MARK: - Init
     
     public init(
+        leftImageList: [ContestImageModel],
+        rightImageList: [ContestImageModel],
         onImageTap: @escaping (ContestImageModel) -> Void
     ) {
+        self.leftImageList = leftImageList
+        self.rightImageList = rightImageList
         self.onImageTap = onImageTap
     }
 
@@ -62,31 +48,23 @@ public struct ImageGridView: View {
                     
                     HStack(alignment: .top) {
                         LazyVStack(spacing: 8) {
-                            ForEach(imageModels1) { model in
-                                model.contestImage
+                            ForEach(leftImageList) { model in
+                                KFImage(URL(string: model.imageUrl)!)
                                     .resizable()
                                     .aspectRatio(contentMode: .fit)
-                                    .onAppear {
-                                        print("1열", model.imageName)
-                                        isImageLoading = true
-                                    }
                                     .onTapGesture {
-                                        onImageTap(model) // ✅ 콜백 호출
+                                        onImageTap(model)
                                     }
                             }
                         }
                         
                         LazyVStack(spacing: 8) {
-                            ForEach(imageModels2) { model in
-                                model.contestImage
+                            ForEach(rightImageList) { model in
+                                KFImage(URL(string: model.imageUrl)!)
                                     .resizable()
                                     .aspectRatio(contentMode: .fit)
-                                    .onAppear {
-                                        print("2열", model.imageName)
-                                        isImageLoading = true
-                                    }
                                     .onTapGesture {
-                                        onImageTap(model) // ✅ 콜백 호출
+                                        onImageTap(model)
                                     }
                             }
                         }
@@ -148,25 +126,18 @@ public struct ImageGridView: View {
     }
 }
 
-#Preview {
-    ImageGridView(onImageTap: {_ in })
-}
+//#Preview {
+//    ImageGridView(onImageTap: {_ in })
+//}
 
 public struct ContestImageModel: Identifiable, Hashable {
-    public let id = UUID()
-    public let imageName: String // 원본 이미지 이름 추가
-    public let contestImage: Image
+    public var id: String
+    public let imageUrl: String
+    public let nickname: String?
     
-    public init(imageName: String, contestImage: Image) {
-        self.imageName = imageName
-        self.contestImage = contestImage
-    }
-    
-    public static func == (lhs: ContestImageModel, rhs: ContestImageModel) -> Bool {
-        lhs.id == rhs.id
-    }
-
-    public func hash(into hasher: inout Hasher) {
-        hasher.combine(id)
+    public init(id: String, imageUrl: String, nickname: String? = nil) {
+        self.id = id
+        self.imageUrl = imageUrl
+        self.nickname = nickname
     }
 }

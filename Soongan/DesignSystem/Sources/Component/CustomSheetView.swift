@@ -21,8 +21,7 @@ public struct CustomSheetView<T: Equatable & CaseIterable>: View {
     private let type: SheetContentType
     private var action: (() -> Void)? = nil
     private var optionAction: ((T) -> Void)? = nil
-    
-    @State private var inputText = ""
+    private var isSelectType: SortContestDataType?
     
     // MARK: - Init
     
@@ -42,6 +41,16 @@ public struct CustomSheetView<T: Equatable & CaseIterable>: View {
         self.optionAction = optionAction
     }
     
+    public init(
+        type: SheetContentType,
+        isSelectType: SortContestDataType,
+        optionAction: @escaping (T) -> Void
+    ) {
+        self.type = type
+        self.isSelectType = isSelectType
+        self.optionAction = optionAction
+    }
+    
     // MARK: - Body
     
     public var body: some View {
@@ -55,14 +64,34 @@ public struct CustomSheetView<T: Equatable & CaseIterable>: View {
                 
             case .postPicture(let name):
                 PostPictureContentSectionView(name: name, action: action ?? {})
-                       .padding(.top, 14)
+                       .padding(.top, 26)
                 
             case .logout:
-                logoutContentSection(action: {})
+                logoutContentSection(action: { optionType in
+                    guard let optionAction else { return }
+                    optionAction(optionType as! T)
+                })
                     .padding(.top, 40)
-            
+                
+            case .logoutSuccess:
+                logoutSuccessContentSection(action: { optionType in
+                    guard let optionAction else { return }
+                    optionAction(optionType as! T)
+                })
+                    .padding(.top, 40)
+                
             case .withdraw:
-                withDrawContentSection(action: {})
+                WithdrawContentSection(action: { optionType in
+                    guard let optionAction else { return }
+                    optionAction(optionType as! T)
+                })
+                    .padding(.top, 40)
+                
+            case .withdrawSuccess:
+                withDrawSuccessContentSection(action: { optionType in
+                    guard let optionAction else { return }
+                    optionAction(optionType as! T)
+                })
                     .padding(.top, 40)
                 
             case .myprofileOption:
@@ -75,10 +104,6 @@ public struct CustomSheetView<T: Equatable & CaseIterable>: View {
             case .alarmSetting:
                 pushAlarmSettingContentSection()
                 
-            case .completeWithdraw:
-                withDrawContentSection(action: {})
-                    .padding(.top, 40)
-                
             case .contestReport:
                 contestReportContentSection(action: { _ in })
                     .padding(.top, 12)
@@ -90,13 +115,27 @@ public struct CustomSheetView<T: Equatable & CaseIterable>: View {
                 reportCompleteContentSection(action: {})
                     .padding(.top, 40)
                 
-            case .detailContestOption:
-                detailContestOptionSection(action: { optionType in
+            case .detailContestOption(let isWriter):
+                detailContestOptionSection(isWriter: isWriter, action: { optionType in
                     guard let optionAction else { return }
                     optionAction(optionType as! T)
 
                 })
-                .padding(.top, 30)
+//                .padding(.top, 30)
+                
+            case .sortContest:
+                if let isSelectType {
+                    sortPostContestSection(selectedType: isSelectType, action: { optionType in
+                        guard let optionAction else { return }
+                        optionAction(optionType as! T)
+                    })
+                }
+                
+            case .selectProfile(let isBaseProfile):
+                selectProfileContestSection(isBaseProfile: isBaseProfile, action: { optionType in
+                    guard let optionAction else { return }
+                    optionAction(optionType as! T)
+                })
             }
         }
         .frame(maxHeight: .infinity, alignment: .top)
@@ -284,46 +323,30 @@ private extension CustomSheetView {
         }
     }
     
-    func withDrawContentSection(action: @escaping () -> Void) -> some View {
-        VStack {
-            VStack(alignment: .leading, spacing: 15) {
-                Text("정말 회원탈퇴를 하실 건가요?")
-                    .font(.regular16)
-                    .foregroundStyle(Color.black100)
+    func withDrawSuccessContentSection(action: @escaping (MypageSuccessSheetType) -> Void) -> some View {
+        VStack(alignment: .leading, spacing: 15) {
+            VStack(alignment: .leading, spacing: 10) {
+                Text("회원탈퇴가 완료되었습니다.")
                 
-                Text("회원탈퇴를 위해 아래 입력창에\n'회원탈퇴'를 입력해주세요")
-                    .font(.regular16)
-                    .foregroundStyle(Color.black100)
-                
-                TextField("", text: $inputText,
-                          prompt: Text("텍스트를 입력해주세요.").foregroundColor(Color.init(red: 187/255, green: 187/255, blue: 187/255)))
-                    .font(.regular18)
-                    .padding()
-                    .frame(height: 48)
-                    .tint(.black100)
-                    .background(
-                        RoundedRectangle(cornerRadius: 8)
-                            .fill(Color.white)
-                            .stroke(Color.black100)
-                    )
-                    .padding(.top, 32)
+                Text("또 만나길 바랄게요!")
             }
+            .font(.regular16)
+            .foregroundStyle(Color.black100)
             .padding(.horizontal, 20)
             
             CustomBottomButton(
-                type: .complete,
+                type: .comfirm,
                 action: {
-                    action()
+                    action(.withdraw)
                     dismiss()
                 }
             )
             .padding(.top, 40)
         }
-        .foregroundStyle(Color.black100)
         .padding(.horizontal, 20)
     }
     
-    func logoutContentSection(action: @escaping () -> Void) -> some View {
+    func logoutContentSection(action: @escaping (MyprofileOptionType) -> Void) -> some View {
         VStack(alignment: .leading, spacing: 15) {
             Text("정말 로그아웃 하실 건가요?")
                 .font(.regular16)
@@ -333,11 +356,34 @@ private extension CustomSheetView {
             CustomBottomButton(
                 type: .logout,
                 action: {
-                    action()
+                    action(.logout)
                     dismiss()
                 }
             )
             .padding(.top, 64)
+        }
+        .padding(.horizontal, 20)
+    }
+    
+    func logoutSuccessContentSection(action: @escaping (MypageSuccessSheetType) -> Void) -> some View {
+        VStack(alignment: .leading, spacing: 15) {
+            VStack(alignment: .leading, spacing: 10) {
+                Text("로그아웃이 완료되었습니다.")
+                
+                Text("또 만나길 바랄게요!")
+            }
+            .font(.regular16)
+            .foregroundStyle(Color.black100)
+            .padding(.horizontal, 20)
+            
+            CustomBottomButton(
+                type: .comfirm,
+                action: {
+                    action(.logout)
+                    dismiss()
+                }
+            )
+            .padding(.top, 40)
         }
         .padding(.horizontal, 20)
     }
@@ -378,7 +424,7 @@ private extension CustomSheetView {
         }
     }
     
-    func detailContestOptionSection(action: @escaping (DetailContestOptionType) -> Void) -> some View {
+    func detailContestOptionSection(isWriter: Bool, action: @escaping (DetailContestOptionType) -> Void) -> some View {
         VStack(spacing: 0) {
             ForEach(DetailContestOptionType.allCases, id: \.self) { option in
                 VStack(spacing: 0) {
@@ -388,15 +434,20 @@ private extension CustomSheetView {
                         HStack(alignment: .center) {
                             Text(option.title)
                                 .font(.semibold16)
-                                .foregroundStyle(Color.black100)
+                                .foregroundStyle(
+                                    !option.isEnabled(forWriter: isWriter)
+                                    ? Color.black100.opacity(0.3)
+                                    : (isWriter ? Color.black100 : (option == .report ? Color.error : Color.black100))
+                                )
                             
                             Spacer()
                             
-                            option.rightImage
+                            option.rightImage(isWriter: isWriter)
                         }
                         .frame(height: 56)
                         .padding(.horizontal, 40)
                     }
+                    .disabled(!option.isEnabled(forWriter: isWriter))
                     
                     if option != DetailContestOptionType.allCases.last {
                         Rectangle()
@@ -415,6 +466,38 @@ private extension CustomSheetView {
 // MARK: - Contest Section Private Extension View
 
 private extension CustomSheetView {
+    func sortPostContestSection(selectedType: SortContestDataType, action: @escaping (SortContestDataType) -> Void) -> some View {
+        VStack(spacing: 0) {
+            ForEach(SortContestDataType.allCases, id: \.self) { option in
+                VStack(spacing: 0) {
+                    Button(action: {
+                        action(option)
+                    }) {
+                        HStack(alignment: .center) {
+                            Text(option.title)
+                                .font(.semibold16)
+                                .foregroundStyle(option == selectedType ? Color.black100 : Color.black100.opacity(0.5))
+                            
+                            Spacer()
+                            
+                            option.rightImage(isSelected: option == selectedType)
+                        }
+                        .frame(height: 56)
+                        .padding(.horizontal, 40)
+                    }
+                    
+                    if option != SortContestDataType.allCases.last {
+                        Rectangle()
+                            .fill(Color(red: 187/255, green: 187/255, blue: 187/255))
+                            .frame(maxWidth: .infinity)
+                            .frame(height: 0.7)
+                            .padding(.horizontal, 24)
+                    }
+                }
+            }
+        }
+    }
+    
     func contestReportContentSection(action: @escaping (ContestReportReasonType) -> Void) -> some View {
         VStack(spacing: 0) {
             ForEach(ContestReportReasonType.allCases, id: \.self) { option in
@@ -498,6 +581,37 @@ private extension CustomSheetView {
         }
         .padding(.horizontal, 36)
     }
+    
+    func selectProfileContestSection(isBaseProfile: Bool, action: @escaping (EditProfileType) -> Void) -> some View {
+        VStack(spacing: 0) {
+            ForEach(EditProfileType.allCases, id: \.self) { option in
+                VStack(spacing: 0) {
+                    Button(action: {
+                        action(option)
+                    }) {
+                        HStack(alignment: .center) {
+                            Text(option.title)
+                                .font(.semibold16)
+                                .foregroundStyle(isBaseProfile && option == .baseProfile ? Color.black100.opacity(0.5) : Color.black100)
+                            
+                            Spacer()
+                        }
+                        .frame(height: 56)
+                        .padding(.horizontal, 40)
+                    }
+                    .disabled(isBaseProfile && option == .baseProfile)
+                    
+                    if option != EditProfileType.allCases.last {
+                        Rectangle()
+                            .fill(Color(red: 187/255, green: 187/255, blue: 187/255))
+                            .frame(maxWidth: .infinity)
+                            .frame(height: 0.7)
+                            .padding(.horizontal, 24)
+                    }
+                }
+            }
+        }
+    }
 }
 
 // MARK: - Preview
@@ -531,7 +645,7 @@ struct PostPictureContentSectionView: View {
                         Rectangle()
                             .stroke(Color.black, lineWidth: 2)
                             .fill(isChecked ? Color.black : Color.clear)
-                            .frame(width: 20, height: 240)
+                            .frame(width: 20, height: 20)
 
                         if isChecked {
                             Image.checkIcon
@@ -564,6 +678,72 @@ struct PostPictureContentSectionView: View {
         }
         .font(.regular16)
         .foregroundStyle(Color.black)
+        .padding(.horizontal, 20)
+    }
+}
+
+struct WithdrawContentSection: View {
+    var action: (MyprofileOptionType) -> Void
+
+    @State var inputText: String = ""
+    @State private var isButtonEnable = false
+    @Environment(\.dismiss) private var dismiss
+    @FocusState private var isFocused: Bool
+    
+    var body: some View {
+        ZStack {
+            Color.clear
+                .contentShape(Rectangle()) // <- 터치 영역 활성화
+                .ignoresSafeArea()
+                .onTapGesture {
+                    isFocused = false // 포커스 해제 → 키보드 내려감
+                }
+            
+            VStack {
+                VStack(alignment: .leading, spacing: 15) {
+                    Text("정말 회원탈퇴를 하실 건가요?")
+                        .font(.regular16)
+                        .foregroundStyle(Color.black100)
+                    
+                    Text("회원탈퇴를 위해 아래 입력창에\n'회원탈퇴'를 입력해주세요")
+                        .font(.regular16)
+                        .foregroundStyle(Color.black100)
+                    
+                    TextField("", text: $inputText,
+                              prompt: Text("텍스트를 입력해주세요.")
+                        .foregroundColor(Color(red: 187/255, green: 187/255, blue: 187/255)))
+                    .focused($isFocused)
+                    .font(.regular18)
+                    .padding()
+                    .frame(height: 48)
+                    .tint(.black100)
+                    .background(
+                        RoundedRectangle(cornerRadius: 8)
+                            .fill(Color.white)
+                            .stroke(Color.black100)
+                    )
+                    .padding(.top, 32)
+                }
+                .padding(.horizontal, 20)
+                
+                CustomBottomButton(
+                    type: .complete,
+                    isEnable: $isButtonEnable,
+                    action: {
+                        action(.withdraw)
+                        dismiss()
+                    }
+                )
+                .padding(.top, 40)
+            }
+            .onAppear {
+                isFocused = true
+            }
+        }
+        .onChange(of: inputText) { _, newValue in
+            isButtonEnable = (newValue == "회원탈퇴")
+        }
+        .foregroundStyle(Color.black100)
         .padding(.horizontal, 20)
     }
 }

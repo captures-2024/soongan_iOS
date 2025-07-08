@@ -11,28 +11,34 @@ public enum SheetContentType: Identifiable, Equatable {
     case contestInfo
     case postPicture(name: String)
     case logout
+    case logoutSuccess
     case withdraw
-    case completeWithdraw
+    case withdrawSuccess
     case myprofileOption
     case alarmSetting
     case contestReport
     case spam
     case reportComplete
-    case detailContestOption
+    case detailContestOption(isWriter: Bool)
+    case sortContest
+    case selectProfile(isBaseProfile: Bool)
     
     public var id: String {
         switch self {
         case .contestInfo: return "contestInfo"
         case .postPicture(let name): return "postPicture_\(name)"
         case .logout: return "logout"
+        case .logoutSuccess: return "logoutSuccess"
         case .withdraw: return "withdraw"
-        case .completeWithdraw: return "completeWithdraw"
+        case .withdrawSuccess: return "withdrawSuccess"
         case .myprofileOption: return "myprofileOption"
         case .alarmSetting: return "alarmSetting"
         case .contestReport: return "contestReport"
         case .spam: return "spam"
         case .reportComplete: return "reportComplete"
         case .detailContestOption: return "detailContestOption"
+        case .sortContest: return "sortContest"
+        case .selectProfile: return "selectProfile"
         }
     }
     
@@ -40,9 +46,9 @@ public enum SheetContentType: Identifiable, Equatable {
         switch self {
         case .contestInfo: return "대회정보"
         case .postPicture: return "제목 확인"
-        case .logout: return "로그아웃"
-        case .withdraw, .completeWithdraw: return "회원탈퇴"
-        case .myprofileOption, .detailContestOption: return ""
+        case .logout, .logoutSuccess: return "로그아웃"
+        case .withdraw, .withdrawSuccess: return "회원탈퇴"
+        case .myprofileOption, .detailContestOption, .sortContest, .selectProfile: return ""
         case .alarmSetting: return "푸시 알림 설정"
         case .contestReport, .reportComplete, .spam: return "신고"
         }
@@ -52,15 +58,16 @@ public enum SheetContentType: Identifiable, Equatable {
         switch self {
         case .contestInfo: return [.fraction(0.75)]
         case .postPicture: return [.fraction(0.31)]
-        case .logout: return [.height(264)]
+        case .logout, .logoutSuccess: return [.height(264)]
         case .withdraw: return [.height(392)]
-        case .completeWithdraw: return [.height(264)]
+        case .withdrawSuccess: return [.height(264)]
         case .myprofileOption: return [.height(420)]
         case .alarmSetting: return [.height(380)]
         case .contestReport: return [.height(432)]
         case .spam: return [.height(288)]
         case .reportComplete: return [.height(456)]
-        case .detailContestOption: return [.height(240)]
+        case .detailContestOption, .sortContest: return [.height(240)]
+        case .selectProfile: return [.height(165)]
         }
     }
 }
@@ -72,7 +79,7 @@ public enum MyprofileOptionType: Equatable, CaseIterable {
     case pushAlarmSetting
     case terms
     case faq
-    case withDraw
+    case withdraw
     case logout
     
     var title: String {
@@ -89,7 +96,7 @@ public enum MyprofileOptionType: Equatable, CaseIterable {
         case .faq:
             return "FAQ"
             
-        case .withDraw:
+        case .withdraw:
             return "회원탈퇴"
             
         case .logout:
@@ -111,7 +118,7 @@ public enum MyprofileOptionType: Equatable, CaseIterable {
         case .faq:
             return .questionIcon
             
-        case .withDraw:
+        case .withdraw:
             return .drawIcon
             
         case .logout:
@@ -159,11 +166,71 @@ public enum DetailContestOptionType: Equatable, CaseIterable {
         }
     }
     
-    var rightImage: Image {
+    func rightImage(isWriter: Bool) -> Image {
+        print("rightImage:", isWriter)
         switch self {
-        case .edit: return .editPost
-        case .delete: return .deletePost
-        case .report: return .reportCard
+        case .edit: return isWriter ? .selectEditIcon : .notSelectEditIcon
+        case .delete: return isWriter ? .selectDeleteIcon : .notSelectDeleteIcon
+        case .report: return isWriter ? .notSelectReportIcon : .selectReportIcon
+        }
+    }
+}
+
+extension DetailContestOptionType {
+    func isEnabled(forWriter isWriter: Bool) -> Bool {
+        if isWriter {
+            return self == .report
+        } else {
+            return self != .report
+        }
+    }
+}
+
+public enum SortContestDataType: String, CaseIterable, Equatable {
+    case like = "MOST_LIKED"
+    case oldest = "OLDEST"
+    case newest = "LATEST"
+
+    var title: String {
+        switch self {
+        case .like: return "좋아요 순"
+        case .oldest: return "오래된 순"
+        case .newest: return "최신 등록 순"
+        }
+    }
+
+    func rightImage(isSelected: Bool) -> Image {
+        switch self {
+        case .like:
+            return isSelected ? .selectSortLikeIcon : .notSelectSortLikeIcon
+        case .oldest:
+            return isSelected ? .selectSortOldestIcon : .notSelectSortOldestIcon
+        case .newest:
+            return isSelected ? .selectSortNewestIcon : .notSelectSortNewestIcon
+        }
+    }
+}
+
+public enum MypageSuccessSheetType: Equatable, CaseIterable {
+    case logout
+    case withdraw
+    
+    public var id: String {
+        switch self {
+        case .logout: return "logoutComplete"
+        case .withdraw: return "withdraw"
+        }
+    }
+}
+
+public enum EditProfileType: Equatable, CaseIterable {
+    case selectImage
+    case baseProfile
+    
+    var title: String {
+        switch self {
+        case .selectImage: return "갤러리에서 사진 선택"
+        case .baseProfile: return "기본 프로필로 돌아가기"
         }
     }
 }

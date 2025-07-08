@@ -37,7 +37,7 @@ public enum BottomButtonType: Equatable {
     
     var textColor: Color {
         switch self {
-        case .next, .editComplete:
+        case .next, .editComplete, .submit:
             return .white
         default:
             return .black100
@@ -48,6 +48,8 @@ public enum BottomButtonType: Equatable {
         switch self {
         case .next:
             return .semibold18
+        case .submit:
+            return .semibold16
         default:
             return .body15
         }
