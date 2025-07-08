@@ -23,7 +23,8 @@ let project = Project(
                 .project(target: "DesignSystem", path: "../../DesignSystem"),
                 .project(target: "CoreKakaoLogin", path: "../../Core/CoreKakaoLogin"),
                 .project(target: "CoreAppleLogin", path: "../../Core/CoreAppleLogin"),
-                .project(target: "CoreNetwork", path: "../../Core/CoreNetwork")
+                .project(target: "CoreNetwork", path: "../../Core/CoreNetwork"),
+                .project(target: "AppDependencies", path: "../../AppDependencies")
             ]
         )
     ]

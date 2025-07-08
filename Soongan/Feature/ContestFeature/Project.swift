@@ -21,7 +21,8 @@ let project = Project(
             dependencies: [
                 .external(name: "ComposableArchitecture"),
                 .project(target: "DesignSystem", path: "../../DesignSystem"),
-                .project(target: "CoreNetwork", path: "../../Core/CoreNetwork")
+                .project(target: "CoreNetwork", path: "../../Core/CoreNetwork"),
+                .project(target: "CoreUserDefault", path: "../../Core/CoreUserDefault")
             ]
         )
     ]

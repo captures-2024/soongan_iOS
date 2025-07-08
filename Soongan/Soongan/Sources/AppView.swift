@@ -18,15 +18,11 @@ public struct AppView: View {
     public var body: some View {
         
         switch store.authState {
-        case .loggedIn:
+        case .loggedIn, .skipped:
             MainTabView(store: store.scope(state: \.mainTab, action: \.mainTab))
             
         case .loggedOut:
             LoginView(store: store.scope(state: \.login, action: \.login))
-            
-        case .skipped:
-            // TODO: - 둘러보기 - 메인 화면 표시
-            EmptyView()
         }
     }
 }

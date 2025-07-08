@@ -6,6 +6,7 @@ let project = Project(
     settings: .settings(
         base: [
             "DEVELOPMENT_TEAM": "N3H27N59VG",
+            "OTHER_LDFLAGS": ["-all_load"]
         ],
         configurations: [
             .debug(name: "Debug", xcconfig: .relativeToRoot("Soongan/Configs/Debug.xcconfig")),
@@ -49,11 +50,9 @@ let project = Project(
             ],
             entitlements: .file(path: "Soongan/Soongan.entitlements"),
             dependencies: [
-                .external(name: "KakaoSDKCommon"),
-                .external(name: "KakaoSDKAuth"),
-                .external(name: "KakaoSDKUser"),
                 .external(name: "ComposableArchitecture"),
                 .external(name: "FirebaseMessaging"),
+                .external(name: "Kingfisher"),
                 .project(target: "Resource", path: "Resource"),
                 .project(target: "Shared", path: "Shared"),
                 .project(target: "DesignSystem", path: "DesignSystem"),
