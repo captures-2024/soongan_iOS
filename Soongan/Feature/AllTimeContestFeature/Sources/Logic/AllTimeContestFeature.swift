@@ -29,7 +29,7 @@ public struct AllTimeContestFeature {
     public struct State: Equatable {
         var path = StackState<AllTimeContestPath.State>()
         
-        var allTimeDictionaryData = [Int: SearchHistoriesContestData]()
+        var allTimeDictionaryData = [Int: SearchAwardContestData]()
         var allTimeContestListData = [AllTimeContestModel]()
         
         // CustomTabBar 가시성
@@ -52,7 +52,7 @@ public struct AllTimeContestFeature {
         case binding(BindingAction<State>)
     
         case onAppear
-        case historyContestSuccessResponse(SearchHistoriesContestResponseDTO)
+        case historyContestSuccessResponse(SearchAwardContestResponseDTO)
         
         case contestListTapped(id: Int)
 //        case presentSheet
@@ -72,8 +72,8 @@ public struct AllTimeContestFeature {
                 
             case .onAppear:
                 return .run { send in
-                    let result: Result<SearchHistoriesContestResponseDTO, NetworkError> = await NetworkManager.shared.request(WeeklyContestEndpoint.getHistoriesContest)
-                    
+                    let result: Result<SearchAwardContestResponseDTO, NetworkError> = await NetworkManager.shared.request(AwardEndpoint.getAwardContest)
+
                     switch result {
                     case .success(let responseResult):
                         return await send(.historyContestSuccessResponse(responseResult))
@@ -163,7 +163,7 @@ public struct AllTimeContestFeature {
 
 
 private extension AllTimeContestFeature {
-    func convertAllTimeContestModel(_ data: SearchHistoriesContestResponseDTO) -> [AllTimeContestModel] {
+    func convertAllTimeContestModel(_ data: SearchAwardContestResponseDTO) -> [AllTimeContestModel] {
         return data.contests.map {
             AllTimeContestModel(id: $0.id, title: $0.subject, backgroundImageURL: $0.thumbnailImageUrl)
         }

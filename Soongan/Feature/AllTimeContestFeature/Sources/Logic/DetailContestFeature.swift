@@ -37,7 +37,7 @@ public struct DetailContestFeature {
         case binding(BindingAction<State>)
         
         case onAppear
-        case detailHistoryContestSuccessResponse(SearchDetailHistoriesContestResponseDTO)
+        case detailHistoryContestSuccessResponse(SearchDetailAwardContestResponseDTO)
         
         case backButtonTapped
     }
@@ -52,7 +52,7 @@ public struct DetailContestFeature {
                 let contestId = state.contestInfoData.id
                 
                 return .run { send in
-                    let result: Result<SearchDetailHistoriesContestResponseDTO, NetworkError> = await NetworkManager.shared.request(WeeklyContestEndpoint.getDetailHistoriesContest(contestId: String(contestId)))
+                    let result: Result<SearchDetailAwardContestResponseDTO, NetworkError> = await NetworkManager.shared.request(AwardEndpoint.getDetailAwardContest(contestId: contestId))
                     
                     switch result {
                     case .success(let responseResult):
@@ -63,7 +63,7 @@ public struct DetailContestFeature {
                 }
                 
             case .detailHistoryContestSuccessResponse(let response):
-                state.contestCount = response.postCount
+                state.contestCount = response.postsCount
                 state.firstPostData = convertFirstModel(response.firstPrizePost)
                 state.otherPostData = convertOtherModel(response.otherTop7Posts)
                 
