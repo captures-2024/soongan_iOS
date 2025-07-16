@@ -92,4 +92,16 @@ public enum TextFieldType: Equatable {
             return "본인을 소개해주세요"
         }
     }
+    
+    /// 입력 필드 우측 하단의 입력 가능한 글자 수를 반환합니다.
+    var inputValidationCount: Int {
+        switch self {
+        case .nickname, .changeNickname:
+            return 10
+        case .introduce:
+            return 25
+        default:
+            return 0
+        }
+    }
 }

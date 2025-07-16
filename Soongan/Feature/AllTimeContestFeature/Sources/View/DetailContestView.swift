@@ -15,16 +15,6 @@ import ComposableArchitecture
 
 struct DetailContestView: View {
     
-    let imageModels1 = [
-        ContestImageModel(imageName: "dumy2", contestImage: ResourceAsset.Image.dumy2.swiftUIImage),
-        ContestImageModel(imageName: "dumy1", contestImage: ResourceAsset.Image.dumy1.swiftUIImage)
-    ]
-    
-    let imageModels2 = [
-        ContestImageModel(imageName: "dumy7", contestImage: ResourceAsset.Image.dumy7.swiftUIImage),
-        ContestImageModel(imageName: "dumy6", contestImage: ResourceAsset.Image.dumy6.swiftUIImage)
-    ]
-    
     @Bindable var store: StoreOf<DetailContestFeature>
     
     // MARK: - Init
@@ -53,36 +43,36 @@ struct DetailContestView: View {
                         .padding(.top, 40)
                         .padding(.bottom, 92)
                     
-                    HStack(alignment: .top) {
-                        LazyVStack(spacing: 8) {
-                            ForEach(imageModels1) { model in
-                                model.contestImage
-                                    .resizable()
-                                    .aspectRatio(contentMode: .fit)
-                                    .onAppear {
-                                        print("1열", model.imageName)
-                                    }
-                                    .onTapGesture {
-                                        //                                    onImageTap(model) // ✅ 콜백 호출
-                                    }
-                            }
-                        }
-                        
-                        LazyVStack(spacing: 8) {
-                            ForEach(imageModels2) { model in
-                                model.contestImage
-                                    .resizable()
-                                    .aspectRatio(contentMode: .fit)
-                                    .onAppear {
-                                        print("2열", model.imageName)
-                                    }
-                                    .onTapGesture {
-                                        //                                    onImageTap(model) // ✅ 콜백 호출
-                                    }
-                            }
-                        }
-                    }
-                    .padding(.horizontal, 8)
+//                    HStack(alignment: .top) {
+//                        LazyVStack(spacing: 8) {
+//                            ForEach(imageModels1) { model in
+//                                model.contestImage
+//                                    .resizable()
+//                                    .aspectRatio(contentMode: .fit)
+//                                    .onAppear {
+//                                        print("1열", model.imageName)
+//                                    }
+//                                    .onTapGesture {
+//                                        //                                    onImageTap(model) // ✅ 콜백 호출
+//                                    }
+//                            }
+//                        }
+//                        
+//                        LazyVStack(spacing: 8) {
+//                            ForEach(imageModels2) { model in
+//                                model.contestImage
+//                                    .resizable()
+//                                    .aspectRatio(contentMode: .fit)
+//                                    .onAppear {
+//                                        print("2열", model.imageName)
+//                                    }
+//                                    .onTapGesture {
+//                                        //                                    onImageTap(model) // ✅ 콜백 호출
+//                                    }
+//                            }
+//                        }
+//                    }
+//                    .padding(.horizontal, 8)
                 }
                 .padding(.bottom, 70)
                 

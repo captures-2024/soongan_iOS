@@ -46,6 +46,15 @@ extension MemberEndpoint: APIEndpoint {
         return .accessTokenHeader
     }
     
+    public var requestBodyType: RequestBodyType {
+        switch self {
+        case .patchProfile:
+            return .formData
+        default:
+            return .json
+        }
+    }
+    
     public var queryParameters: [URLQueryItem]? {
         switch self {
         case .patchBirthYear(let dto):

@@ -29,13 +29,20 @@ public struct ContestFeature {
     public struct State: Equatable {
         var path = StackState<ContestPath.State>()
         
-        var contestOptions = ["1회차 평화", "2회차 자연", "3회차 풍경", "4회차 주제", "5회차 주제"]
-        var contestIndex: String = "1회차"
-        var weekTopic: String = "평화"
+        var contestOptions = [ContestIndexModel]()
+        var contestIndex: Int = 0
+        var weekTopic: String = ""
+        
+        var leftContestImageList = [ContestImageModel]()
+        var rightContestImageList = [ContestImageModel]()
         
         var selectedContestIndex: Int = 0
         
+        var isLoading = false
+        var isNext = false
         var isContestSheetPresented: Bool = false
+        var isSortSheetPresented: Bool = false
+        var sortSelectType: SortContestDataType = .newest
         
         // CustomTabBar 가시성
         public var isTabBarVisible: Bool {
@@ -57,13 +64,17 @@ public struct ContestFeature {
         case binding(BindingAction<State>)
     
         case onAppear
+        case fetchContestPosts
         case getContestSuccess(SearchWeeklyContestResponseDTO)
+        case getContestListSuccess(SearchContestListResponseDTO)
         
         case presentSheet
         case chagneContestIndex
         case dismissContestSheet(Bool)
+        case dismissSortContestSheet(Bool)
         case contestDetailImageTapped(String)
         case sortContestContentTapped
+        case changeSortContestType(SortContestDataType)
     }
     
     // MARK: - Body
@@ -74,29 +85,75 @@ public struct ContestFeature {
         Reduce { state, action in
             switch action {
             case .onAppear:
+                state.isLoading.toggle()
+                
                 return .run { send in
-                    let dto = SearchWeeklyContestRequestDTO(
-                        round: 1,
-                        orderCriteria: "LATEST",
-                        page: 0,
-                        pageSize: 50
-                    )
+                    let result: Result<SearchContestListResponseDTO, NetworkError> = await NetworkManager.shared.request(WeeklyContestEndpoint.getContestList)
                     
+                    switch result {
+                    case .success(let response):
+                        await send(.getContestListSuccess(response))
+                    case .failure(let error):
+                        print(error.localizedDescription)
+                        // 필요하다면 isLoading 토글 등 에러 처리
+                    }
+                }
+              
+            // 콘테스트 목록을 성공적으로 가져온 후, '게시물'을 가져오는 새 액션을 보냅니다.
+            case .getContestListSuccess(let response):
+                state.contestOptions = response.contests.map {
+                    ContestIndexModel(id: $0.id, round: $0.round, subject: $0.subject)
+                }
+                
+                state.contestIndex = state.contestOptions.last?.round ?? 1
+                state.weekTopic = state.contestOptions.last?.subject ?? ""
+                
+                return .send(.fetchContestPosts)
+                
+            // fetchContestPosts 액션을 받아 올바른 contestIndex로 게시물을 요청합니다.
+            case .fetchContestPosts:
+                let order = state.sortSelectType.rawValue
+                let dto = SearchWeeklyContestRequestDTO(
+                    round: state.contestIndex,
+                    orderCriteria: order,
+                    page: 0,
+                    pageSize: 50
+                )
+                
+                return .run { send in
                     let result: Result<SearchWeeklyContestResponseDTO, NetworkError> = await NetworkManager.shared.request(WeeklyContestEndpoint.getContest(dto))
                     
                     switch result {
-                    case .success(let responseResult):
-                        await send(.getContestSuccess(responseResult))
+                    case .success(let response):
+                        await send(.getContestSuccess(response))
                     case .failure(let error):
                         print(error.localizedDescription)
                     }
                 }
                 
+            // 게시물 데이터를 성공적으로 받으면 상태를 업데이트합니다.
             case .getContestSuccess(let response):
-                createImageData(response.posts)
+                state.contestIndex = response.round
+                state.weekTopic = response.subject
                 
+                state.leftContestImageList.removeAll()
+                state.rightContestImageList.removeAll()
+                
+                for (index, item) in response.posts.enumerated() {
+                    let model = ContestImageModel(id: String(item.postId), imageUrl: item.imageUrl, nickname: item.nickname)
+                    if index % 2 == 0 {
+                        state.leftContestImageList.append(model)
+                    } else {
+                        state.rightContestImageList.append(model)
+                    }
+                }
+                
+                state.isNext = response.pageInfo.hasNext
+                state.weekTopic = response.subject
+                
+                state.isLoading.toggle()
                 return .none
-                
+
                 
             case let .path(.element(id: _, action: action)):
                 switch action {
@@ -115,6 +172,7 @@ public struct ContestFeature {
                 return .none
                 
             case .sortContestContentTapped:
+                state.isSortSheetPresented = true
                 return .none
                 
             case .presentSheet:
@@ -124,9 +182,8 @@ public struct ContestFeature {
             case .chagneContestIndex:
                 let contest = state.contestOptions[state.selectedContestIndex]
                 
-                let splitResult = spiltIndexTitle(contest: contest)
-                state.contestIndex = splitResult.index
-                state.weekTopic = splitResult.contest
+                state.contestIndex = contest.round
+                state.weekTopic = contest.subject
                 
                 state.isContestSheetPresented = false
                 
@@ -136,22 +193,19 @@ public struct ContestFeature {
                 state.isContestSheetPresented = false
                 return .none
                 
+            case .dismissSortContestSheet:
+                state.isSortSheetPresented = false
+                return .none
+                
+            case .changeSortContestType(let type):
+                state.sortSelectType = type
+                state.isSortSheetPresented = false
+                return .none
+                
             default:
                 return .none
             }
         }
         .forEach(\.path, action: \.path)
-    }
-    
-    func spiltIndexTitle(contest: String) -> (index: String, contest: String){
-        
-        let splitContest = contest.split(separator: " ").map{ String($0) }
-        return (splitContest[0], splitContest[1])
-    }
-}
-
-private extension ContestFeature {
-    func createImageData(_ data: [PostInfoData]) {
-        
     }
 }

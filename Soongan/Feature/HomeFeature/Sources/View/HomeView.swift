@@ -10,6 +10,7 @@ import SwiftUI
 import DesignSystem
 
 import ComposableArchitecture
+import Kingfisher
 
 public struct HomeView: View {
     
@@ -57,28 +58,32 @@ public struct HomeView: View {
                     
                     Spacer(minLength: 63)
                     
-                    Button(action: {
-                        store.send(.addPictureButtonTapped)
-                    }) {
-                        ZStack(alignment: .center) {
-                            Rectangle()
-                                .fill(Color.white)
-                                .frame(width: 257, height: 257)
-                                .shadow(
-                                    color: Color.black.opacity(0.25),
-                                    radius: 5, x: 0, y: 4)
-                            
-                            VStack(spacing: 16) {
-                                Image.addPlus
-                                    .resizable()
-                                    .scaledToFit()
-                                    .frame(width: 40, height: 40)
+                    if store.postImageData.isEmpty {
+                        Button(action: {
+                            store.send(.addPictureButtonTapped)
+                        }) {
+                            ZStack(alignment: .center) {
+                                Rectangle()
+                                    .fill(Color.white)
+                                    .frame(width: 257, height: 257)
+                                    .shadow(
+                                        color: Color.black.opacity(0.25),
+                                        radius: 5, x: 0, y: 4)
                                 
-                                Text("출품하기")
-                                    .font(.regular14)
-                                    .foregroundStyle(Color.black100)
+                                VStack(spacing: 16) {
+                                    Image.addPlus
+                                        .resizable()
+                                        .scaledToFit()
+                                        .frame(width: 40, height: 40)
+                                    
+                                    Text("출품하기")
+                                        .font(.regular14)
+                                        .foregroundStyle(Color.black100)
+                                }
                             }
                         }
+                    } else {
+                        postImageSection(postImageList: store.postImageData)
                     }
                     
                     Spacer(minLength: 100)
@@ -126,7 +131,78 @@ public struct HomeView: View {
 // MARK: - Private Extension View
 
 private extension HomeView {
-    private func periodSection(startPeriod: String, endPeriod: String) -> some View {
+    func postImageSection(postImageList: [PostImageModel]) -> some View {
+        ScrollView(.horizontal, showsIndicators: false) {
+            HStack(spacing: 16) {
+                Spacer(minLength: 20)
+                
+                Button(action: {
+                    store.send(.addPictureButtonTapped)
+                }) {
+                    ZStack(alignment: .center) {
+                        Rectangle()
+                            .fill(Color.white)
+                            .frame(width: 60, height: 257)
+                            .shadow(
+                                color: Color.black.opacity(0.25),
+                                radius: 5, x: 0, y: 4)
+                        
+                        VStack(spacing: 76) {
+                            Image.addPlus
+                                .resizable()
+                                .scaledToFit()
+                                .frame(width: 20, height: 20)
+                            
+                            if postImageList.isEmpty {
+                                Text("출품하기")
+                                    .font(.regular14)
+                                    .foregroundStyle(Color.black100)
+                            } else {
+                                Text("\(postImageList.count)/3")
+                                    .font(.regular14)
+                                    .foregroundStyle(Color.black100)
+                            }
+                        }
+                    }
+                }
+                
+                if !postImageList.isEmpty {
+                    ForEach(postImageList) { image in
+                        if let url = URL(string: image.imageURL) {
+                            VStack(spacing: 12) {
+                                KFImage(url)
+                                    .resizable()
+                                    .scaledToFit()
+                                    .frame(width: 60, height: 257)
+                                    .shadow(
+                                        color: Color.black.opacity(0.25),
+                                        radius: 5, x: 0, y: 4)
+                                
+                                HStack(spacing: 16) {
+                                    HStack {
+                                        Image.selectLike
+                                        Text("\(image.likeCount)")
+                                    }
+                                    
+                                    HStack {
+                                        Image.commentIcon
+                                        Text("\(image.commentCount)")
+                                    }
+                                }
+                                .padding(.leading, 4)
+                                .font(.medium12)
+                                .foregroundStyle(Color.black100)
+                            }
+                        }
+                    }
+                }
+                
+                Spacer(minLength: 20)
+            }
+        }
+    }
+    
+    func periodSection(startPeriod: String, endPeriod: String) -> some View {
         VStack(spacing: 8) {
             HStack(spacing: 4) {
                 Text("시작일")
@@ -159,4 +235,11 @@ private extension HomeView {
                 HomeFeature()
             }
     )
+}
+
+struct PostImageModel: Identifiable, Equatable {
+    var id: Int
+    let imageURL: String
+    let likeCount: Int
+    let commentCount: Int
 }

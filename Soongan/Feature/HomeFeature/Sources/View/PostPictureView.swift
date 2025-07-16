@@ -14,7 +14,7 @@ import Shared
 import ComposableArchitecture
 
 public struct PostPictureView: View {
-
+    
     @Bindable var store: StoreOf<PostPictureFeature>
     @FocusState private var isFocused: Bool
     
@@ -27,19 +27,19 @@ public struct PostPictureView: View {
         
         let appearance = UINavigationBarAppearance()
         appearance.configureWithOpaqueBackground()
-        appearance.backgroundColor = UIColor.white
+        appearance.backgroundColor = UIColor(DesignSystem.Color.soonganBG)
         appearance.shadowColor = .clear
-
+        
         UINavigationBar.appearance().standardAppearance = appearance
         UINavigationBar.appearance().scrollEdgeAppearance = appearance
     }
-
+    
     // MARK: - Body
     
     public var body: some View {
         ZStack {
-            Color.clear
-                .contentShape(Rectangle())
+            DesignSystem.Color.soonganBG
+                .ignoresSafeArea()
                 .onTapGesture {
                     UIApplication.shared.dismissKeyboard()
                 }
@@ -51,20 +51,20 @@ public struct PostPictureView: View {
                 VStack(alignment: .trailing, spacing: 0) {
                     TextField("", text: $store.postPictureName,
                               prompt: Text("제목을 입력해주세요.").foregroundColor(Color.init(red: 187/255, green: 187/255, blue: 187/255)))
-                        .focused($isFocused)
-                        .font(.bold18)
-                        .padding()
-                        .frame(height: 46)
-                        .tint(.black100)
-                        .multilineTextAlignment(.center)
-                        .background(
-                            RoundedRectangle(cornerRadius: 8)
-                                .fill(Color.white)
-                                .shadow(
-                                    color: Color.black.opacity(0.25),
-                                    radius: 5, x: 0, y: 4)
-                        )
-                        .foregroundColor(.black100)
+                    .focused($isFocused)
+                    .font(.bold18)
+                    .padding()
+                    .frame(height: 46)
+                    .tint(.black100)
+                    .multilineTextAlignment(.center)
+                    .background(
+                        RoundedRectangle(cornerRadius: 4)
+                            .fill(Color.white)
+                            .shadow(
+                                color: Color.black.opacity(0.25),
+                                radius: 5, x: 0, y: 4)
+                    )
+                    .foregroundColor(.black100)
                     
                     Text("\(store.textCount)/15")
                         .font(.regular8)
@@ -80,27 +80,21 @@ public struct PostPictureView: View {
                     store.send(.postButtonTapped)
                 }
                 .padding(.horizontal, 136)
-                
-                Text("부적절한 사진은 삭제될 수 있습니다.")
-                    .font(.regular12)
-                    .foregroundColor(.black100)
-                    .padding(.top, 12)
-                    .padding(.bottom, 68)
+                .padding(.bottom, 95)
             }
             .padding(.top, 50)
             .frame(maxHeight: .infinity, alignment: .top)
             .toolbar(.hidden, for: .tabBar)
             .navigationBarBackButtonHidden(true)
-            .background(InteractivePopGestureEnabler())
             .onAppear {
                 store.send(.onAppear)
             }
             .sheet(
                 isPresented: $store.isPostSheetPresented.sending(\.dismissPostSheet)
             ) {
-//                CustomSheetView(type: .postPicture(name: store.postPictureName)) {
-//                    
-//                }
+                CustomSheetView<NeverOption>(type: .postPicture(name: store.postPictureName)) {
+                    store.send(.postButtonTappedInSheet)
+                }
             }
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
@@ -120,6 +114,47 @@ public struct PostPictureView: View {
                         .padding(.bottom, 10)
                 }
             }
+        }
+        .background(alertHostingView)
+    }
+    
+    @ViewBuilder
+    private var alertHostingView: some View {
+        Color.clear.fullScreenCover(isPresented: $store.isAlertPresented) {
+            if let type = store.alertPresentedType {
+                switch type {
+                case .backPostContest:
+                    CustomAlertView(
+                        type: type,
+                        leftButtonAction: {
+                            store.send(.dismissAlertButtonTapped)
+                        },
+                        rightButtonAction: {
+                            store.send(.dismissAlertButtonTapped)
+                            store.send(.delegate(.backConfirmed))
+                        }
+                    ).presentationBackground(.clear)
+                case .postContestError:
+                    CustomAlertView(
+                        type: type,
+                        centerButtonAction: {
+                            store.send(.dismissAlertButtonTapped)
+                            store.send(.delegate(.backConfirmed))
+                        }
+                    ).presentationBackground(.clear)
+                case .showLoginView:
+                    CustomAlertView(
+                        type: type,
+                        centerButtonAction: {
+                            store.send(.dismissAlertButtonTapped)
+                            store.send(.delegate(.backConfirmed))
+                        }
+                    ).presentationBackground(.clear)
+                }
+            }
+        }
+        .transaction { transaction in
+            transaction.disablesAnimations = true
         }
     }
 }
@@ -167,6 +202,7 @@ private extension PostPictureView {
                             if let data = try? await newItem?.loadTransferable(type: Data.self),
                                let uiImage = UIImage(data: data) {
                                 store.selectedImage = uiImage
+                                store.imageData = data
                             } else {
                                 // 실패 처리
                             }
@@ -195,8 +231,8 @@ private extension PostPictureView {
 #Preview {
     PostPictureView(
         store: Store(initialState:
-            PostPictureFeature.State()) {
-                PostPictureFeature()
-            }
+                        PostPictureFeature.State(weekTopic: "")) {
+                            PostPictureFeature()
+                        }
     )
 }

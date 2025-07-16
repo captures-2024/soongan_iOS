@@ -69,14 +69,29 @@ public struct LoginView: View {
                             store.send(.kakaoButtonTapped)
                         }
                         
-                        Group {
-                            Text("계속하시면 ") +
-                            Text("이용약관").underline() +
-                            Text(" 및 ") +
-                            Text("개인보호 정책").underline() +
+                        HStack(spacing: 0) {
+                            Text("계속하시면 ")
+                            
+                            Button(action: {
+                                store.send(.termsOfUseButtonTapped)
+                            }) {
+                                Text("이용약관")
+                                    .underline()
+                            }
+                            
+                            Text(" 및 ")
+                            
+                            Button(action: {
+                                store.send(.personalInformationButtonTapped)
+                            }) {
+                                Text("개인보호 정책")
+                                    .underline()
+                            }
+                            
                             Text("에 동의하시게 됩니다.")
                         }
                         .font(.medium12)
+                        .foregroundStyle(Color.black100)
                     }
                     
                     Button(action: {

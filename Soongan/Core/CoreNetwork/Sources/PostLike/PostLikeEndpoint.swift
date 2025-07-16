@@ -25,7 +25,7 @@ extension PostLikeEndpoint: APIEndpoint {
     public var method: Alamofire.HTTPMethod {
         switch self {
         case .putPostLike:
-            return .post
+            return .put
         case .deletePostLike:
             return .delete
         }
@@ -33,6 +33,10 @@ extension PostLikeEndpoint: APIEndpoint {
     
     public var headerType: HeaderType {
         return .accessTokenHeader
+    }
+    
+    public var requestBodyType: RequestBodyType {
+        return .json
     }
     
     public var queryParameters: [URLQueryItem]? {

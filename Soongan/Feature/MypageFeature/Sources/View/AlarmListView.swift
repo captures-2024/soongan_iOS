@@ -53,6 +53,7 @@ public struct AlarmListView: View {
             Divider()
                 .background(DesignSystem.Color.black80)
                 .frame(height: 2)
+                .offset(y: -1)
             
             Group {
                 alarmList(store.selectedTab)

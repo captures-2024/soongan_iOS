@@ -27,7 +27,10 @@ public struct HomeFeature {
     
     @ObservableState
     public struct State: Equatable {
+        @Shared(.appStorage("AuthState")) var authState: AuthType = .loggedOut
         var path = StackState<HomePath.State>()
+        
+        var postImageData = [PostImageModel]()
         var weekTopic: String = ""
         var startPeriod: String = ""
         var endPeriod: String = ""
@@ -90,11 +93,27 @@ public struct HomeFeature {
                 state.startPeriod = contestData.startAt.toFormattedDateString()
                 state.endPeriod = contestData.endAt.toFormattedDateString()
                 state.weekTopic = contestData.subject
+                
+                state.postImageData = postData.map {
+                    PostImageModel(
+                        id: $0.postId,
+                        imageURL: $0.imageUrl,
+                        likeCount: $0.likeCount,
+                        commentCount: $0.commentCount
+                    )
+                }
             
                 return .none
                 
             case .addPictureButtonTapped:
-                state.path.append(.postPicture(PostPictureFeature.State()))
+                switch state.authState {
+                case .skipped:
+                    break
+                case .loggedIn:
+                    state.path.append(.postPicture(PostPictureFeature.State(weekTopic: state.weekTopic)))
+                default:
+                    break
+                }
                 
                 return .none
                 
@@ -110,10 +129,10 @@ public struct HomeFeature {
                 print("Popping from path, id: \(id), isTabBarVisible: \(state.isTabBarVisible)")
                 return .none
                 
-            case .path(.element(id: _, action: .postPicture(.backButtonTapped))):
+            case .path(.element(id: _, action: .postPicture(.delegate(.backConfirmed)))):
                 state.path.removeLast()
-                
                 return .none
+                
             default:
                 return .none
             }

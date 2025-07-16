@@ -10,7 +10,7 @@ import Foundation
 public struct SearchMyProfileResponseDTO: Decodable {
     public let email: String
     public let nickname: String?
-    public let birthYear: Int
+    public let birthYear: Int?
     public let profileImageUrl: String?
     public let selfIntroduction: String?
     public let reportHistories: [ReportHistoryData?]

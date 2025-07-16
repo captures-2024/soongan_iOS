@@ -90,7 +90,7 @@ public struct CustomTextFieldView: View {
                     alignment: .trailing
                 )
             
-            if isFocused.wrappedValue == true {
+            if isFocused.wrappedValue == true || (type == .changeNickname || type == .introduce) {
                 HStack(spacing: 0) {
                     switch state {
                     case .error(let errorMessage):
@@ -106,14 +106,14 @@ public struct CustomTextFieldView: View {
                     
                     Spacer()
                     
-                    if type == .nickname {
-                        Text("\(textCount)/10")
-                            .font(.medium12)
-                            .foregroundColor(.black60)
+                    if type != .birthday {
+                        Text("\(textCount)/\(type.inputValidationCount)")
+                            .font((type == .changeNickname || type == .introduce) ? .regular8 : .medium12)
+                            .foregroundColor((type == .changeNickname || type == .introduce) ? .black100 : .black60)
                             .padding(.trailing, 12)
                     }
                 }
-                .padding(.top, 12)
+                .padding(.top, (type == .changeNickname || type == .introduce) ? 4 : 12)
                 .padding(.leading, 12)
                 .onChange(of: text) {
                     textCount = text.count

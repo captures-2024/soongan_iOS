@@ -11,6 +11,7 @@ import DesignSystem
 import Shared
 
 import ComposableArchitecture
+import Kingfisher
 
 struct ContestDetailView: View {
     
@@ -31,10 +32,12 @@ struct ContestDetailView: View {
             VStack(spacing: 0) {
                 Spacer()
                 
-                Image.dumy4
-                    .resizable()
-                    .aspectRatio(contentMode: .fit)
-                    .frame(width: 360, height: 480)
+                if let url = store.imageUrl {
+                    KFImage(URL(string: url)!)
+                        .resizable()
+                        .aspectRatio(contentMode: .fit)
+                        .frame(maxWidth: 360, maxHeight: 460, alignment: .center)
+                }
                 
                 Spacer()
                 
@@ -44,7 +47,6 @@ struct ContestDetailView: View {
                     
                     Text("@" + (store.contestAuthor ?? "정보없음"))
                         .font(.medium14)
-                        .padding(.leading, 4)
                 }
                 .padding(.horizontal, 36)
                 .padding(.bottom, 40)
@@ -52,7 +54,7 @@ struct ContestDetailView: View {
             }
             .padding(.bottom, 83)
 
-            bottomOptionMenuBar(isLiked: store.isLiked ?? false, likeCount: store.likeCount ?? 0)
+            bottomOptionMenuBar(isLiked: store.isLiked ?? false, likeCount: store.likeCount ?? "0")
         }
         .onAppear {
             store.send(.onAppear)
@@ -61,7 +63,7 @@ struct ContestDetailView: View {
         .background(DesignSystem.Color.soonganBG)
         .background(InteractivePopGestureEnabler())
         .sheet(isPresented: $store.isContestOptionSheetPresented.sending(\.dismissOptionSheet)) {
-            CustomSheetView<DetailContestOptionType>(type: .detailContestOption) { type in
+            CustomSheetView<DetailContestOptionType>(type: .detailContestOption(isWriter: store.isWriter)) { type in
                 switch type {
                 case .edit:
                     break
@@ -103,7 +105,7 @@ struct ContestDetailView: View {
         }
     }
     
-    func bottomOptionMenuBar(isLiked: Bool, likeCount: Int) -> some View {
+    func bottomOptionMenuBar(isLiked: Bool, likeCount: String) -> some View {
         HStack(alignment: .top) {
             Button(action: {
                 store.send(.optionButtonTapped)
@@ -126,7 +128,7 @@ struct ContestDetailView: View {
                 }
                 .padding(.trailing, 8)
                 
-                Text("\(likeCount)")
+                Text(likeCount)
                     .font(.info12)
                     .foregroundColor(DesignSystem.Color.black100)
                     .padding(.trailing, 32)

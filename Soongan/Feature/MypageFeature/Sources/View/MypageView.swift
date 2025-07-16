@@ -11,6 +11,7 @@ import DesignSystem
 import Shared
 
 import ComposableArchitecture
+import Kingfisher
 
 public struct MypageView: View {
     
@@ -30,12 +31,21 @@ public struct MypageView: View {
         NavigationStack(
             path: $store.scope(state: \.path, action: \.path)
         ) {
-            VStack(alignment: .leading) {
+            VStack {
                 HStack(alignment: .center, spacing: 18) {
-                    Image.myprofile
-                        .resizable()
-                        .scaledToFit()
-                        .frame(width: 60, height: 60)
+                    Group {
+                        if let url = store.userProfileImageUrl {
+                            KFImage(URL(string: url)!)
+                                .resizable()
+                                .scaledToFill()
+                                .clipShape(Circle())
+                        } else {
+                            Image.myprofile
+                                .resizable()
+                                .scaledToFit()
+                        }
+                    }
+                    .frame(width: 60, height: 60)
                     
                     profileHeaderSection()
                         .frame(maxWidth: .infinity, alignment: .leading)
@@ -45,7 +55,16 @@ public struct MypageView: View {
                 }
                 .padding(EdgeInsets(top: 21, leading: 18, bottom: 26, trailing: 28))
                 
-                ImageGridView(onImageTap: { _ in })
+                if store.leftContestImageList.isEmpty {
+                    notJoinContestSection()
+                } else {
+                    ImageGridView(
+                        leftImageList: store.leftContestImageList,
+                        rightImageList: store.rightContestImageList,
+                        onImageTap: { tappedImage in
+                            
+                    })
+                }
             }
             .frame(maxHeight: .infinity)
             .toolbar(.hidden, for: .tabBar)
@@ -59,9 +78,13 @@ public struct MypageView: View {
             }
             .sheet(item: $store.activeSheet) { sheetType in
                 CustomSheetView<MyprofileOptionType>(type: sheetType) { optionType in
-//                    if let optionType = optionType as? MyprofileOptionType {
-//                        store.send(.optionSelected(optionType))
-//                    }
+                    store.send(.profileOptionTapped(optionType))
+                }
+            }
+            .sheet(item: $store.successSheet) { sheetType in
+                CustomSheetView<MypageSuccessSheetType>(type: sheetType) { successType in
+                    store.successSheet = nil
+                    store.send(.deleteMyInfomation)
                 }
             }
             .onAppear {
@@ -84,7 +107,7 @@ public struct MypageView: View {
 
 private extension MypageView {
     func profileHeaderSection() -> some View {
-        VStack(alignment: .leading, spacing: 10) {
+        VStack(alignment: .leading, spacing: 8) {
             Text(store.userName)
                 .font(.medium16)
             
@@ -114,6 +137,32 @@ private extension MypageView {
                     .frame(width: 20, height: 20)
             }
         }
+    }
+    
+    func notJoinContestSection() -> some View {
+        VStack {
+            Spacer()
+            
+            Text("아직 참가한 내역이 없어요.")
+                .font(.regular12)
+                .padding(.bottom, 12)
+            
+            Button(action: {
+                
+            }) {
+                VStack(spacing: 4) {
+                    Text("참가하러 가기")
+                        .font(.bold12)
+                        
+                    Divider()
+                        .frame(width: 66, height: 2)
+                        .background(Color.black100)
+                }
+            }
+            
+            Spacer(minLength: 370)
+        }
+        .foregroundStyle(Color.black100)
     }
 }
 

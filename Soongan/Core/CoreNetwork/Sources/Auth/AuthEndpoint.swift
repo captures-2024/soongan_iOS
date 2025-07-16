@@ -53,6 +53,10 @@ extension AuthEndpoint: APIEndpoint {
         }
     }
     
+    public var requestBodyType: RequestBodyType {
+        return .json
+    }
+    
     public var queryParameters: [URLQueryItem]? {
         return nil
     }
