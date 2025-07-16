@@ -142,8 +142,14 @@ public struct PostPictureView: View {
                             store.send(.delegate(.backConfirmed))
                         }
                     ).presentationBackground(.clear)
-                default:
-                    break
+                case .showLoginView:
+                    CustomAlertView(
+                        type: type,
+                        centerButtonAction: {
+                            store.send(.dismissAlertButtonTapped)
+                            store.send(.delegate(.backConfirmed))
+                        }
+                    ).presentationBackground(.clear)
                 }
             }
         }
