@@ -25,6 +25,9 @@ public struct DetailContestFeature {
         var contestCount: Int?
         var firstPostData: DetailHistoryFirstPostModel?
         var otherPostData: [DetailHistoryOtherPostModel]?
+        
+        var leftContestImageList = [DetailHistoryOtherPostModel]()
+        var rightContestImageList = [DetailHistoryOtherPostModel]()
     }
     
     // MARK: - Init
@@ -38,8 +41,17 @@ public struct DetailContestFeature {
         
         case onAppear
         case detailHistoryContestSuccessResponse(SearchDetailAwardContestResponseDTO)
+        case postPictureTapped(postId: Int)
+        case showPictureButtonTapped
         
         case backButtonTapped
+        
+        case delegate(Delegate)
+        
+        public enum Delegate {
+            case showContestDetail(postId: Int)
+            case moveToContestTab
+        }
     }
     
     // MARK: - Body
@@ -67,8 +79,27 @@ public struct DetailContestFeature {
                 state.firstPostData = convertFirstModel(response.firstPrizePost)
                 state.otherPostData = convertOtherModel(response.otherTop7Posts)
                 
+                state.leftContestImageList.removeAll()
+                state.rightContestImageList.removeAll()
+                
+                if let data = state.otherPostData {
+                    for (index, item) in data.enumerated() {
+                        if index % 2 == 0 {
+                            state.leftContestImageList.append(item)
+                        } else {
+                            state.rightContestImageList.append(item)
+                        }
+                    }
+                }
+                
                 return .none
                 
+            case .postPictureTapped(let postId):
+                return .send(.delegate(.showContestDetail(postId: postId)))
+                
+            case .showPictureButtonTapped:
+                return .send(.delegate(.moveToContestTab))
+
             default:
                 return .none
             }

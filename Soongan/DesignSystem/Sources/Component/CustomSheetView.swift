@@ -22,6 +22,7 @@ public struct CustomSheetView<T: Equatable & CaseIterable>: View {
     private var action: (() -> Void)? = nil
     private var optionAction: ((T) -> Void)? = nil
     private var isSelectType: SortContestDataType?
+    private var reportAction: ((ContestReportReasonType, String) -> Void)? = nil
     
     // MARK: - Init
     
@@ -51,6 +52,15 @@ public struct CustomSheetView<T: Equatable & CaseIterable>: View {
         self.optionAction = optionAction
     }
     
+    // 신고 케이스를 위한 init
+    public init(
+        type: SheetContentType,
+        reportAction: @escaping (ContestReportReasonType, String) -> Void
+    ) {
+        self.type = type
+        self.reportAction = reportAction
+    }
+    
     // MARK: - Body
     
     public var body: some View {
@@ -68,36 +78,36 @@ public struct CustomSheetView<T: Equatable & CaseIterable>: View {
                 
             case .logout:
                 logoutContentSection(action: { optionType in
-                    guard let optionAction else { return }
-                    optionAction(optionType as! T)
+                    guard let castedOption = optionType as? T else { return }
+                    optionAction?(castedOption)
                 })
                     .padding(.top, 40)
                 
             case .logoutSuccess:
                 logoutSuccessContentSection(action: { optionType in
-                    guard let optionAction else { return }
-                    optionAction(optionType as! T)
+                    guard let castedOption = optionType as? T else { return }
+                    optionAction?(castedOption)
                 })
                     .padding(.top, 40)
                 
             case .withdraw:
                 WithdrawContentSection(action: { optionType in
-                    guard let optionAction else { return }
-                    optionAction(optionType as! T)
+                    guard let castedOption = optionType as? T else { return }
+                    optionAction?(castedOption)
                 })
                     .padding(.top, 40)
                 
             case .withdrawSuccess:
                 withDrawSuccessContentSection(action: { optionType in
-                    guard let optionAction else { return }
-                    optionAction(optionType as! T)
+                    guard let castedOption = optionType as? T else { return }
+                    optionAction?(castedOption)
                 })
                     .padding(.top, 40)
                 
             case .myprofileOption:
                 mypageOptionContentSection(action: { optionType in
-                    guard let optionAction else { return }
-                    optionAction(optionType as! T)
+                    guard let castedOption = optionType as? T else { return }
+                    optionAction?(castedOption)
                 })
                 .padding(.top, 30)
                 
@@ -105,20 +115,44 @@ public struct CustomSheetView<T: Equatable & CaseIterable>: View {
                 pushAlarmSettingContentSection()
                 
             case .contestReport:
-                contestReportContentSection(action: { _ in })
-                    .padding(.top, 12)
+                contestReportContentSection(action: { optionType in
+                    guard let castedOption = optionType as? T else { return }
+                    optionAction?(castedOption)
+                })
+                .padding(.top, 12)
                 
             case .spam:
                 reportContentSection(reportType: .spam, action: {})
-                
-            case .reportComplete:
-                reportCompleteContentSection(action: {})
                     .padding(.top, 40)
+                
+            case .infringement:
+                ReportInputReasonConestSection(action: reportAction ?? { _, _ in }, type: .infringement)
+                .padding(.top, 40)
+                
+            case .inappropriateContent:
+                reportContentSection(reportType: .inappropriateContent, action: {})
+                    .padding(.top, 40)
+                
+            case .hateSpeech:
+                reportContentSection(reportType: .hateSpeech, action: {})
+                    .padding(.top, 40)
+                
+            case .reportComplete(let type):
+                reportCompleteContentSection(type: type, action: {})
+                    .padding(.top, 40)
+                
+            case .promotion:
+                reportContentSection(reportType: .promotion, action: {})
+                    .padding(.top, 40)
+            
+            case .other:
+                ReportInputReasonConestSection(action: reportAction ?? { _, _ in }, type: .other)
+                .padding(.top, 40)
                 
             case .detailContestOption(let isWriter):
                 detailContestOptionSection(isWriter: isWriter, action: { optionType in
-                    guard let optionAction else { return }
-                    optionAction(optionType as! T)
+                    guard let castedOption = optionType as? T else { return }
+                    optionAction?(castedOption)
 
                 })
 //                .padding(.top, 30)
@@ -126,15 +160,15 @@ public struct CustomSheetView<T: Equatable & CaseIterable>: View {
             case .sortContest:
                 if let isSelectType {
                     sortPostContestSection(selectedType: isSelectType, action: { optionType in
-                        guard let optionAction else { return }
-                        optionAction(optionType as! T)
+                        guard let castedOption = optionType as? T else { return }
+                        optionAction?(castedOption)
                     })
                 }
                 
             case .selectProfile(let isBaseProfile):
                 selectProfileContestSection(isBaseProfile: isBaseProfile, action: { optionType in
-                    guard let optionAction else { return }
-                    optionAction(optionType as! T)
+                    guard let castedOption = optionType as? T else { return }
+                    optionAction?(castedOption)
                 })
             }
         }
@@ -435,7 +469,7 @@ private extension CustomSheetView {
                             Text(option.title)
                                 .font(.semibold16)
                                 .foregroundStyle(
-                                    !option.isEnabled(forWriter: isWriter)
+                                    option.isDisabled(forWriter: isWriter)
                                     ? Color.black100.opacity(0.3)
                                     : (isWriter ? Color.black100 : (option == .report ? Color.error : Color.black100))
                                 )
@@ -447,7 +481,7 @@ private extension CustomSheetView {
                         .frame(height: 56)
                         .padding(.horizontal, 40)
                     }
-                    .disabled(!option.isEnabled(forWriter: isWriter))
+                    .disabled(option.isDisabled(forWriter: isWriter))
                     
                     if option != DetailContestOptionType.allCases.last {
                         Rectangle()
@@ -502,12 +536,16 @@ private extension CustomSheetView {
         VStack(spacing: 0) {
             ForEach(ContestReportReasonType.allCases, id: \.self) { option in
                 VStack(spacing: 0) {
-                    Text(option.title)
-                        .font(.semibold16)
-                        .foregroundStyle(Color.black100)
-                        .padding(.vertical, 20)
-                        .padding(.horizontal, 40)
-                        .frame(maxWidth: .infinity, alignment: .leading)
+                    Button(action: {
+                        action(option)
+                    }) {
+                        Text(option.title)
+                            .font(.semibold16)
+                            .foregroundStyle(Color.black100)
+                            .padding(.vertical, 20)
+                            .padding(.horizontal, 40)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                    }
                     
                     if option != ContestReportReasonType.allCases.last {
                         Rectangle()
@@ -555,18 +593,21 @@ private extension CustomSheetView {
         .padding(.horizontal, 36)
     }
     
-    func reportCompleteContentSection(action: @escaping () -> Void) -> some View {
+    func reportCompleteContentSection(type: ContestReportReasonType, action: @escaping () -> Void) -> some View {
         VStack(spacing: 0) {
             VStack(alignment: .leading, spacing: 0) {
                 Text("신고가 완료됐습니다.\n\n해당 게시물은 숨김처리되었습니다.\n\n3일 이내로 검토 후 조치가 이뤄질 예정입니다. 결과가 나오면 알림으로 알려드리겠습니다.")
                     .padding(.bottom, 20)
                 
-                Text("신고 내용의 구체적인 확인이 더 필요한 경우\n이메일로 연락드릴 예정입니다.")
+                if type == .infringement {
+                    Text("신고 내용의 구체적인 확인이 더 필요한 경우\n이메일로 연락드릴 예정입니다.")
+                        .underline(color: DesignSystem.Color.black100)
+                }
                 Text("감사합니다")
                 
             }
             .font(.regular16)
-            .foregroundStyle(Color.black100)
+            .foregroundStyle(DesignSystem.Color.black100)
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(.horizontal, 4)
             
@@ -745,5 +786,83 @@ struct WithdrawContentSection: View {
         }
         .foregroundStyle(Color.black100)
         .padding(.horizontal, 20)
+    }
+}
+
+struct ReportInputReasonConestSection: View {
+    
+    @State var inputText: String = ""
+    @Environment(\.dismiss) private var dismiss
+    @FocusState private var isFocused: Bool
+    @State var isButtonEnable: Bool = false
+    
+    var action: (_ type: ContestReportReasonType, _ text: String) -> Void
+    var characterLimit: Int = 200
+    var placeholder: String = "신고 사유를 입력해주세요"
+    var type: ContestReportReasonType
+    
+    var body: some View {
+        VStack(spacing: 0) {
+            textEditorSection
+                .frame(height: 188)
+                .padding(.bottom, 40)
+            
+            CustomBottomButton(
+                type: .report,
+                isEnable: $isButtonEnable,
+                action: {
+                    action(type, inputText)
+                    dismiss()
+                }
+            )
+            
+            Spacer(minLength: 20)
+        }
+        .padding(.horizontal, 20)
+        .onChange(of: inputText) { _, newValue in
+            isButtonEnable = !newValue.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty && newValue.count <= 200
+        }
+        .onAppear {
+            isFocused = true
+        }
+    }
+    
+    // MARK: - Subviews
+    
+    /// TextEditor와 관련된 UI를 구성하는 뷰
+    @ViewBuilder
+    private var textEditorSection: some View {
+        ZStack(alignment: .topLeading) {
+            TextEditor(text: $inputText)
+                .padding(10)
+                .focused($isFocused)
+                .font(.regular16)
+                .onChange(of: inputText) { _, newValue in
+                    if newValue.count > characterLimit {
+                        inputText = String(newValue.prefix(characterLimit))
+                    }
+                }
+                .padding(.bottom, 10)
+
+            if inputText.isEmpty {
+                Text(placeholder)
+                    .font(.regular16)
+                    .foregroundColor(DesignSystem.Color.black60)
+                    .padding(15)
+                    .allowsHitTesting(false)
+            }
+            
+            Text("\(inputText.count) / \(characterLimit)")
+                .font(.regular12)
+                .foregroundColor(DesignSystem.Color.black100)
+                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomTrailing)
+                .padding(.trailing, 12)
+                .padding(.bottom, 12)
+                .allowsHitTesting(false)
+        }
+        .background(
+            RoundedRectangle(cornerRadius: 8)
+                .stroke(DesignSystem.Color.black100, lineWidth: 1)
+        )
     }
 }

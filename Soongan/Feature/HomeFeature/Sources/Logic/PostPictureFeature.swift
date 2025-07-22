@@ -95,7 +95,7 @@ public struct PostPictureFeature {
             
             case .postButtonTappedInSheet:
                 guard let data = state.selectedImage else { return .none }
-                guard let compressData = data.jpegData(compressionQuality: 0.2) else { return .none }
+                guard let compressData = data.jpegData(compressionQuality: 0.5) else { return .none }
                 
                 print("압축한 데이타", compressData)
                 

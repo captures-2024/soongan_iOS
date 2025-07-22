@@ -22,7 +22,8 @@ let project = Project(
                 .external(name: "ComposableArchitecture"),
                 .project(target: "DesignSystem", path: "../../DesignSystem"),
                 .project(target: "CoreNetwork", path: "../../Core/CoreNetwork"),
-                .project(target: "CoreUserDefault", path: "../../Core/CoreUserDefault")
+                .project(target: "CoreUserDefault", path: "../../Core/CoreUserDefault"),
+                .project(target: "DetailContestFeature", path: "../DetailContestFeature"),
             ]
         )
     ]

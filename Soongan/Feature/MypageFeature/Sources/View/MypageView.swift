@@ -7,6 +7,7 @@
 
 import SwiftUI
 
+import DetailContestFeature
 import DesignSystem
 import Shared
 
@@ -33,7 +34,10 @@ public struct MypageView: View {
         ) {
             VStack {
                 HStack(alignment: .center, spacing: 18) {
-                    Group {
+                    ProfileHeaderView(
+                        userName: store.userName,
+                        userIntroduction: store.userIntroduce
+                    ) {
                         if let url = store.userProfileImageUrl {
                             KFImage(URL(string: url)!)
                                 .resizable()
@@ -45,10 +49,6 @@ public struct MypageView: View {
                                 .scaledToFit()
                         }
                     }
-                    .frame(width: 60, height: 60)
-                    
-                    profileHeaderSection()
-                        .frame(maxWidth: .infinity, alignment: .leading)
                     
                     rightButtonsSection()
                         .padding(.bottom, 9)
@@ -62,8 +62,9 @@ public struct MypageView: View {
                         leftImageList: store.leftContestImageList,
                         rightImageList: store.rightContestImageList,
                         onImageTap: { tappedImage in
-                            
+                            store.send(.contestDetailImageTapped(tappedImage.id))
                     })
+                    .padding(.bottom, 50)
                 }
             }
             .frame(maxHeight: .infinity)
@@ -72,7 +73,7 @@ public struct MypageView: View {
             .sheet(
                 isPresented: $store.isOptionSheetPresented.sending(\.dismissOptionSheet)
             ) {
-                CustomSheetView(type: .myprofileOption) { optionType in
+                CustomSheetView<MyprofileOptionType>(type: .myprofileOption) { optionType in
                     store.send(.optionSheetIsPresented(optionType))
                 }
             }
@@ -98,6 +99,8 @@ public struct MypageView: View {
                 AlarmListView(store: store)
             case .questionsList(let store):
                 QuestionsListView(store: store)
+            case .contestDetail(let store):
+                ContestDetailView(store: store)
             }
         }
     }
@@ -106,17 +109,6 @@ public struct MypageView: View {
 // MARK: - Private Extension View
 
 private extension MypageView {
-    func profileHeaderSection() -> some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Text(store.userName)
-                .font(.medium16)
-            
-            Text(store.userIntroduce)
-                .font(.regular12)
-        }
-        .foregroundStyle(Color.black100)
-    }
-    
     func rightButtonsSection() -> some View {
         HStack(spacing: 28) {
             Button(action: {
@@ -148,7 +140,7 @@ private extension MypageView {
                 .padding(.bottom, 12)
             
             Button(action: {
-                
+                store.send(.joinToContestButtonTapped)
             }) {
                 VStack(spacing: 4) {
                     Text("참가하러 가기")

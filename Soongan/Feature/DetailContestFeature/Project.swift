@@ -1,7 +1,7 @@
 import ProjectDescription
 
 let project = Project(
-    name: "HomeFeature",
+    name: "DetailContestFeature",
     packages: [
       .package(
         url: "https://github.com/pointfreeco/swift-composable-architecture.git",
@@ -10,10 +10,10 @@ let project = Project(
     ],
     targets: [
         .target(
-            name: "HomeFeature",
+            name: "DetailContestFeature",
             destinations: .iOS,
             product: .staticFramework,
-            bundleId: "com.captures.HomeFeature.Soongan",
+            bundleId: "com.captures.DetailContestFeature.Soongan",
             deploymentTargets: .iOS("17.0"),
             infoPlist: .default,
             sources: ["Sources/**"],
@@ -21,9 +21,9 @@ let project = Project(
             dependencies: [
                 .external(name: "ComposableArchitecture"),
                 .project(target: "DesignSystem", path: "../../DesignSystem"),
-                .project(target: "Shared", path: "../../Shared"),
                 .project(target: "CoreNetwork", path: "../../Core/CoreNetwork"),
-                .project(target: "DetailContestFeature", path: "../DetailContestFeature"),
+                .project(target: "CoreUserDefault", path: "../../Core/CoreUserDefault"),
+                .project(target: "UserProfileFeature", path: "../UserProfileFeature"),
             ]
         )
     ]

@@ -8,6 +8,7 @@
 import SwiftUI
 
 import CoreNetwork
+import DetailContestFeature
 import DesignSystem
 import Shared
 
@@ -21,6 +22,7 @@ public struct HomeFeature {
     @Reducer(state: .equatable)
     public enum HomePath {
         case postPicture(PostPictureFeature)
+        case contestDetail(ContestDetailFeature)
     }
     
     // MARK: - State
@@ -35,6 +37,8 @@ public struct HomeFeature {
         var startPeriod: String = ""
         var endPeriod: String = ""
         var isInfoSheetPresented: Bool = false
+        var isAlertPresented: Bool = false
+        var isAddPostImage: Bool = false
         
         // CustomTabBar 가시성
         public var isTabBarVisible: Bool {
@@ -58,13 +62,19 @@ public struct HomeFeature {
     
     // MARK: - Action
     
-    public enum Action {
+    public enum Action: BindableAction {
+        case binding(BindingAction<State>)
+        
         case path(StackActionOf<HomePath>)
         
         case onAppear
         case addPictureButtonTapped
+        case pictureTapped(Int)
         case infoButtonTapped
         case dismissInfoSheet(Bool)
+        
+        case showNotLoginUserAlert
+        case dismissAlertButtonTapped
         
         case homeInfoSuccess(SearchHomeInfoResponseDTO)
     }
@@ -72,6 +82,8 @@ public struct HomeFeature {
     // MARK: - Body
     
     public var body: some ReducerOf<Self> {
+        BindingReducer()
+        
         Reduce { state, action in
             switch action {
             case .onAppear:
@@ -85,14 +97,15 @@ public struct HomeFeature {
                         print(error.localizedDescription)
                     }
                 }
-            
+                
             case .homeInfoSuccess(let result):
                 let contestData = result.contestInfo
                 let postData = result.postInfo
-            
+                
                 state.startPeriod = contestData.startAt.toFormattedDateString()
                 state.endPeriod = contestData.endAt.toFormattedDateString()
                 state.weekTopic = contestData.subject
+                state.isAddPostImage = postData.count == 3 ? true : false
                 
                 state.postImageData = postData.map {
                     PostImageModel(
@@ -102,18 +115,23 @@ public struct HomeFeature {
                         commentCount: $0.commentCount
                     )
                 }
-            
+                
                 return .none
                 
             case .addPictureButtonTapped:
                 switch state.authState {
                 case .skipped:
-                    break
+                    return .send(.showNotLoginUserAlert)
                 case .loggedIn:
                     state.path.append(.postPicture(PostPictureFeature.State(weekTopic: state.weekTopic)))
                 default:
                     break
                 }
+                
+                return .none
+                
+            case .pictureTapped(let id):
+                state.path.append(.contestDetail(ContestDetailFeature.State(postId: String(id))))
                 
                 return .none
                 
@@ -125,14 +143,31 @@ public struct HomeFeature {
                 state.isInfoSheetPresented = isPresented
                 return .none
                 
+            case .showNotLoginUserAlert:
+                state.isAlertPresented = true
+                return .none
+                
+            case .dismissAlertButtonTapped:
+                state.isAlertPresented = false
+                
+                return .none
+                
             case .path(.popFrom(id: let id)):
                 print("Popping from path, id: \(id), isTabBarVisible: \(state.isTabBarVisible)")
                 return .none
                 
-            case .path(.element(id: _, action: .postPicture(.delegate(.backConfirmed)))):
-                state.path.removeLast()
-                return .none
-                
+            case let .path(.element(id: _, action: action)):
+                switch action {
+                case .postPicture(.delegate(.backConfirmed)):
+                    state.path.removeLast()
+                    return .none
+                case .contestDetail(.delegate(.backConfirmed)):
+                    state.path.removeLast()
+                    return .none
+                default:
+                    return .none
+                }
+
             default:
                 return .none
             }

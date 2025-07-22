@@ -7,6 +7,7 @@
 
 import SwiftUI
 
+import DetailContestFeature
 import DesignSystem
 import Shared
 import Resource
@@ -33,51 +34,55 @@ struct DetailContestView: View {
             
             ScrollView {
                 VStack(spacing: 0) {
-                    Image.dumy6
-                        .resizable()
-                        .aspectRatio(contentMode: .fit)
+                    if let imageData = store.firstPostData {
+                        ContestPictureView(
+                            imageUrl: imageData.imageUrl,
+                            nickName: imageData.nickName,
+                            likeCount: imageData.likeCount
+                        )
                         .frame(width: 360)
                         .padding(.top, 27)
+                    }
                     
                     contestTitleSection()
                         .padding(.top, 40)
                         .padding(.bottom, 92)
                     
-//                    HStack(alignment: .top) {
-//                        LazyVStack(spacing: 8) {
-//                            ForEach(imageModels1) { model in
-//                                model.contestImage
-//                                    .resizable()
-//                                    .aspectRatio(contentMode: .fit)
-//                                    .onAppear {
-//                                        print("1열", model.imageName)
-//                                    }
-//                                    .onTapGesture {
-//                                        //                                    onImageTap(model) // ✅ 콜백 호출
-//                                    }
-//                            }
-//                        }
-//                        
-//                        LazyVStack(spacing: 8) {
-//                            ForEach(imageModels2) { model in
-//                                model.contestImage
-//                                    .resizable()
-//                                    .aspectRatio(contentMode: .fit)
-//                                    .onAppear {
-//                                        print("2열", model.imageName)
-//                                    }
-//                                    .onTapGesture {
-//                                        //                                    onImageTap(model) // ✅ 콜백 호출
-//                                    }
-//                            }
-//                        }
-//                    }
-//                    .padding(.horizontal, 8)
+                    HStack(alignment: .top) {
+                        LazyVStack(spacing: 8) {
+                            ForEach(store.leftContestImageList) { model in
+                                ContestPictureView(
+                                    imageUrl: model.imageUrl,
+                                    nickName: model.nickName,
+                                    likeCount: model.likeCount
+                                )
+                                .frame(width: 184)
+                                .onTapGesture {
+                                    store.send(.postPictureTapped(postId: model.id))
+                                }
+                            }
+                        }
+                        
+                        LazyVStack(spacing: 8) {
+                            ForEach(store.rightContestImageList) { model in
+                                ContestPictureView(
+                                    imageUrl: model.imageUrl,
+                                    nickName: model.nickName,
+                                    likeCount: model.likeCount
+                                )
+                                .frame(width: 184)
+                                .onTapGesture {
+                                    store.send(.postPictureTapped(postId: model.id))
+                                }
+                            }
+                        }
+                    }
+                    .padding(.horizontal, 8)
                 }
                 .padding(.bottom, 70)
                 
                 Button(action: {
-                    
+                    store.send(.showPictureButtonTapped)
                 }) {
                     Text("참여작품 보러 가기👀")
                         .font(.medium20)
@@ -94,6 +99,9 @@ struct DetailContestView: View {
         }
         .background(InteractivePopGestureEnabler())
         .navigationBarBackButtonHidden(true)
+        .onAppear {
+            store.send(.onAppear)
+        }
     }
     
     func topBackButtonSection() -> some View {
@@ -107,7 +115,7 @@ struct DetailContestView: View {
                 }
             }
             .padding(.top, 16)
-            .padding(.leading, 25)
+            .padding(.leading, 20)
             
             Spacer()
         }
@@ -118,7 +126,7 @@ struct DetailContestView: View {
     
     func contestTitleSection() -> some View {
         VStack(spacing: 0) {
-            Text("\(store.contestInfoData.subject) (\(store.contestInfoData.round)회차")
+            Text("\(store.contestInfoData.subject) (\(store.contestInfoData.round)회차)")
                 .font(.semibold20)
                 .foregroundColor(DesignSystem.Color.black100)
                 .padding(.bottom, 20)
@@ -128,7 +136,7 @@ struct DetailContestView: View {
                 .foregroundColor(DesignSystem.Color.black100)
                 .padding(.bottom, 8)
             
-            Text("총 참여작품 수 : \(store.contestCount)")
+            Text("총 참여 작품 수 : \(store.contestCount ?? 0)")
                 .font(.semibold14)
                 .foregroundColor(DesignSystem.Color.black100)
         }

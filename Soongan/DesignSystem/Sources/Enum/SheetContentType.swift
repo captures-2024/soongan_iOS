@@ -18,7 +18,12 @@ public enum SheetContentType: Identifiable, Equatable {
     case alarmSetting
     case contestReport
     case spam
-    case reportComplete
+    case infringement
+    case inappropriateContent
+    case hateSpeech
+    case promotion
+    case other
+    case reportComplete(type: ContestReportReasonType)
     case detailContestOption(isWriter: Bool)
     case sortContest
     case selectProfile(isBaseProfile: Bool)
@@ -35,6 +40,11 @@ public enum SheetContentType: Identifiable, Equatable {
         case .alarmSetting: return "alarmSetting"
         case .contestReport: return "contestReport"
         case .spam: return "spam"
+        case .infringement: return "infringement"
+        case .inappropriateContent: return "inappropriateContent"
+        case .hateSpeech: return "hateSpeech"
+        case .promotion: return "promotion"
+        case .other: return "other"
         case .reportComplete: return "reportComplete"
         case .detailContestOption: return "detailContestOption"
         case .sortContest: return "sortContest"
@@ -50,7 +60,7 @@ public enum SheetContentType: Identifiable, Equatable {
         case .withdraw, .withdrawSuccess: return "회원탈퇴"
         case .myprofileOption, .detailContestOption, .sortContest, .selectProfile: return ""
         case .alarmSetting: return "푸시 알림 설정"
-        case .contestReport, .reportComplete, .spam: return "신고"
+        case .contestReport, .reportComplete, .spam, .infringement, .inappropriateContent, .hateSpeech, .promotion, .other: return "신고"
         }
     }
     
@@ -64,7 +74,8 @@ public enum SheetContentType: Identifiable, Equatable {
         case .myprofileOption: return [.height(420)]
         case .alarmSetting: return [.height(380)]
         case .contestReport: return [.height(432)]
-        case .spam: return [.height(288)]
+        case .spam, .inappropriateContent, .hateSpeech, .promotion: return [.height(288)]
+        case .infringement, .other: return [.height(404)]
         case .reportComplete: return [.height(456)]
         case .detailContestOption, .sortContest: return [.height(240)]
         case .selectProfile: return [.height(165)]
@@ -167,7 +178,6 @@ public enum DetailContestOptionType: Equatable, CaseIterable {
     }
     
     func rightImage(isWriter: Bool) -> Image {
-        print("rightImage:", isWriter)
         switch self {
         case .edit: return isWriter ? .selectEditIcon : .notSelectEditIcon
         case .delete: return isWriter ? .selectDeleteIcon : .notSelectDeleteIcon
@@ -177,7 +187,7 @@ public enum DetailContestOptionType: Equatable, CaseIterable {
 }
 
 extension DetailContestOptionType {
-    func isEnabled(forWriter isWriter: Bool) -> Bool {
+    func isDisabled(forWriter isWriter: Bool) -> Bool {
         if isWriter {
             return self == .report
         } else {

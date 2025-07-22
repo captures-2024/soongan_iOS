@@ -37,6 +37,10 @@ public extension Font {
         return ResourceFontFamily.Pretendard.semiBold.swiftUIFont(size: 16)
     }
     
+    static var semibold11: Font {
+        return ResourceFontFamily.Pretendard.semiBold.swiftUIFont(size: 11)
+    }
+    
     static var semibold14: Font {
         return ResourceFontFamily.Pretendard.semiBold.swiftUIFont(size: 14)
     }

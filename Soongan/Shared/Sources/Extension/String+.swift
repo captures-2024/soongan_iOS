@@ -46,7 +46,11 @@ public extension String {
         return .valid
     }
     
-    func toFormattedDateString() -> String {
+    /// ISO 8601 형식의 문자열을 지정된 형식의 날짜 문자열로 변환합니다.
+    ///
+    /// - Parameter showTime: `true`이면 시간(HH:mm:ss)까지, `false`이면 날짜(yyyy.MM.dd)까지만 표시합니다. (기본값: `true`)
+    /// - Returns: 변환된 날짜 문자열 또는 변환 실패 시 "알수없음".
+    func toFormattedDateString(showTime: Bool = true) -> String {
         let isoFormatter = DateFormatter()
         isoFormatter.locale = Locale(identifier: "en_US_POSIX")
         isoFormatter.timeZone = TimeZone(secondsFromGMT: 0)
@@ -54,11 +58,15 @@ public extension String {
         
         let outputFormatter = DateFormatter()
         outputFormatter.locale = Locale(identifier: "ko_KR")
-        outputFormatter.dateFormat = "yyyy.MM.dd HH:mm:ss"
+        outputFormatter.timeZone = TimeZone.current
+        
+        // showTime 값에 따라 날짜 포맷을 다르게 설정합니다.
+        outputFormatter.dateFormat = showTime ? "yyyy.MM.dd HH:mm:ss" : "yyyy.MM.dd"
         
         guard let date = isoFormatter.date(from: self) else {
             return "알수없음"
         }
+        
         return outputFormatter.string(from: date)
     }
 }

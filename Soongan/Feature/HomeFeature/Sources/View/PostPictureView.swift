@@ -150,6 +150,9 @@ public struct PostPictureView: View {
                             store.send(.delegate(.backConfirmed))
                         }
                     ).presentationBackground(.clear)
+                    
+                default:
+                    EmptyView()
                 }
             }
         }

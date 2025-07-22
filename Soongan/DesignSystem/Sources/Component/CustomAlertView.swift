@@ -15,6 +15,8 @@ public struct CustomAlertView: View {
     private var leftButtonAction: (() -> Void)?
     private var rightButtonAction: (() -> Void)?
     
+    // MARK: - Init
+    
     public init(
         type: AlertType,
         centerButtonAction: (() -> Void)? = nil,
@@ -26,6 +28,8 @@ public struct CustomAlertView: View {
         self.leftButtonAction = leftButtonAction
         self.rightButtonAction = rightButtonAction
     }
+    
+    // MARK: - Body
     
     public var body: some View {
         ZStack {
@@ -62,7 +66,7 @@ public struct CustomAlertView: View {
                 Button(action: {
                     centerButtonAction?()
                 }) {
-                    Text("확인")
+                    Text(type == .showLoginView ? "로그인하기" : "확인")
                         .font(.semibold14)
                         .foregroundStyle(Color.black100)
                         .frame(height: 40)
@@ -115,6 +119,8 @@ public enum AlertType: Identifiable {
     case postContestError
     case backPostContest
     case showLoginView
+    case deletePost
+    case deletePostComplete
     
     public var id: Self {
         self
@@ -128,6 +134,10 @@ public enum AlertType: Identifiable {
             return "정말 작품 등록을\n하지 않으시겠어요?"
         case .showLoginView:
             return "해당 기능은\n로그인이 필요한 기능입니다."
+        case .deletePost:
+            return "정말 작품을\n삭제하시겠습니까?"
+        case .deletePostComplete:
+            return "삭제가 완료되었습니다"
         }
     }
 }

@@ -1,6 +1,6 @@
 //
 //  ContestDetailFeature.swift
-//  ContestFeature
+//  DetailContestFeature
 //
 //  Created by ParkJunHyuk on 6/1/25.
 //
@@ -22,6 +22,7 @@ public struct ContestDetailFeature {
     @ObservableState
     public struct State: Equatable {
         var postId: String
+        var userId: Int?
         var myNickname: String?
         
         var contestTitle: String?
@@ -30,13 +31,24 @@ public struct ContestDetailFeature {
         var isLiked: Bool?
         var likeCount: String?
         
+        var isDeleteAlertPresented: Bool = false
+        var isDeleteCompleteAlertPresented: Bool = false
         var isContestOptionSheetPresented: Bool = false
         var isReportOptionSheetPresented: Bool = false
+        var isFullSizeImageSheetPresented: Bool = false
+        var isReportInputReasonSheetPresented: Bool = false
         
         var activeSheet: SheetContentType?
+        var reportReasonSheet: SheetContentType?
         
         var isWriter: Bool {
             return myNickname == contestAuthor
+        }
+        
+        public init (
+            postId: String
+        ) {
+            self.postId = postId
         }
     }
     
@@ -54,23 +66,33 @@ public struct ContestDetailFeature {
         case binding(BindingAction<State>)
         
         case onAppear
+        case reportReasonButtonTapped(type: ContestReportReasonType, reason: String)
+        case postReport(type: ContestReportReasonType, reason: String?)
+        case reportSuccess(ReportResponseDTO)
         
         case likeButtonTapped
         case optionButtonTapped
+        case deleteOptionButtonTapped
         case deleteButtonTapped
+        case contestImageTapped
         
         case reportSheetIsPresented
         case optionSheetIsPresented(ContestReportReasonType)
         case dismissOptionSheet(Bool)
-        case dismissSheet
+        case dismissReportOptionSheet(Bool)
+        case dismissFullSizeImageSheet(Bool)
+        case dismissReportIntputReasonSheet(Bool)
+        case dismissSheet(Bool)
         case userDataLoaded(String?)
         
         case backButtonTapped
         
         case onAppearSuccess(SearchDetailContestResponseDTO)
-        case likeButtonTappedSuccess(PostLikeResponseDTO)
+        case likeButtonTappedSuccess(isLike: Bool, PostLikeResponseDTO)
         case deleteActionResult(Bool)
-        
+        case deleteCompletedButtonTapped
+        case presentDeleteAlert
+        case dismissDeleteAlert
         case contestDetailError(Error)
         
         case delegate(DelegateAction)
@@ -83,6 +105,8 @@ public struct ContestDetailFeature {
     // MARK: - Body
     
     public var body: some ReducerOf<Self> {
+        BindingReducer()
+        
         Reduce { state, action in
             switch action {
             case .onAppear:
@@ -106,6 +130,7 @@ public struct ContestDetailFeature {
                 }
                 
             case .onAppearSuccess(let response):
+                state.userId = response.memberId
                 state.contestTitle = response.title
                 state.contestAuthor = response.nickname
                 state.imageUrl = response.imageUrl
@@ -121,26 +146,26 @@ public struct ContestDetailFeature {
                 return .none
                 
             case .optionSheetIsPresented(let tappedOption):
-                state.isContestOptionSheetPresented = false
+                state.isReportOptionSheetPresented = false
                 
                 switch tappedOption {
                 case .inappropriateContent:
-                    break
+                    state.activeSheet = .inappropriateContent
                     
                 case .hateSpeech:
-                    break
+                    state.activeSheet = .hateSpeech
                     
                 case .infringement:
-                    break
+                    state.activeSheet = .infringement
                     
                 case .spam:
                     state.activeSheet = .spam
                     
                 case .promotion:
-                    break
+                    state.activeSheet = .promotion
                     
                 case .other:
-                    break
+                    state.activeSheet = .other
                 }
                 
                 return .none
@@ -155,24 +180,28 @@ public struct ContestDetailFeature {
                     
                     switch result {
                     case .success(let responseResult):
-                        await send(.likeButtonTappedSuccess(responseResult))
+                        await send(.likeButtonTappedSuccess(isLike: isLiked, responseResult))
                     case .failure(let error):
                         await send(.contestDetailError(error))
                     }
                 }
             
-            case .likeButtonTappedSuccess(let response):
+            case .likeButtonTappedSuccess(let isLike, let response):
                 state.likeCount = formatLikeCount(response.likeCount)
+                state.isLiked = !isLike
                 
                 return .none
                 
             case .deleteButtonTapped:
+                state.isDeleteAlertPresented = false
+                
                 let postId = state.postId
                 return .run { send in
                     let result: Result<EmptyResponseDTO, NetworkError> = await NetworkManager.shared.request(WeeklyContestEndpoint.deleteContest(postId: postId))
                     
                     switch result {
                     case .success:
+                        try await Task.sleep(nanoseconds: 500_000_000)
                         await send(.deleteActionResult(true))
                     case .failure(let error):
                         print(error)
@@ -182,17 +211,63 @@ public struct ContestDetailFeature {
                 
             case .deleteActionResult(let result):
                 if result {
-                    return .send(.delegate(.backConfirmed))
+                    state.isDeleteCompleteAlertPresented = true
+                    return .none
                 } else {
                     return .none
                 }
+            
+            case .deleteOptionButtonTapped:
+                state.isContestOptionSheetPresented = false
+                
+                return .run { send in
+                    try await Task.sleep(nanoseconds: 500_000_000)
+                    await send(.presentDeleteAlert)
+                }
+                
+            case .presentDeleteAlert:
+                state.isDeleteAlertPresented = true
+                
+                return .none
+            
+            case .deleteCompletedButtonTapped:
+                state.isDeleteCompleteAlertPresented = false
+                
+                return .run { send in
+                    try await Task.sleep(nanoseconds: 300_000_000)
+                    await send(.delegate(.backConfirmed))
+                }
+                
+            case .dismissDeleteAlert:
+                state.isDeleteAlertPresented = false
+                
+                return .none
                 
             case .dismissOptionSheet:
                 state.isContestOptionSheetPresented = false
                 return .none
                 
+            case .dismissReportOptionSheet:
+                state.isReportOptionSheetPresented = false
+                return .none
+                
             case .dismissSheet:
                 state.activeSheet = nil
+                return .none
+            
+            case .contestImageTapped:
+                state.isFullSizeImageSheetPresented = true
+                
+                return .none
+                
+            case .dismissFullSizeImageSheet:
+                state.isFullSizeImageSheetPresented = false
+                
+                return .none
+                
+            case .dismissReportIntputReasonSheet:
+                state.isReportInputReasonSheetPresented = false
+                
                 return .none
                 
             case .optionButtonTapped:
@@ -201,9 +276,39 @@ public struct ContestDetailFeature {
                 return .none
                 
             case .userDataLoaded(let nickname):
-                print("로드된 아이디", nickname)
                 state.myNickname = nickname
                 return .none
+                
+            case .backButtonTapped:
+                return .send(.delegate(.backConfirmed))
+                
+            case .postReport(let type, let reason):
+                guard let id = state.userId else { return .none }
+                
+                let dto = ReportRequestDTO(
+                    targetId: id,
+                    targetType: "WEEKLY_POST",
+                    reportType: type.typeTitle,
+                    reason: reason
+                )
+                
+                return .run { send in
+                    let result: Result<ReportResponseDTO, NetworkError> = await NetworkManager.shared.request(ReportEndpoint.postReport(dto))
+                    
+                    switch result {
+                    case .success(let responseResult):
+                        await send(.reportSuccess(responseResult))
+                    case .failure(let error):
+                        break
+                    }
+                }
+                
+            case .reportSuccess(let response):
+                
+                return .none
+                
+            case .reportReasonButtonTapped(let type, let reason):
+                return .send(.postReport(type: type, reason: reason))
                 
             default:
                 return .none

@@ -8,6 +8,7 @@
 import SwiftUI
 import PhotosUI
 
+import DetailContestFeature
 import DesignSystem
 
 import ComposableArchitecture
@@ -39,6 +40,11 @@ public struct ContestView: View {
                     onImageTap: { tappedImage in
                         store.send(.contestDetailImageTapped(tappedImage.id))
                 })
+                .padding(.bottom, 50)
+                .refreshable {
+                    try? await Task.sleep(nanoseconds: 1000_000_000)
+                    store.send(.refreshTriggered)
+                }
             }
             .background(DesignSystem.Color.soonganBG)
             .toolbar(.hidden, for: .tabBar)
@@ -130,9 +136,10 @@ private extension ContestView {
             .foregroundStyle(DesignSystem.Color.black100)
 
             Picker("", selection: $store.selectedContestIndex) {
-                ForEach(store.contestOptions) { contest in
+                ForEach(0..<store.contestOptions.count, id: \.self) { index in
+                    let contest = store.contestOptions[index]
                     Text("\(contest.round)회차 \(contest.subject)")
-                        .tag(contest.id)
+                        .tag(index)
                 }
             }
             .pickerStyle(.wheel)

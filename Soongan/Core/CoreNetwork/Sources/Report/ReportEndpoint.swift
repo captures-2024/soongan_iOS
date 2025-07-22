@@ -10,6 +10,7 @@ import Foundation
 
 public enum ReportEndpoint {
     case postReport(ReportRequestDTO)
+    case postReportExplain(ReportExplainRequestDTO)
 }
 
 extension ReportEndpoint: APIEndpoint {
@@ -18,7 +19,12 @@ extension ReportEndpoint: APIEndpoint {
     }
     
     public var path: String {
-        return basePath.rawValue
+        switch self {
+        case .postReport:
+            return basePath.rawValue
+        case .postReportExplain:
+            return basePath.rawValue + "/explain"
+        }
     }
     
     public var method: Alamofire.HTTPMethod {
@@ -40,6 +46,8 @@ extension ReportEndpoint: APIEndpoint {
     public var body: (any Encodable)? {
         switch self {
         case .postReport(let dto):
+            return dto
+        case .postReportExplain(let dto):
             return dto
         }
     }

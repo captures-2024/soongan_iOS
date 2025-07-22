@@ -44,6 +44,7 @@ public struct MainTabView: View {
                 MypageView(store: store.scope(state: \.mypage, action: \.mypage))
                     .tag(MainTabFeature.State.Tab.myPage)
             }
+            .sensoryFeedback(.impact(weight: .light), trigger: store.selectedTab)
             .toolbar(.hidden, for: .tabBar)
             
             VStack {

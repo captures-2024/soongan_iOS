@@ -8,6 +8,7 @@
 import SwiftUI
 
 import CoreNetwork
+import DetailContestFeature
 import DesignSystem
 import Shared
 
@@ -21,6 +22,7 @@ public struct AllTimeContestFeature {
     @Reducer(state: .equatable)
     public enum AllTimeContestPath {
         case detailContest(DetailContestFeature)
+        case contestDetail(ContestDetailFeature)
     }
     
     // MARK: - State
@@ -52,14 +54,15 @@ public struct AllTimeContestFeature {
         case binding(BindingAction<State>)
     
         case onAppear
+        case refreshTriggered
         case historyContestSuccessResponse(SearchAwardContestResponseDTO)
-        
         case contestListTapped(id: Int)
-//        case presentSheet
-//        case chagneContestIndex
-//        case dismissContestSheet(Bool)
-//        case contestDetailImageTapped(String)
-//        case sortContestContentTapped
+        
+        case delegate(Delegate)
+                
+        public enum Delegate {
+            case moveToContestTab
+        }
     }
     
     // MARK: - Body
@@ -70,7 +73,7 @@ public struct AllTimeContestFeature {
         Reduce { state, action in
             switch action {
                 
-            case .onAppear:
+            case .onAppear, .refreshTriggered:
                 return .run { send in
                     let result: Result<SearchAwardContestResponseDTO, NetworkError> = await NetworkManager.shared.request(AwardEndpoint.getAwardContest)
 
@@ -81,6 +84,7 @@ public struct AllTimeContestFeature {
                         print(error.localizedDescription)
                     }
                 }
+                .cancellable(id: "refresh-task")
                 
             case .historyContestSuccessResponse(let response):
                 response.contests.forEach {
@@ -96,6 +100,19 @@ public struct AllTimeContestFeature {
                 case .detailContest(.backButtonTapped):
                     state.path.removeLast()
                     return .none
+                
+                case .contestDetail(.backButtonTapped):
+                    state.path.removeLast()
+                    return .none
+                    
+                case .detailContest(.delegate(.showContestDetail(let postId))):
+                    state.path.append(.contestDetail(ContestDetailFeature.State(postId: String(postId))))
+                    return .none
+                    
+                case .detailContest(.delegate(.moveToContestTab)):
+                    state.path.removeLast()
+                    return .send(.delegate(.moveToContestTab))
+                    
                 default:
                     return .none
                 }
@@ -106,8 +123,8 @@ public struct AllTimeContestFeature {
                         id: id,
                         round: data.round,
                         subject: data.subject,
-                        startAt: data.startAt,
-                        endAt: data.endAt
+                        startAt: data.startAt.toFormattedDateString(showTime: false),
+                        endAt: data.endAt.toFormattedDateString(showTime: false)
                     )
                     
                     state.path.append(.detailContest(DetailContestFeature.State(contestInfoData: contestInfo)))
