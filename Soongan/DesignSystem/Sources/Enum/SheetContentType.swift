@@ -187,7 +187,7 @@ public enum DetailContestOptionType: Equatable, CaseIterable {
 }
 
 extension DetailContestOptionType {
-    func isEnabled(forWriter isWriter: Bool) -> Bool {
+    func isDisabled(forWriter isWriter: Bool) -> Bool {
         if isWriter {
             return self == .report
         } else {

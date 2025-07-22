@@ -469,7 +469,7 @@ private extension CustomSheetView {
                             Text(option.title)
                                 .font(.semibold16)
                                 .foregroundStyle(
-                                    option.isEnabled(forWriter: isWriter)
+                                    option.isDisabled(forWriter: isWriter)
                                     ? Color.black100.opacity(0.3)
                                     : (isWriter ? Color.black100 : (option == .report ? Color.error : Color.black100))
                                 )
@@ -481,7 +481,7 @@ private extension CustomSheetView {
                         .frame(height: 56)
                         .padding(.horizontal, 40)
                     }
-                    .disabled(option.isEnabled(forWriter: isWriter))
+                    .disabled(option.isDisabled(forWriter: isWriter))
                     
                     if option != DetailContestOptionType.allCases.last {
                         Rectangle()
