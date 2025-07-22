@@ -85,14 +85,32 @@ public struct MainTabFeature {
             case .selectTab(let tab):
                 state.selectedTab = tab
                 return .none
+                
             case .home:
                 return .none
+                
             case .contest:
                 return .none
-            case .allTimeContest:
-                return .none
-            case .mypage:
-                return .none
+                
+            case .allTimeContest(let allTimeAction):
+                switch allTimeAction {
+                case .delegate(.moveToContestTab):
+                    state.selectedTab = .contest
+                    return .none
+                    
+                default:
+                    return .none
+                }
+
+            case .mypage(let mypageAction):
+                switch mypageAction {
+                case .delegate(.moveToJoinContest):
+                    state.selectedTab = .home
+                    return .none
+                    
+                default:
+                    return .none
+                }
             }
         }
     }
