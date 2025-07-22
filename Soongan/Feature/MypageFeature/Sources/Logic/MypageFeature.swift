@@ -9,6 +9,7 @@ import SwiftUI
 
 import CoreNetwork
 import CoreKeyChain
+import DetailContestFeature
 import DesignSystem
 import Shared
 
@@ -24,6 +25,7 @@ public struct MypageFeature {
         case editProfile(EditProfileFeature)
         case alarmList(AlarmListFeature)
         case questionsList(QuestionsListFeature)
+        case contestDetail(ContestDetailFeature)
     }
     
     // MARK: - State
@@ -73,6 +75,7 @@ public struct MypageFeature {
         
         case onAppear
         case alarmButtonTapped
+        case joinToContestButtonTapped
         case optionButtonTapped
         case optionSheetIsPresented(MyprofileOptionType)
         case profileOptionTapped(MyprofileOptionType)
@@ -88,8 +91,15 @@ public struct MypageFeature {
         
         case myInfoActionSuccess(MyprofileOptionType)
         case successSheetComplete(MypageSuccessSheetType)
+        case contestDetailImageTapped(String)
         
         case deleteMyInfomation
+        
+        case delegate(Delegate)
+                
+        public enum Delegate {
+            case moveToJoinContest
+        }
     }
     
     // MARK: - Body
@@ -250,6 +260,13 @@ public struct MypageFeature {
                 KeychainManager.shared.clearTokens()
                 
                 return .none
+                
+            case .contestDetailImageTapped(let postId):
+                state.path.append(.contestDetail(ContestDetailFeature.State(postId: postId)))
+                return .none
+                
+            case .joinToContestButtonTapped:
+                return .send(.delegate(.moveToJoinContest))
                 
             case .dismissOptionSheet(_):
                 state.isOptionSheetPresented = false
