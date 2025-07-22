@@ -19,10 +19,7 @@ public struct ImageGridView: View {
     
     @State private var showScrollToTopButton = false
     @State private var initialScrollOffset: CGFloat = 0
-    @State private var hasSetInitialOffset: Bool = false
     @State private var scrollOffset: CGFloat = 0
-    
-    @State private var isImageLoading: Bool = false
     
     // MARK: - Init
     
@@ -75,7 +72,7 @@ public struct ImageGridView: View {
                         Color.clear
                             .preference(
                                 key: ScrollOffsetPreferenceKey.self,
-                                value: geometry.frame(in: .named("scrollView")).minY
+                                value: geometry.frame(in: .named("scroll")).minY
                             )
                     }
                     .frame(height: 0)
@@ -84,18 +81,12 @@ public struct ImageGridView: View {
                 .onPreferenceChange(ScrollOffsetPreferenceKey.self) { value in
                     scrollOffset = value
                     
-                    // 초기 오프셋 설정 (맨 위에 있을 때의 값)
-                    if !hasSetInitialOffset && isImageLoading {
-                        initialScrollOffset = value
-                        hasSetInitialOffset = true
-                        print("초기 오프셋 설정:", initialScrollOffset)
-                    }
-                    
-                    print("스크롤 오프셋:", value)
-                    
-                    // 스크롤을 아래로 100포인트 이상 내렸을 때 버튼 표시
+                    initialScrollOffset = max(value, initialScrollOffset)
+
+                    let scrollDistance = initialScrollOffset - value
+
                     withAnimation(.easeInOut(duration: 0.3)) {
-                        showScrollToTopButton = initialScrollOffset - value > 100
+                        showScrollToTopButton = scrollDistance > 200
                     }
                 }
 
