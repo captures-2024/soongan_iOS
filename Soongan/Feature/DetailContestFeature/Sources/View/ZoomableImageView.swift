@@ -26,7 +26,7 @@ struct ZoomableImageView: View {
     var body: some View {
         ZStack(alignment: .topLeading) {
             if let url = url {
-                KFImage(URL(string: url)!)
+                KFImage(URL(string: url))
                     .resizable()
                     .aspectRatio(contentMode: .fit)
                     .scaleEffect(scale)

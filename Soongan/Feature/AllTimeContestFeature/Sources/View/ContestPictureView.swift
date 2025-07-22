@@ -31,7 +31,7 @@ struct ContestPictureView: View {
     
     var body: some View {
         ZStack(alignment: .bottom) {
-            KFImage(URL(string: imageUrl)!)
+            KFImage(URL(string: imageUrl))
                 .resizable()
                 .aspectRatio(contentMode: .fit)
             

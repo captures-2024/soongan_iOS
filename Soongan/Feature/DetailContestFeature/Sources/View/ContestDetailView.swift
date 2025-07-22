@@ -134,7 +134,7 @@ public struct ContestDetailView: View {
                 Spacer()
                 
                 if let url = store.imageUrl {
-                    KFImage(URL(string: url)!)
+                    KFImage(URL(string: url))
                         .resizable()
                         .aspectRatio(contentMode: .fit)
                         .frame(maxWidth: 360, maxHeight: 460, alignment: .center)
