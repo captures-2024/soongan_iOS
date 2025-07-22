@@ -8,6 +8,7 @@
 import SwiftUI
 
 import CoreNetwork
+import DetailContestFeature
 import DesignSystem
 import Shared
 
@@ -64,6 +65,7 @@ public struct ContestFeature {
         case binding(BindingAction<State>)
     
         case onAppear
+        case refreshTriggered
         case fetchContestPosts
         case getContestSuccess(SearchWeeklyContestResponseDTO)
         case getContestListSuccess(SearchContestListResponseDTO)
@@ -84,7 +86,7 @@ public struct ContestFeature {
         
         Reduce { state, action in
             switch action {
-            case .onAppear:
+            case .onAppear, .refreshTriggered:
                 state.isLoading.toggle()
                 
                 return .run { send in
@@ -105,8 +107,9 @@ public struct ContestFeature {
                     ContestIndexModel(id: $0.id, round: $0.round, subject: $0.subject)
                 }
                 
-                state.contestIndex = state.contestOptions.last?.round ?? 1
-                state.weekTopic = state.contestOptions.last?.subject ?? ""
+                state.contestIndex = state.contestOptions.last?.round ?? 0
+                state.weekTopic = state.contestOptions.last?.subject ?? "정보없음"
+                state.selectedContestIndex = state.contestOptions.count - 1
                 
                 return .send(.fetchContestPosts)
                 
@@ -157,7 +160,7 @@ public struct ContestFeature {
                 
             case let .path(.element(id: _, action: action)):
                 switch action {
-                case .contestDetail(.backButtonTapped):
+                case .contestDetail(.delegate(.backConfirmed)):
                     state.path.removeLast()
                     return .none
                 default:
@@ -187,7 +190,7 @@ public struct ContestFeature {
                 
                 state.isContestSheetPresented = false
                 
-                return .none
+                return .send(.fetchContestPosts)
                 
             case .dismissContestSheet:
                 state.isContestSheetPresented = false
