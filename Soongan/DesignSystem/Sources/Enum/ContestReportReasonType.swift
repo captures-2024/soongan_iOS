@@ -31,4 +31,21 @@ public enum ContestReportReasonType: CaseIterable {
             return "기타"
         }
     }
+    
+    public var typeTitle: String {
+        switch self {
+        case .inappropriateContent:
+            return "INAPPROPRIATE_PHOTO_OR_BEHAVIOR"
+        case .hateSpeech:
+            return "PROFANITY_HATE_SPEECH"
+        case .infringement:
+            return "COPYRIGHT_OR_PRIVACY_VIOLATION"
+        case .spam:
+            return "SPAM"
+        case .promotion:
+            return "PROMOTIONAL_CONTENT"
+        case .other:
+            return "OTHER"
+        }
+    }
 }
