@@ -7,6 +7,7 @@
 
 import SwiftUI
 
+import DetailContestFeature
 import DesignSystem
 
 import ComposableArchitecture
@@ -52,8 +53,7 @@ public struct HomeView: View {
                             .resizable()
                             .frame(width: 33, height: 50)
                     }
-                    .frame(height: 65)
-                    .padding(.top, 74)
+                    .padding(.top, 108)
                     .padding(.horizontal, 36)
                     
                     Spacer(minLength: 63)
@@ -103,8 +103,7 @@ public struct HomeView: View {
                         }
                     }
                     .padding(.horizontal, 28)
-                    
-                    Spacer(minLength: 40)
+                    .padding(.bottom, 40)
                 }
                 .toolbar(.hidden, for: .tabBar)
                 .safeAreaInset(edge: .bottom, spacing: 0) {
@@ -119,10 +118,13 @@ public struct HomeView: View {
             ) {
                 CustomSheetView<NeverOption>(type: .contestInfo) { }
             }
+            .background(alertHostingView)
         } destination: { store in
             switch store.case {
             case .postPicture(let store):
                 PostPictureView(store: store)
+            case .contestDetail(let store):
+                ContestDetailView(store: store)
             }
         }
     }
@@ -133,38 +135,53 @@ public struct HomeView: View {
 private extension HomeView {
     func postImageSection(postImageList: [PostImageModel]) -> some View {
         ScrollView(.horizontal, showsIndicators: false) {
-            HStack(spacing: 16) {
+            HStack(alignment: .top, spacing: 16) {
                 Spacer(minLength: 20)
                 
                 Button(action: {
                     store.send(.addPictureButtonTapped)
                 }) {
-                    ZStack(alignment: .center) {
-                        Rectangle()
-                            .fill(Color.white)
-                            .frame(width: 60, height: 257)
-                            .shadow(
-                                color: Color.black.opacity(0.25),
-                                radius: 5, x: 0, y: 4)
-                        
-                        VStack(spacing: 76) {
-                            Image.addPlus
+                    ZStack(alignment: .bottom) {
+                        ZStack {
+                            if store.isAddPostImage {
+                                Rectangle()
+                                    .fill(store.isAddPostImage ? DesignSystem.Color.black40 : Color.white)
+                                    .frame(width: 60, height: 257)
+                                    .overlay(
+                                        Rectangle()
+                                        // 그림자 색상과 두께를 가진 테두리를 생성
+                                            .stroke(Color.black.opacity(0.3), lineWidth: 4)
+                                        // 테두리를 부드럽게 번지게 하여 그림자처럼 만듦
+                                            .blur(radius: 4)
+                                        // 그림자에 방향성을 주기 위해 약간 이동
+                                            .offset(x: 2, y: 2)
+                                        // 번진 효과가 사각형 밖으로 나가지 않도록 마스킹
+                                            .mask(Rectangle())
+                                    )
+                            } else {
+                                Rectangle()
+                                    .fill(Color.white)
+                                    .frame(width: 60, height: 257)
+                                    .shadow(
+                                        color: Color.black.opacity(0.25),
+                                        radius: 5, x: 0, y: 4
+                                    )
+                            }
+                            
+                            Image(systemName: "plus")
                                 .resizable()
                                 .scaledToFit()
+                                .foregroundStyle(store.isAddPostImage ? .white : DesignSystem.Color.black100)
                                 .frame(width: 20, height: 20)
-                            
-                            if postImageList.isEmpty {
-                                Text("출품하기")
-                                    .font(.regular14)
-                                    .foregroundStyle(Color.black100)
-                            } else {
-                                Text("\(postImageList.count)/3")
-                                    .font(.regular14)
-                                    .foregroundStyle(Color.black100)
-                            }
                         }
+
+                        Text("\(postImageList.count)/3")
+                            .font(.regular14)
+                            .foregroundStyle(store.isAddPostImage ? .white : DesignSystem.Color.black100)
+                            .padding(.bottom, 24)
                     }
                 }
+                .disabled(store.isAddPostImage)
                 
                 if !postImageList.isEmpty {
                     ForEach(postImageList) { image in
@@ -173,25 +190,37 @@ private extension HomeView {
                                 KFImage(url)
                                     .resizable()
                                     .scaledToFit()
-                                    .frame(width: 60, height: 257)
+                                    .frame(height: 257)
                                     .shadow(
                                         color: Color.black.opacity(0.25),
                                         radius: 5, x: 0, y: 4)
+                                    .onTapGesture {
+                                        store.send(.pictureTapped(image.id))
+                                    }
                                 
                                 HStack(spacing: 16) {
-                                    HStack {
-                                        Image.selectLike
+                                    HStack(spacing: 4) {
+                                        Image.notSelectLike
+                                            .resizable()
+                                            .frame(width: 12, height: 12)
+                                        
                                         Text("\(image.likeCount)")
                                     }
                                     
-                                    HStack {
+                                    HStack(spacing: 4) {
                                         Image.commentIcon
+                                            .resizable()
+                                            .frame(width: 12, height: 12)
+                                        
                                         Text("\(image.commentCount)")
                                     }
+                                    
+                                    Spacer()
                                 }
                                 .padding(.leading, 4)
                                 .font(.medium12)
                                 .foregroundStyle(Color.black100)
+                                .frame(maxWidth: .infinity)
                             }
                         }
                     }
@@ -222,6 +251,22 @@ private extension HomeView {
             }
             .font(.medium14)
             .foregroundStyle(Color.black100)
+        }
+    }
+    
+    @ViewBuilder
+    var alertHostingView: some View {
+        Color.clear.fullScreenCover(isPresented: $store.isAlertPresented) {
+            CustomAlertView(
+                type: .showLoginView,
+                centerButtonAction: {
+                    store.send(.dismissAlertButtonTapped)
+                }
+            )
+            .presentationBackground(.clear)
+        }
+        .transaction { transaction in
+            transaction.disablesAnimations = true
         }
     }
 }
