@@ -8,6 +8,7 @@
 import SwiftUI
 import PhotosUI
 
+import DetailContestFeature
 import DesignSystem
 
 import ComposableArchitecture
@@ -40,14 +41,21 @@ public struct AllTimeContestView: View {
                         .padding(.vertical, 28)
                     
                     if !(store.allTimeContestListData.isEmpty) {
-                        ScrollView {
-                            LazyVStack(spacing: 12) {
-                                ForEach(store.allTimeContestListData, id: \.self) { contestData in
-                                    contestListView(data: contestData) {
-                                        store.send(.contestListTapped(id: contestData.id))
-                                    }
+                        List {
+                            ForEach(store.allTimeContestListData, id: \.self) { contestData in
+                                contestListView(data: contestData) {
+                                    store.send(.contestListTapped(id: contestData.id))
                                 }
+                                .listRowBackground(Color.clear)
                             }
+                            .listRowSeparator(.hidden)
+                            .listRowInsets(EdgeInsets.init(top: 0, leading: 0, bottom: 0, trailing: 0))
+                            .listRowSpacing(12)
+                        }
+                        .listStyle(.plain)
+                        .refreshable {
+                            try? await Task.sleep(nanoseconds: 1000_000_000)
+                            store.send(.refreshTriggered)
                         }
                     } else {
                         Spacer()
@@ -65,13 +73,17 @@ public struct AllTimeContestView: View {
                 }
             }
             .onAppear {
-                store.send(.onAppear)
+                if store.allTimeContestListData.isEmpty {
+                    store.send(.onAppear)
+                }
             }
             .toolbar(.hidden, for: .tabBar)
         } destination: { store in
             switch store.case {
             case .detailContest(let store):
                 DetailContestView(store: store)
+            case .contestDetail(let store):
+                ContestDetailView(store: store)
             }
         }
     }
