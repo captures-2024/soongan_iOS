@@ -78,36 +78,36 @@ public struct CustomSheetView<T: Equatable & CaseIterable>: View {
                 
             case .logout:
                 logoutContentSection(action: { optionType in
-                    guard let optionAction else { return }
-                    optionAction(optionType as! T)
+                    guard let castedOption = optionType as? T else { return }
+                    optionAction?(castedOption)
                 })
                     .padding(.top, 40)
                 
             case .logoutSuccess:
                 logoutSuccessContentSection(action: { optionType in
-                    guard let optionAction else { return }
-                    optionAction(optionType as! T)
+                    guard let castedOption = optionType as? T else { return }
+                    optionAction?(castedOption)
                 })
                     .padding(.top, 40)
                 
             case .withdraw:
                 WithdrawContentSection(action: { optionType in
-                    guard let optionAction else { return }
-                    optionAction(optionType as! T)
+                    guard let castedOption = optionType as? T else { return }
+                    optionAction?(castedOption)
                 })
                     .padding(.top, 40)
                 
             case .withdrawSuccess:
                 withDrawSuccessContentSection(action: { optionType in
-                    guard let optionAction else { return }
-                    optionAction(optionType as! T)
+                    guard let castedOption = optionType as? T else { return }
+                    optionAction?(castedOption)
                 })
                     .padding(.top, 40)
                 
             case .myprofileOption:
                 mypageOptionContentSection(action: { optionType in
-                    guard let optionAction else { return }
-                    optionAction(optionType as! T)
+                    guard let castedOption = optionType as? T else { return }
+                    optionAction?(castedOption)
                 })
                 .padding(.top, 30)
                 
@@ -116,8 +116,8 @@ public struct CustomSheetView<T: Equatable & CaseIterable>: View {
                 
             case .contestReport:
                 contestReportContentSection(action: { optionType in
-                    guard let optionAction else { return }
-                    optionAction(optionType as! T)
+                    guard let castedOption = optionType as? T else { return }
+                    optionAction?(castedOption)
                 })
                 .padding(.top, 12)
                 
@@ -151,8 +151,8 @@ public struct CustomSheetView<T: Equatable & CaseIterable>: View {
                 
             case .detailContestOption(let isWriter):
                 detailContestOptionSection(isWriter: isWriter, action: { optionType in
-                    guard let optionAction else { return }
-                    optionAction(optionType as! T)
+                    guard let castedOption = optionType as? T else { return }
+                    optionAction?(castedOption)
 
                 })
 //                .padding(.top, 30)
@@ -160,15 +160,15 @@ public struct CustomSheetView<T: Equatable & CaseIterable>: View {
             case .sortContest:
                 if let isSelectType {
                     sortPostContestSection(selectedType: isSelectType, action: { optionType in
-                        guard let optionAction else { return }
-                        optionAction(optionType as! T)
+                        guard let castedOption = optionType as? T else { return }
+                        optionAction?(castedOption)
                     })
                 }
                 
             case .selectProfile(let isBaseProfile):
                 selectProfileContestSection(isBaseProfile: isBaseProfile, action: { optionType in
-                    guard let optionAction else { return }
-                    optionAction(optionType as! T)
+                    guard let castedOption = optionType as? T else { return }
+                    optionAction?(castedOption)
                 })
             }
         }
