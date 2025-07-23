@@ -71,12 +71,19 @@ public struct HomeFeature {
         case addPictureButtonTapped
         case pictureTapped(Int)
         case infoButtonTapped
+        case showContest
         case dismissInfoSheet(Bool)
         
         case showNotLoginUserAlert
         case dismissAlertButtonTapped
         
         case homeInfoSuccess(SearchHomeInfoResponseDTO)
+        
+        case delegate(Delegate)
+                
+        public enum Delegate {
+            case moveToContestTab
+        }
     }
     
     // MARK: - Body
@@ -138,6 +145,9 @@ public struct HomeFeature {
             case .infoButtonTapped:
                 state.isInfoSheetPresented = true
                 return .none
+                
+            case .showContest:
+                return .send(.delegate(.moveToContestTab))
                 
             case .dismissInfoSheet(let isPresented):
                 state.isInfoSheetPresented = isPresented

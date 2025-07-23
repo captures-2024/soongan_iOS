@@ -86,8 +86,14 @@ public struct MainTabFeature {
                 state.selectedTab = tab
                 return .none
                 
-            case .home:
-                return .none
+            case .home(let homeAction):
+                switch homeAction {
+                case .delegate(.moveToContestTab):
+                    state.selectedTab = .contest
+                    return .none
+                default:
+                    return .none
+                }
                 
             case .contest:
                 return .none
