@@ -13,4 +13,5 @@ struct DetailHistoryFirstPostModel: Identifiable, Equatable, Hashable {
     let postTitle: String
     let likeCount: Int
     let imageUrl: String
+    let status: PostStatus
 }

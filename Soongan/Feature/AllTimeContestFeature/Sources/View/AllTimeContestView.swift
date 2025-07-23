@@ -12,6 +12,7 @@ import DetailContestFeature
 import DesignSystem
 
 import ComposableArchitecture
+import Kingfisher
 
 public struct AllTimeContestView: View {
 
@@ -36,8 +37,8 @@ public struct AllTimeContestView: View {
                 
                 VStack(spacing: 0) {
                     Text("역대 콘테스트")
-                        .font(.bold20)
-                        .foregroundStyle(Color.black100)
+                        .font(DesignSystem.Font.bold20)
+                        .foregroundStyle(DesignSystem.Color.black100)
                         .padding(.vertical, 28)
                     
                     if !(store.allTimeContestListData.isEmpty) {
@@ -65,8 +66,8 @@ public struct AllTimeContestView: View {
                             
                             Text("회차가 끝나면 역대 콘테스트가 생깁니다.")
                         }
-                        .font(.bold20)
-                        .foregroundStyle(Color.black100)
+                        .font(DesignSystem.Font.bold20)
+                        .foregroundStyle(DesignSystem.Color.black100)
                         
                         Spacer(minLength: 350)
                     }
@@ -94,7 +95,7 @@ public struct AllTimeContestView: View {
 private extension AllTimeContestView {
     func contestListView(data: AllTimeContestModel, onTap: @escaping () -> Void) -> some View {
         ZStack {
-            Image.dumy5
+            KFImage(URL(string: data.backgroundImageURL))
                 .resizable()
                 .aspectRatio(contentMode: .fill)
                 .frame(height: 126)
@@ -106,7 +107,7 @@ private extension AllTimeContestView {
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
             
             Text(data.title)
-                .font(.bold20)
+                .font(DesignSystem.Font.bold20)
                 .foregroundStyle(Color.white)
         }
         .padding(.horizontal, 16)

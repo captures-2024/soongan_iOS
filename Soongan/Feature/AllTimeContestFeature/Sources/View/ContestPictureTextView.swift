@@ -33,7 +33,7 @@ struct ContestPictureTextView: View {
                 .frame(width: 60, height: 20)
             
             Text(title)
-                .font(.semibold11)
+                .font(DesignSystem.Font.semibold11)
                 .foregroundStyle(Color.white)
         }
     }
