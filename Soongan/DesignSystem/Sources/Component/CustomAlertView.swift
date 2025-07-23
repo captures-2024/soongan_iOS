@@ -43,7 +43,7 @@ public struct CustomAlertView: View {
                     .padding(.bottom, 35)
                 
                 Text(type.title)
-                    .font(.semibold16)
+                    .font(DesignSystem.Font.semibold16, lineHeight: 24)
                     .foregroundStyle(Color.black100)
                     .multilineTextAlignment(.center)
                     .padding(.bottom, 35)
@@ -67,7 +67,7 @@ public struct CustomAlertView: View {
                     centerButtonAction?()
                 }) {
                     Text(type == .showLoginView ? "로그인하기" : "확인")
-                        .font(.semibold14)
+                        .font(DesignSystem.Font.semibold14)
                         .foregroundStyle(Color.black100)
                         .frame(height: 40)
                         .frame(maxWidth: .infinity)
@@ -81,7 +81,7 @@ public struct CustomAlertView: View {
                     leftButtonAction?()
                 }) {
                     Text("아니요")
-                        .font(.semibold14)
+                        .font(DesignSystem.Font.semibold14)
                         .foregroundStyle(Color.black100)
                         .frame(height: 40)
                         .frame(maxWidth: .infinity)
@@ -96,7 +96,7 @@ public struct CustomAlertView: View {
                     rightButtonAction?()
                 }) {
                     Text("네")
-                        .font(.semibold14)
+                        .font(DesignSystem.Font.semibold14)
                         .foregroundStyle(Color.black100)
                         .frame(height: 40)
                         .frame(maxWidth: .infinity)

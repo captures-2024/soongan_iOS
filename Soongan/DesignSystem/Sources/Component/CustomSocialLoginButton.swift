@@ -32,7 +32,7 @@ public struct CustomSocialLoginButton: View {
         Button(action: action) {
             ZStack(alignment: .center) {
                 Text(type.title)
-                    .font(.semibold18)
+                    .font(DesignSystem.Font.semibold18)
                     .foregroundStyle(type.textColor)
 
                 HStack {

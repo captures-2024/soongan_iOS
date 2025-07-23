@@ -37,23 +37,23 @@ public enum BottomButtonType: Equatable {
     
     var textColor: Color {
         switch self {
-        case .next, .editComplete, .submit, .report:
+        case .next, .editComplete, .submit, .report, .complete:
             return .white
         default:
             return .black100
         }
     }
     
-    var font: Font {
+    var font: FontStyle {
         switch self {
         case .next:
-            return .semibold18
+            return DesignSystem.Font.semibold18
         case .submit:
-            return .semibold16
+            return DesignSystem.Font.semibold16
         case .report:
-            return .bold16
+            return DesignSystem.Font.bold16
         default:
-            return .body15
+            return DesignSystem.Font.body15
         }
     }
     

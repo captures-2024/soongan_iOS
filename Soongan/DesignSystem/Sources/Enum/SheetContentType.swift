@@ -66,8 +66,8 @@ public enum SheetContentType: Identifiable, Equatable {
     
     var height: Set<PresentationDetent> {
         switch self {
-        case .contestInfo: return [.fraction(0.75)]
-        case .postPicture: return [.fraction(0.31)]
+        case .contestInfo: return [.height(520)]
+        case .postPicture: return [.height(264)]
         case .logout, .logoutSuccess: return [.height(264)]
         case .withdraw: return [.height(392)]
         case .withdrawSuccess: return [.height(264)]
@@ -86,7 +86,6 @@ public enum SheetContentType: Identifiable, Equatable {
 
 public enum MyprofileOptionType: Equatable, CaseIterable {
     case editMyProfile
-//    case license
     case pushAlarmSetting
     case terms
     case faq
@@ -95,23 +94,12 @@ public enum MyprofileOptionType: Equatable, CaseIterable {
     
     var title: String {
         switch self {
-        case .editMyProfile:
-            return "프로필 편집"
-
-        case .pushAlarmSetting:
-            return "푸시 알림 설정"
-            
-        case .terms:
-            return "약관 및 정책"
-            
-        case .faq:
-            return "FAQ"
-            
-        case .withdraw:
-            return "회원탈퇴"
-            
-        case .logout:
-            return "로그아웃"
+        case .editMyProfile: return "프로필 편집"
+        case .pushAlarmSetting: return "푸시 알림 설정"
+        case .terms: return "약관 및 정책"
+        case .faq: return "FAQ"
+        case .withdraw: return "회원탈퇴"
+        case .logout: return "로그아웃"
         }
     }
     

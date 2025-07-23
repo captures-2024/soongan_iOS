@@ -37,7 +37,11 @@ public struct ContestFeature {
         var leftContestImageList = [ContestImageModel]()
         var rightContestImageList = [ContestImageModel]()
         
-        var selectedContestIndex: Int = 0
+        var selectedContestIndex: Int = 0 {
+            didSet {
+                print("selectedContestIndex", selectedContestIndex)
+            }
+        }
         
         var isLoading = false
         var isNext = false
@@ -97,7 +101,6 @@ public struct ContestFeature {
                         await send(.getContestListSuccess(response))
                     case .failure(let error):
                         print(error.localizedDescription)
-                        // 필요하다면 isLoading 토글 등 에러 처리
                     }
                 }
               
@@ -203,7 +206,8 @@ public struct ContestFeature {
             case .changeSortContestType(let type):
                 state.sortSelectType = type
                 state.isSortSheetPresented = false
-                return .none
+                
+                return .send(.fetchContestPosts)
                 
             default:
                 return .none

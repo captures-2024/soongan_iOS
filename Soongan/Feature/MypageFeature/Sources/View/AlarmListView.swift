@@ -82,7 +82,7 @@ public struct AlarmListView: View {
             
             ToolbarItem(placement: .principal) {
                 Text("알림")
-                    .font(.bold16)
+                    .font(DesignSystem.Font.bold16, lineHeight: 20)
                     .foregroundColor(DesignSystem.Color.black100)
                     .padding(.top, 16)
             }
@@ -143,15 +143,15 @@ private extension AlarmListView {
             
             VStack(alignment: .leading, spacing: 8) {
                 Text(data.title)
-                    .font(.bold16)
+                    .font(DesignSystem.Font.bold16)
                     .foregroundColor(DesignSystem.Color.black100)
                 
                 Text(data.content)
-                    .font(.bold12)
+                    .font(DesignSystem.Font.bold12, lineHeight: 20)
                     .foregroundColor(DesignSystem.Color.black100)
                 
                 Text(data.time)
-                    .font(.regular12)
+                    .font(DesignSystem.Font.regular12)
                     .foregroundColor(DesignSystem.Color.black100)
             }
         }

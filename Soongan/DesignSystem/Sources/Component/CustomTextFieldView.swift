@@ -44,8 +44,8 @@ public struct CustomTextFieldView: View {
             ? (isFocused.wrappedValue ? state.borderColor : .clear)
             : DesignSystem.Color.black100
         
-        let titleFont: Font = (type == .birthday || type == .nickname) ? .regular16 : .regular8
-        
+        let titleFont: FontStyle = (type == .birthday || type == .nickname) ? DesignSystem.Font.regular16 : DesignSystem.Font.regular8
+
         VStack(alignment: .leading, spacing: 0) {
             Text(type.title)
                 .font(titleFont)
@@ -55,7 +55,7 @@ public struct CustomTextFieldView: View {
             
             TextField("", text: $text, prompt: Text(type.placeholder).foregroundColor(.black60))
                 .focused(isFocused)
-                .font(.regular18)
+                .font(DesignSystem.Font.regular18)
                 .padding()
                 .tint(.black100)
                 .background(
@@ -95,12 +95,12 @@ public struct CustomTextFieldView: View {
                     switch state {
                     case .error(let errorMessage):
                         Text(errorMessage.message)
-                            .font(.medium12)
+                            .font(DesignSystem.Font.medium12)
                             .foregroundColor(.error)
                         
                     case .normal, .valid, .possible:
                         Text(type.subTitle)
-                            .font(.medium12)
+                            .font(DesignSystem.Font.medium12)
                             .foregroundColor(.black60)
                     }
                     
@@ -108,7 +108,7 @@ public struct CustomTextFieldView: View {
                     
                     if type != .birthday {
                         Text("\(textCount)/\(type.inputValidationCount)")
-                            .font((type == .changeNickname || type == .introduce) ? .regular8 : .medium12)
+                            .font((type == .changeNickname || type == .introduce) ? DesignSystem.Font.regular8 : DesignSystem.Font.medium12)
                             .foregroundColor((type == .changeNickname || type == .introduce) ? .black100 : .black60)
                             .padding(.trailing, 12)
                     }

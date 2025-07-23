@@ -147,10 +147,10 @@ public struct ContestDetailView: View {
                 
                 VStack(alignment: .leading, spacing: 10) {
                     Text(store.contestTitle ?? "정보없음")
-                        .font(.bold20)
+                        .font(DesignSystem.Font.bold20, lineHeight: 24)
                     
                     Text("@" + (store.contestAuthor ?? "정보없음"))
-                        .font(.medium14)
+                        .font(DesignSystem.Font.medium14, lineHeight: 16)
                 }
                 .padding(.horizontal, 36)
                 .padding(.bottom, 40)
@@ -195,7 +195,7 @@ public struct ContestDetailView: View {
                 .padding(.trailing, 8)
                 
                 Text(likeCount)
-                    .font(.info12)
+                    .font(DesignSystem.Font.info12)
                     .foregroundColor(DesignSystem.Color.black100)
                     .padding(.trailing, 32)
             }

@@ -95,7 +95,7 @@ struct QuestionsListView: View {
             
             ToolbarItem(placement: .principal) {
                 Text("FAQ")
-                    .font(.bold16)
+                    .font(DesignSystem.Font.bold16, lineHeight: 20)
                     .foregroundColor(DesignSystem.Color.black100)
                     .padding(.top, 16)
             }
@@ -106,7 +106,7 @@ struct QuestionsListView: View {
         VStack(alignment: .leading, spacing: 0) {
             VStack(alignment: .leading, spacing: 15) {
                 Text(item.question)
-                    .font(.bold16)
+                    .font(DesignSystem.Font.bold16, lineHeight: 20)
                     .foregroundStyle(DesignSystem.Color.black100)
                 
                 if store.expandedQuestionID == item.id {
@@ -124,7 +124,7 @@ struct QuestionsListView: View {
                             }
                         }
                     }
-                    .font(.bold12)
+                    .font(DesignSystem.Font.bold12)
                     .foregroundStyle(DesignSystem.Color.gray55)
                 }
             }
@@ -164,7 +164,7 @@ struct QuestionsListView: View {
                 }
             }
         }
-        .font(.bold12)
+        .font(DesignSystem.Font.bold12)
         .foregroundStyle(DesignSystem.Color.gray55)
     }
 }

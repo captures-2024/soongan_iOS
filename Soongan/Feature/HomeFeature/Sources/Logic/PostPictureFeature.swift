@@ -50,6 +50,7 @@ public struct PostPictureFeature {
         case postButtonTapped
         case postButtonTappedInSheet
         case postSuccess(PostWeeklyContestResponseDTO)
+        case postFailure(NetworkError)
         case addPictureButtonTapped
         case dismissPostSheet(Bool)
         case backButtonTapped
@@ -111,13 +112,24 @@ public struct PostPictureFeature {
                     case .success(let responseResult):
                         await send(.postSuccess(responseResult))
                     case .failure(let error):
-                        print(error)
+                        await send(.postFailure(error))
                     }
                 }
                 
             case .postSuccess(_):
                 state.isPostSheetPresented = false
                 return .send(.delegate(.backConfirmed))
+                
+            case .postFailure(let error):
+                switch error {
+                case .periodExpired:
+                    state.alertPresentedType = .postContestError
+                    state.isAlertPresented = true
+                default:
+                    break
+                }
+                
+                return .none
             
             case .backButtonTapped:
                 if state.postPictureName.count != 0 || (state.selectedImage != nil) {

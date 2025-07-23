@@ -48,12 +48,12 @@ private extension ProfileHeaderView {
     func profileHeaderSection() -> some View {
         VStack(alignment: .leading, spacing: 8) {
             Text(userName)
-                .font(.medium16)
+                .font(DesignSystem.Font.medium16, lineHeight: 20)
             
             Text(userIntroduction)
-                .font(.regular12)
+                .font(DesignSystem.Font.regular12)
         }
-        .foregroundStyle(Color.black100)
+        .foregroundStyle(DesignSystem.Color.black100)
     }
 }
 

@@ -69,7 +69,7 @@ public struct CustomSheetView<T: Equatable & CaseIterable>: View {
             
             switch type {
             case .contestInfo:
-                contestInfoContentSection(action: {})
+                contestInfoContentSection()
                     .padding(.top, 40)
                 
             case .postPicture(let name):
@@ -172,7 +172,7 @@ public struct CustomSheetView<T: Equatable & CaseIterable>: View {
                 })
             }
         }
-        .frame(maxHeight: .infinity, alignment: .top)
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         .presentationDetents(type.height)
         .presentationBackground(Color.white)
         .presentationCornerRadius(20)
@@ -191,80 +191,71 @@ private extension CustomSheetView {
             
             if type != .myprofileOption {
                 Text(type.title)
-                    .font(.bold16)
+                    .font(DesignSystem.Font.bold16, lineHeight: 20)
                     .foregroundStyle(Color.black100)
             }
         }
     }
     
-    func contestInfoContentSection(action: @escaping () -> Void) -> some View {
-        VStack(alignment: .leading, spacing: 3) {
+    func contestInfoContentSection() -> some View {
+        VStack(alignment: .leading, spacing: 0) {
             Text("규칙")
-                .font(.semibold16)
+                .font(DesignSystem.Font.semibold16, lineHeight: 24)
                 .padding(.bottom, 2)
+                .frame(maxWidth: .infinity, alignment: .leading)
             
             Text("작품 총 3개 출품 가능")
-                .font(.regular16)
+                .font(DesignSystem.Font.regular16, lineHeight: 24)
                 .padding(.bottom, 10)
                 .padding(.leading, 16)
             
             Text("선정 방식")
-                .font(.semibold16)
+                .font(DesignSystem.Font.semibold16, lineHeight: 24)
                 .padding(.bottom, 4)
             
             Text("투표: 좋아요 개수로 TOP 7 선정")
-                .font(.regular16)
+                .font(DesignSystem.Font.regular16, lineHeight: 24)
                 .padding(.bottom, 4)
                 .padding(.leading, 16)
             
             Text("기간 : 1달")
-                .font(.regular16)
+                .font(DesignSystem.Font.regular16, lineHeight: 24)
                 .padding(.bottom, 4)
                 .padding(.leading, 16)
             
             Text("매달 1일 오전 9시 ~ 다음 달 1일 00시")
-                .font(.regular16)
+                .font(DesignSystem.Font.regular16, lineHeight: 24)
                 .padding(.bottom, 8)
                 .padding(.leading, 16)
             
             Text("동점자 처리 방식")
-                .font(.semibold16)
+                .font(DesignSystem.Font.semibold16, lineHeight: 24)
                 .padding(.bottom, 4)
             
             Text("1. 직전 회차 참가자")
-                .font(.regular16)
+                .font(DesignSystem.Font.regular16, lineHeight: 24)
                 .padding(.bottom, 4)
                 .padding(.leading, 16)
             
             Text("2. 업로드 시간을 비교해 더 일찍 참가한 작품")
-                .font(.regular16)
+                .font(DesignSystem.Font.regular16, lineHeight: 24)
                 .padding(.bottom, 8)
                 .padding(.leading, 16)
             
             Text("리워드")
-                .font(.semibold16)
+                .font(DesignSystem.Font.semibold16, lineHeight: 24)
                 .padding(.bottom, 4)
             
             Text("최종 1위한 작품은\n앱 접속 시 나오는 화면에 배경 사진으로 사용")
-                .font(.regular16)
+                .font(DesignSystem.Font.regular16, lineHeight: 24)
                 .padding(.bottom, 4)
                 .padding(.leading, 16)
             
             Text("(차기 콘테스트 종료 시까지)")
-                .font(.regular16)
+                .font(DesignSystem.Font.regular16, lineHeight: 24)
                 .padding(.leading, 16)
-            
-            CustomBottomButton(
-                type: .comfirm,
-                action: {
-                    action()
-                    dismiss()
-                }
-            )
-            .padding(.top, 40)
-            .padding(.horizontal, -2)
         }
-        .foregroundStyle(Color.black)
+        .foregroundStyle(DesignSystem.Color.black100)
         .padding(.horizontal, 38)
     }
     
@@ -306,7 +297,7 @@ private extension CustomSheetView {
                     Text("등록된 순간은 약관에 따라 관리되며,\nTOP 7에 선정된 순간은 역대 콘테스트에 기록됩니다")
                         .foregroundStyle(DesignSystem.Color.black100)
                 }
-                .font(.regular12)
+                .font(DesignSystem.Font.regular12, lineHeight: 16)
             }
             .padding(.horizontal, 20)
             
@@ -320,8 +311,8 @@ private extension CustomSheetView {
             )
             .padding(.top, 16)
         }
-        .font(.regular16)
-        .foregroundStyle(Color.black)
+        .font(DesignSystem.Font.regular16, lineHeight: 24)
+        .foregroundStyle(DesignSystem.Color.black100)
         .padding(.horizontal, 20)
     }
     
@@ -334,7 +325,7 @@ private extension CustomSheetView {
                     }) {
                         HStack(alignment: .center) {
                             Text(option.title)
-                                .font(.semibold16)
+                                .font(DesignSystem.Font.semibold16, lineHeight: 20)
                                 .foregroundStyle(Color.black100)
                             
                             Spacer()
@@ -364,7 +355,7 @@ private extension CustomSheetView {
                 
                 Text("또 만나길 바랄게요!")
             }
-            .font(.regular16)
+            .font(DesignSystem.Font.regular16, lineHeight: 24)
             .foregroundStyle(Color.black100)
             .padding(.horizontal, 20)
             
@@ -383,7 +374,7 @@ private extension CustomSheetView {
     func logoutContentSection(action: @escaping (MyprofileOptionType) -> Void) -> some View {
         VStack(alignment: .leading, spacing: 15) {
             Text("정말 로그아웃 하실 건가요?")
-                .font(.regular16)
+                .font(DesignSystem.Font.regular16, lineHeight: 24)
                 .foregroundStyle(Color.black100)
                 .padding(.horizontal, 20)
             
@@ -406,8 +397,8 @@ private extension CustomSheetView {
                 
                 Text("또 만나길 바랄게요!")
             }
-            .font(.regular16)
-            .foregroundStyle(Color.black100)
+            .font(DesignSystem.Font.regular16, lineHeight: 24)
+            .foregroundStyle(DesignSystem.Color.black100)
             .padding(.horizontal, 20)
             
             CustomBottomButton(
@@ -431,12 +422,12 @@ private extension CustomSheetView {
                     Toggle(isOn: $toggle1On) {
                         VStack(alignment: .leading, spacing: 6) {
                             Text(option.title)
-                                .font(.semibold16)
+//                                .font(DesignSystem.Font.semibold16, lineHeight: 20)
                                 .foregroundStyle(Color.black100)
                             
                             if !option.subTitle.isEmpty {
                                 Text(option.subTitle)
-                                    .font(.regular12)
+                                    .font(DesignSystem.Font.regular12)
                                     .foregroundStyle(Color.black100)
                             }
                         }
@@ -467,7 +458,7 @@ private extension CustomSheetView {
                     }) {
                         HStack(alignment: .center) {
                             Text(option.title)
-                                .font(.semibold16)
+                                .font(DesignSystem.Font.semibold16, lineHeight: 20)
                                 .foregroundStyle(
                                     option.isDisabled(forWriter: isWriter)
                                     ? Color.black100.opacity(0.3)
@@ -509,7 +500,7 @@ private extension CustomSheetView {
                     }) {
                         HStack(alignment: .center) {
                             Text(option.title)
-                                .font(.semibold16)
+                                .font(DesignSystem.Font.semibold16, lineHeight: 20)
                                 .foregroundStyle(option == selectedType ? Color.black100 : Color.black100.opacity(0.5))
                             
                             Spacer()
@@ -540,7 +531,7 @@ private extension CustomSheetView {
                         action(option)
                     }) {
                         Text(option.title)
-                            .font(.semibold16)
+                            .font(DesignSystem.Font.semibold16, lineHeight: 20)
                             .foregroundStyle(Color.black100)
                             .padding(.vertical, 20)
                             .padding(.horizontal, 40)
@@ -563,18 +554,18 @@ private extension CustomSheetView {
         VStack(spacing: 0) {
             VStack(alignment: .leading, spacing: 4) {
                 Text("이 댓글을")
-                    .font(.regular16)
+                    .font(DesignSystem.Font.regular16, lineHeight: 24)
                 
                 HStack(spacing: 0) {
                     Text(reportType.title)
-                        .font(.bold16)
+                        .font(DesignSystem.Font.bold16, lineHeight: 24)
                     
                     Text("(으)로")
-                        .font(.regular16)
+                        .font(DesignSystem.Font.regular16, lineHeight: 24)
                 }
                 
                 Text("정말 신고하겠습니까?")
-                    .font(.regular16)
+                    .font(DesignSystem.Font.regular16, lineHeight: 24)
             }
             .padding(.horizontal, 4)
             .foregroundStyle(Color.black100)
@@ -606,7 +597,7 @@ private extension CustomSheetView {
                 Text("감사합니다")
                 
             }
-            .font(.regular16)
+            .font(DesignSystem.Font.regular16, lineHeight: 24)
             .foregroundStyle(DesignSystem.Color.black100)
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(.horizontal, 4)
@@ -632,7 +623,7 @@ private extension CustomSheetView {
                     }) {
                         HStack(alignment: .center) {
                             Text(option.title)
-                                .font(.semibold16)
+                                .font(DesignSystem.Font.semibold16)
                                 .foregroundStyle(isBaseProfile && option == .baseProfile ? Color.black100.opacity(0.5) : Color.black100)
                             
                             Spacer()
@@ -703,7 +694,7 @@ struct PostPictureContentSectionView: View {
                     Text("등록된 순간은 약관에 따라 관리되며,\nTOP 7에 선정된 순간은 역대 콘테스트에 기록됩니다")
                         .foregroundStyle(DesignSystem.Color.black100)
                 }
-                .font(.regular12)
+                .font(DesignSystem.Font.regular12, lineHeight: 16)
             }
             .padding(.horizontal, 20)
             
@@ -717,7 +708,7 @@ struct PostPictureContentSectionView: View {
             )
             .padding(.top, 16)
         }
-        .font(.regular16)
+        .font(DesignSystem.Font.regular16, lineHeight: 24)
         .foregroundStyle(Color.black)
         .padding(.horizontal, 20)
     }
@@ -743,18 +734,18 @@ struct WithdrawContentSection: View {
             VStack {
                 VStack(alignment: .leading, spacing: 15) {
                     Text("정말 회원탈퇴를 하실 건가요?")
-                        .font(.regular16)
-                        .foregroundStyle(Color.black100)
+                        .font(DesignSystem.Font.regular16, lineHeight: 24)
+                        .foregroundStyle(DesignSystem.Color.black100)
                     
                     Text("회원탈퇴를 위해 아래 입력창에\n'회원탈퇴'를 입력해주세요")
-                        .font(.regular16)
-                        .foregroundStyle(Color.black100)
+                        .font(DesignSystem.Font.regular16, lineHeight: 24)
+                        .foregroundStyle(DesignSystem.Color.black100)
                     
                     TextField("", text: $inputText,
                               prompt: Text("텍스트를 입력해주세요.")
                         .foregroundColor(Color(red: 187/255, green: 187/255, blue: 187/255)))
                     .focused($isFocused)
-                    .font(.regular18)
+                    .font(DesignSystem.Font.regular18, lineHeight: 24)
                     .padding()
                     .frame(height: 48)
                     .tint(.black100)
@@ -836,7 +827,7 @@ struct ReportInputReasonConestSection: View {
             TextEditor(text: $inputText)
                 .padding(10)
                 .focused($isFocused)
-                .font(.regular16)
+                .font(DesignSystem.Font.regular16)
                 .onChange(of: inputText) { _, newValue in
                     if newValue.count > characterLimit {
                         inputText = String(newValue.prefix(characterLimit))
@@ -846,14 +837,14 @@ struct ReportInputReasonConestSection: View {
 
             if inputText.isEmpty {
                 Text(placeholder)
-                    .font(.regular16)
+                    .font(DesignSystem.Font.regular16)
                     .foregroundColor(DesignSystem.Color.black60)
                     .padding(15)
                     .allowsHitTesting(false)
             }
             
             Text("\(inputText.count) / \(characterLimit)")
-                .font(.regular12)
+                .font(DesignSystem.Font.regular12)
                 .foregroundColor(DesignSystem.Color.black100)
                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomTrailing)
                 .padding(.trailing, 12)
