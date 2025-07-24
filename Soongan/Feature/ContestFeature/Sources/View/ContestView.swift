@@ -49,7 +49,9 @@ public struct ContestView: View {
             .background(DesignSystem.Color.soonganBG)
             .toolbar(.hidden, for: .tabBar)
             .onAppear {
-                store.send(.onAppear)
+                if store.contestOptions.isEmpty {
+                    store.send(.onAppear)
+                }
             }
             .sheet(
                 isPresented: $store.isContestSheetPresented.sending(\.dismissContestSheet)
@@ -60,7 +62,6 @@ public struct ContestView: View {
             .sheet(isPresented: $store.isSortSheetPresented.sending(\.dismissSortContestSheet)) {
                 CustomSheetView<SortContestDataType>(type: .sortContest, isSelectType: store.sortSelectType) { optionType in
                     store.send(.changeSortContestType(optionType))
-                    store.send(.onAppear)
                 }
             }
         } destination: { store in
@@ -99,7 +100,7 @@ public struct ContestView: View {
                     .padding(.trailing, 14)
             }
         }
-        .font(.bold20)
+        .font(DesignSystem.Font.bold20)
         .foregroundStyle(Color.black100)
         .padding(.vertical, 14)
         .background(DesignSystem.Color.soonganBG)
@@ -114,13 +115,13 @@ private extension ContestView {
                     store.send(.dismissContestSheet(false))
                 }) {
                     Text("취소")
-                        .font(.semibold16)
+                        .font(DesignSystem.Font.semibold16, lineHeight: 19)
                 }
                 
                 Spacer()
                 
                 Text("회차 선택")
-                    .font(.semibold20)
+                    .font(DesignSystem.Font.semibold20)
                 
                 Spacer()
                 
@@ -128,7 +129,7 @@ private extension ContestView {
                     store.send(.chagneContestIndex)
                 }) {
                     Text("확인")
-                        .font(.semibold16)
+                        .font(DesignSystem.Font.semibold16, lineHeight: 19)
                 }
             }
             .padding(.top, 28)

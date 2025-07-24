@@ -134,9 +134,9 @@ private extension MypageView {
     func notJoinContestSection() -> some View {
         VStack {
             Spacer()
-            
+                
             Text("아직 참가한 내역이 없어요.")
-                .font(.regular12)
+                .font(DesignSystem.Font.regular12)
                 .padding(.bottom, 12)
             
             Button(action: {
@@ -144,7 +144,7 @@ private extension MypageView {
             }) {
                 VStack(spacing: 4) {
                     Text("참가하러 가기")
-                        .font(.bold12)
+                        .font(DesignSystem.Font.bold12)
                         
                     Divider()
                         .frame(width: 66, height: 2)

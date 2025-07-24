@@ -36,6 +36,8 @@ struct DetailContestView: View {
                 VStack(spacing: 0) {
                     if let imageData = store.firstPostData {
                         ContestPictureView(
+                            isFirstPost: true,
+                            contestStatus: imageData.status,
                             imageUrl: imageData.imageUrl,
                             nickName: imageData.nickName,
                             likeCount: imageData.likeCount
@@ -52,6 +54,8 @@ struct DetailContestView: View {
                         LazyVStack(spacing: 8) {
                             ForEach(store.leftContestImageList) { model in
                                 ContestPictureView(
+                                    isFirstPost: false,
+                                    contestStatus: model.status,
                                     imageUrl: model.imageUrl,
                                     nickName: model.nickName,
                                     likeCount: model.likeCount
@@ -66,6 +70,8 @@ struct DetailContestView: View {
                         LazyVStack(spacing: 8) {
                             ForEach(store.rightContestImageList) { model in
                                 ContestPictureView(
+                                    isFirstPost: false,
+                                    contestStatus: model.status,
                                     imageUrl: model.imageUrl,
                                     nickName: model.nickName,
                                     likeCount: model.likeCount
@@ -85,7 +91,7 @@ struct DetailContestView: View {
                     store.send(.showPictureButtonTapped)
                 }) {
                     Text("참여작품 보러 가기👀")
-                        .font(.medium20)
+                        .font(DesignSystem.Font.medium20)
                         .foregroundColor(DesignSystem.Color.black100)
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 18)
@@ -127,17 +133,17 @@ struct DetailContestView: View {
     func contestTitleSection() -> some View {
         VStack(spacing: 0) {
             Text("\(store.contestInfoData.subject) (\(store.contestInfoData.round)회차)")
-                .font(.semibold20)
+                .font(DesignSystem.Font.semibold20)
                 .foregroundColor(DesignSystem.Color.black100)
                 .padding(.bottom, 20)
             
             Text("\(store.contestInfoData.startAt) - \(store.contestInfoData.endAt)")
-                .font(.semibold14)
+                .font(DesignSystem.Font.semibold14, lineHeight: 20)
                 .foregroundColor(DesignSystem.Color.black100)
                 .padding(.bottom, 8)
             
             Text("총 참여 작품 수 : \(store.contestCount ?? 0)")
-                .font(.semibold14)
+                .font(DesignSystem.Font.semibold14, lineHeight: 20)
                 .foregroundColor(DesignSystem.Color.black100)
         }
     }
@@ -145,13 +151,13 @@ struct DetailContestView: View {
 
 // MARK: - Preview
 
-//#Preview {
-//    NavigationStack {
-//        DetailContestView(
-//            store: Store(initialState:
-//                            DetailContestFeature.State()) {
-//                                DetailContestFeature()
-//                            }
-//        )
-//    }
-//}
+#Preview {
+    NavigationStack {
+        DetailContestView(
+            store: Store(initialState:
+                            DetailContestFeature.State(contestInfoData: DetailContestInfoModel(id: 0, round: 0, subject: "", startAt: "BLINDED", endAt: ""))) {
+                                DetailContestFeature()
+                            }
+        )
+    }
+}

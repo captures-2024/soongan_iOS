@@ -116,7 +116,8 @@ private extension DetailContestFeature {
             nickName: data.nickname,
             postTitle: data.title,
             likeCount: data.score,
-            imageUrl: data.imageUrl
+            imageUrl: data.imageUrl,
+            status: PostStatus(rawValue: data.status) ?? .active
         )
     }
     
@@ -127,7 +128,8 @@ private extension DetailContestFeature {
                 nickName: $0.nickname,
                 likeCount: $0.score,
                 imageUrl: $0.imageUrl,
-                ranking: $0.ranking
+                ranking: $0.ranking,
+                status: PostStatus(rawValue: $0.status) ?? .active
             )
         }
     }

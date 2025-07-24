@@ -67,7 +67,7 @@ public struct SignupView: View {
                 Spacer()
                 
                 Text("다음이 마지막 단계입니다!")
-                    .font(.medium12)
+                    .font(DesignSystem.Font.medium12, lineHeight: 16)
                     .foregroundStyle(Color.black60)
                     .padding(.bottom, 12)
                 
@@ -96,7 +96,7 @@ public struct SignupView: View {
                             .padding(.trailing, 5)
                         
                         Text("회원가입")
-                            .font(.medium24)
+                            .font(DesignSystem.Font.medium24, lineHeight: 32)
                             .foregroundStyle(Color.black100)
                     }
                 }

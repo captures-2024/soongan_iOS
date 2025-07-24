@@ -20,6 +20,7 @@ public enum NetworkError: Error {
     case tokenRefreshFailed(Error)
     case maxRetryExceeded
     case tokenExpiration
+    case periodExpired
 }
 
 extension NetworkError: LocalizedError {
@@ -49,6 +50,8 @@ extension NetworkError: LocalizedError {
             return "재시도 할 수 있는 횟수가 초과되었습니다."
         case .tokenExpiration:
             return "유효하지 않은 토큰입니다."
+        case .periodExpired:
+            return "콘테스트가 마감됐어요."
         }
     }
 }

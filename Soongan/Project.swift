@@ -41,6 +41,12 @@ let project = Project(
                     "UIBackgroundModes": [
                         "remote-notification"
                     ],
+                    "UIAppFonts": [
+                        "Pretendard-Bold.ttf",
+                        "Pretendard-SemiBold.ttf",
+                        "Pretendard-Medium.ttf",
+                        "Pretendard-Regular.ttf",
+                    ]
                 ]
             ),
             sources: ["Soongan/Sources/**"],

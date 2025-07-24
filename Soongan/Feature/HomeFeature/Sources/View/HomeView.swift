@@ -43,7 +43,7 @@ public struct HomeView: View {
                                 .offset(x: -35, y: -16)
                             
                             Text(store.weekTopic)
-                                .font(.bold42)
+                                .font(DesignSystem.Font.bold42)
                                 .foregroundStyle(Color.black100)
                         }
                         
@@ -55,8 +55,7 @@ public struct HomeView: View {
                     }
                     .padding(.top, 108)
                     .padding(.horizontal, 36)
-                    
-                    Spacer(minLength: 63)
+                    .padding(.bottom, 63)
                     
                     if store.postImageData.isEmpty {
                         Button(action: {
@@ -77,7 +76,7 @@ public struct HomeView: View {
                                         .frame(width: 40, height: 40)
                                     
                                     Text("출품하기")
-                                        .font(.regular14)
+                                        .font(DesignSystem.Font.regular14, lineHeight: 16)
                                         .foregroundStyle(Color.black100)
                                 }
                             }
@@ -86,7 +85,7 @@ public struct HomeView: View {
                         postImageSection(postImageList: store.postImageData)
                     }
                     
-                    Spacer(minLength: 100)
+                    Spacer(minLength: 76)
 
                     periodSection(startPeriod: store.startPeriod, endPeriod: store.endPeriod)
                         .padding(.bottom, 32)
@@ -99,11 +98,11 @@ public struct HomeView: View {
                         Spacer()
                         
                         CircleButton(type: .rightArrow) {
-                            
+                            store.send(.showContest)
                         }
                     }
-                    .padding(.horizontal, 28)
-                    .padding(.bottom, 40)
+                    .padding(.horizontal, 32)
+                    .padding(.bottom, 55)
                 }
                 .toolbar(.hidden, for: .tabBar)
                 .safeAreaInset(edge: .bottom, spacing: 0) {
@@ -136,8 +135,6 @@ private extension HomeView {
     func postImageSection(postImageList: [PostImageModel]) -> some View {
         ScrollView(.horizontal, showsIndicators: false) {
             HStack(alignment: .top, spacing: 16) {
-                Spacer(minLength: 20)
-                
                 Button(action: {
                     store.send(.addPictureButtonTapped)
                 }) {
@@ -176,7 +173,7 @@ private extension HomeView {
                         }
 
                         Text("\(postImageList.count)/3")
-                            .font(.regular14)
+                            .font(DesignSystem.Font.regular14)
                             .foregroundStyle(store.isAddPostImage ? .white : DesignSystem.Color.black100)
                             .padding(.bottom, 24)
                     }
@@ -218,8 +215,8 @@ private extension HomeView {
                                     Spacer()
                                 }
                                 .padding(.leading, 4)
-                                .font(.medium12)
-                                .foregroundStyle(Color.black100)
+                                .font(DesignSystem.Font.medium12)
+                                .foregroundStyle(DesignSystem.Color.black100)
                                 .frame(maxWidth: .infinity)
                             }
                         }
@@ -228,6 +225,7 @@ private extension HomeView {
                 
                 Spacer(minLength: 20)
             }
+            .padding(.leading, 20)
         }
     }
     
@@ -240,7 +238,7 @@ private extension HomeView {
                     
                 Text(startPeriod)
             }
-            .font(.medium14)
+            .font(DesignSystem.Font.medium14)
             
             HStack(spacing: 4) {
                 Text("마감일")
@@ -249,8 +247,8 @@ private extension HomeView {
                     
                 Text(endPeriod)
             }
-            .font(.medium14)
-            .foregroundStyle(Color.black100)
+            .font(DesignSystem.Font.medium14)
+            .foregroundStyle(DesignSystem.Color.black100)
         }
     }
     

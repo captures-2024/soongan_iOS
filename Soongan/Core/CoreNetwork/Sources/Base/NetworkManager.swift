@@ -104,6 +104,20 @@ public final actor NetworkManager {
                 return .success(decodedResponse.responseData)
             }
         case .failure(let error):
+            if let data = response.data {
+                do {
+                    let errorResponse = try JSONDecoder().decode(APIErrorResponse.self, from: data)
+                    
+                    if errorResponse.statusCode == 1103 {
+                        return .failure(.periodExpired)
+                    }
+                    
+                    return .failure(.requestFailed(description: errorResponse.detailMessage))
+                } catch {
+                    return .failure(.requestFailed(description: error.localizedDescription))
+                }
+            }
+            
             return .failure(.requestFailed(description: error.localizedDescription))
         }
     }

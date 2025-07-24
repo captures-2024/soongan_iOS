@@ -52,7 +52,7 @@ public struct PostPictureView: View {
                     TextField("", text: $store.postPictureName,
                               prompt: Text("제목을 입력해주세요.").foregroundColor(Color.init(red: 187/255, green: 187/255, blue: 187/255)))
                     .focused($isFocused)
-                    .font(.bold18)
+                    .font(DesignSystem.Font.bold18, lineHeight: 22)
                     .padding()
                     .frame(height: 46)
                     .tint(.black100)
@@ -67,7 +67,7 @@ public struct PostPictureView: View {
                     .foregroundColor(.black100)
                     
                     Text("\(store.textCount)/15")
-                        .font(.regular8)
+                        .font(DesignSystem.Font.regular8)
                         .foregroundColor(.black100)
                         .padding(.top, 8)
                         .padding(.trailing, 5)
@@ -133,7 +133,9 @@ public struct PostPictureView: View {
                             store.send(.dismissAlertButtonTapped)
                             store.send(.delegate(.backConfirmed))
                         }
-                    ).presentationBackground(.clear)
+                    )
+                    .presentationBackground(.clear)
+                    
                 case .postContestError:
                     CustomAlertView(
                         type: type,
@@ -141,7 +143,9 @@ public struct PostPictureView: View {
                             store.send(.dismissAlertButtonTapped)
                             store.send(.delegate(.backConfirmed))
                         }
-                    ).presentationBackground(.clear)
+                    )
+                    .presentationBackground(.clear)
+                    
                 case .showLoginView:
                     CustomAlertView(
                         type: type,
@@ -149,7 +153,8 @@ public struct PostPictureView: View {
                             store.send(.dismissAlertButtonTapped)
                             store.send(.delegate(.backConfirmed))
                         }
-                    ).presentationBackground(.clear)
+                    )
+                    .presentationBackground(.clear)
                     
                 default:
                     EmptyView()
@@ -195,7 +200,7 @@ private extension PostPictureView {
                                     .frame(width: 40, height: 40)
                                 
                                 Text("출품하기")
-                                    .font(.regular14)
+                                    .font(DesignSystem.Font.regular14)
                                     .foregroundStyle(Color.black100)
                             }
                         }
@@ -220,11 +225,11 @@ private extension PostPictureView {
             Text("\(round)회차")
             
             Text("|")
-                .font(.medium20)
+                .font(DesignSystem.Font.medium20)
             
             Text(weekTopic)
         }
-        .font(.bold20)
+        .font(DesignSystem.Font.bold20)
         .foregroundStyle(Color.black100)
     }
 }

@@ -58,7 +58,7 @@ public extension String {
         
         let outputFormatter = DateFormatter()
         outputFormatter.locale = Locale(identifier: "ko_KR")
-        outputFormatter.timeZone = TimeZone.current
+        outputFormatter.timeZone = TimeZone(secondsFromGMT: 0)
         
         // showTime 값에 따라 날짜 포맷을 다르게 설정합니다.
         outputFormatter.dateFormat = showTime ? "yyyy.MM.dd HH:mm:ss" : "yyyy.MM.dd"

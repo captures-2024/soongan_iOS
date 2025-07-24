@@ -36,8 +36,8 @@ public struct SignupSuccessView: View {
                 
                 Text("\(store.nickname)님!")
             }
-            .font(.semibold36)
-            .foregroundStyle(Color.textFieldBackground)
+            .font(DesignSystem.Font.semibold36, lineHeight: 44)
+            .foregroundStyle(DesignSystem.Color.textFieldBackground)
         }
         .onAppear {
             store.send(.onAppear)

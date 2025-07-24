@@ -48,14 +48,13 @@ public struct LoginView: View {
                 VStack {
                     HStack(alignment: .top, spacing: 0) {
                         Text("순")
-                            .font(.title80)
                             .padding(.bottom, 58)
                         
                         Text("간")
-                            .font(.title80)
                             .padding(.top, 58)
                             .padding(.leading, -9)
                     }
+                    .font(DesignSystem.Font.title80, lineHeight: 112)
                     .padding(.top, 171)
                     
                     Spacer()
@@ -90,7 +89,7 @@ public struct LoginView: View {
                             
                             Text("에 동의하시게 됩니다.")
                         }
-                        .font(.medium12)
+                        .font(DesignSystem.Font.medium12, lineHeight: 16)
                         .foregroundStyle(Color.black100)
                     }
                     
@@ -98,7 +97,7 @@ public struct LoginView: View {
                         store.send(.skippLoginButtonTapped)
                     }) {
                         Text("둘러보기")
-                            .font(.semibold14)
+                            .font(DesignSystem.Font.semibold14, lineHeight: 20)
                             .foregroundStyle(Color.black100)
                             .padding([.top, .bottom], 24)
                     }
