@@ -29,7 +29,7 @@ public extension View {
         }
     }
     
-    func scrollToMinDistance(minDisntance: CGFloat) -> some View {
-        ModifiedContent(content: self, modifier: KeyboardAware(minDisntance: minDisntance))
+    func scrollToMinDistance(minDistance: CGFloat) -> some View {
+        ModifiedContent(content: self, modifier: KeyboardAware(minDistance: minDistance))
     }
 }

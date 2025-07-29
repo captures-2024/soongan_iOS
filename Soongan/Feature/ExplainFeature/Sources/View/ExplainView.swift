@@ -96,7 +96,7 @@ public struct ExplainView: View {
                         UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
                         
                     })
-            .scrollToMinDistance(minDisntance: 32)
+            .scrollToMinDistance(minDistance: 32)
         }
         .navigationBarBackButtonHidden(true)
         .toolbar {
@@ -125,26 +125,6 @@ public struct ExplainView: View {
 // MARK: - Private Extension
 
 private extension ExplainView {
-    func topBackButtonSection() -> some View {
-        HStack {
-            Button {
-                store.send(.backButtonTapped)
-            } label: {
-                HStack(spacing: 0) {
-                    Image.arrowBack
-                        .padding(.trailing, 5)
-                }
-            }
-            .padding(.top, 16)
-            .padding(.leading, 20)
-            
-            Spacer()
-        }
-        .frame(maxWidth: .infinity)
-        .frame(height: 52)
-        .background(DesignSystem.Color.soonganBG)
-    }
-    
     func explainTitleSection(title: String) -> some View {
         VStack(alignment: .leading, spacing: 0) {
             Text("'\(title)'은")

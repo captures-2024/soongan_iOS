@@ -61,9 +61,9 @@ public struct ExplainFeature {
         Reduce { state, action in
             switch action {
             case .binding(\.inputTextEditor):
-                state.isButtonEnable = state.inputTextEditor.count > 0 ? true : false
-                    return .none
-            
+                state.isButtonEnable = !state.inputTextEditor.isEmpty
+                return .none
+                
             case .bottomButtonTapped:
                 let dto = ReportExplainRequestDTO(targetId: 0, targetType: "", explain: state.inputTextEditor)
                 return .run { send in

@@ -8,12 +8,12 @@
 import SwiftUI
 
 struct KeyboardAware: ViewModifier {
-    var minDisntance: CGFloat
+    var minDistance: CGFloat
     @ObservedObject private var keyboard = KeyboardInfo.shared
     
     func body(content: Content) -> some View {
         content
-            .safeAreaPadding(.bottom, keyboard.height > 0 ? minDisntance : 0)
+            .safeAreaPadding(.bottom, keyboard.height > 0 ? minDistance : 0)
     }
 }
 
