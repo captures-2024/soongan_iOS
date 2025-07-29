@@ -24,4 +24,5 @@ public struct HomePostInfoData: Decodable {
     public let imageUrl: String
     public let likeCount: Int
     public let commentCount: Int
+    public let isLiked: Bool
 }
