@@ -28,4 +28,8 @@ public extension View {
             self.font(style.swiftUIFont)
         }
     }
+    
+    func scrollToMinDistance(minDisntance: CGFloat) -> some View {
+        ModifiedContent(content: self, modifier: KeyboardAware(minDisntance: minDisntance))
+    }
 }
