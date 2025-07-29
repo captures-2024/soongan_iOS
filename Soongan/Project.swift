@@ -67,6 +67,7 @@ let project = Project(
                 .project(target: "ContestFeature", path: "Feature/ContestFeature"),
                 .project(target: "AllTimeContestFeature", path: "Feature/AllTimeContestFeature"),
                 .project(target: "MypageFeature", path: "Feature/MypageFeature"),
+                .project(target: "ExplainFeature", path: "Feature/ExplainFeature"),
                 .project(target: "CoreNetwork", path: "Core/CoreNetwork")
             ]
         ),
