@@ -37,7 +37,7 @@ public struct CustomBottomButton: View {
             Text(type.title)
                 .font(type.font)
                 .foregroundStyle(
-                    (type == .report || type == .complete) ?
+                    (type == .report || type == .complete || type == .submit) ?
                         (isEnable ? DesignSystem.Color.black100 : type.textColor) :
                         type.textColor
                 )

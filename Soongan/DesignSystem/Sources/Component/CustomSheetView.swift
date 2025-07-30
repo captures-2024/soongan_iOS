@@ -794,9 +794,14 @@ struct ReportInputReasonConestSection: View {
     
     var body: some View {
         VStack(spacing: 0) {
-            textEditorSection
-                .frame(height: 188)
-                .padding(.bottom, 40)
+            CustomTextEditor(
+                text: $inputText,
+                placeholder: placeholder,
+                characterLimit: characterLimit,
+                isFocused: $isFocused
+            )
+            .frame(height: 188)
+            .padding(.bottom, 40)
             
             CustomBottomButton(
                 type: .report,
@@ -816,44 +821,5 @@ struct ReportInputReasonConestSection: View {
         .onAppear {
             isFocused = true
         }
-    }
-    
-    // MARK: - Subviews
-    
-    /// TextEditor와 관련된 UI를 구성하는 뷰
-    @ViewBuilder
-    private var textEditorSection: some View {
-        ZStack(alignment: .topLeading) {
-            TextEditor(text: $inputText)
-                .padding(10)
-                .focused($isFocused)
-                .font(DesignSystem.Font.regular16)
-                .onChange(of: inputText) { _, newValue in
-                    if newValue.count > characterLimit {
-                        inputText = String(newValue.prefix(characterLimit))
-                    }
-                }
-                .padding(.bottom, 10)
-
-            if inputText.isEmpty {
-                Text(placeholder)
-                    .font(DesignSystem.Font.regular16)
-                    .foregroundColor(DesignSystem.Color.black60)
-                    .padding(15)
-                    .allowsHitTesting(false)
-            }
-            
-            Text("\(inputText.count) / \(characterLimit)")
-                .font(DesignSystem.Font.regular12)
-                .foregroundColor(DesignSystem.Color.black100)
-                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomTrailing)
-                .padding(.trailing, 12)
-                .padding(.bottom, 12)
-                .allowsHitTesting(false)
-        }
-        .background(
-            RoundedRectangle(cornerRadius: 8)
-                .stroke(DesignSystem.Color.black100, lineWidth: 1)
-        )
     }
 }

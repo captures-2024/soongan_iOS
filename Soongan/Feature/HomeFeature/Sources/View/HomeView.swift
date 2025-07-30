@@ -197,7 +197,7 @@ private extension HomeView {
                                 
                                 HStack(spacing: 16) {
                                     HStack(spacing: 4) {
-                                        Image.notSelectLike
+                                        (image.isLiked ? Image.selectLike : Image.notSelectLike)
                                             .resizable()
                                             .frame(width: 12, height: 12)
                                         
@@ -278,11 +278,4 @@ private extension HomeView {
                 HomeFeature()
             }
     )
-}
-
-struct PostImageModel: Identifiable, Equatable {
-    var id: Int
-    let imageURL: String
-    let likeCount: Int
-    let commentCount: Int
 }

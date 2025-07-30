@@ -119,7 +119,8 @@ public struct HomeFeature {
                         id: $0.postId,
                         imageURL: $0.imageUrl,
                         likeCount: $0.likeCount,
-                        commentCount: $0.commentCount
+                        commentCount: $0.commentCount,
+                        isLiked: $0.isLiked
                     )
                 }
                 
