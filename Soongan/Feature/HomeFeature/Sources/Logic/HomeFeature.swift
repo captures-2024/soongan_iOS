@@ -139,7 +139,7 @@ public struct HomeFeature {
                 return .none
                 
             case .pictureTapped(let id):
-                state.path.append(.contestDetail(ContestDetailFeature.State(postId: String(id))))
+                state.path.append(.contestDetail(ContestDetailFeature.State(postId: id)))
                 
                 return .none
                 

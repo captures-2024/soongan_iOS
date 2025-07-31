@@ -106,7 +106,7 @@ public struct AllTimeContestFeature {
                     return .none
                     
                 case .detailContest(.delegate(.showContestDetail(let postId))):
-                    state.path.append(.contestDetail(ContestDetailFeature.State(postId: String(postId))))
+                    state.path.append(.contestDetail(ContestDetailFeature.State(postId: postId)))
                     return .none
                     
                 case .detailContest(.delegate(.moveToContestTab)):

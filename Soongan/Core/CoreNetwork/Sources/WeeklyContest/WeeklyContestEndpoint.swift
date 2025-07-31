@@ -11,9 +11,9 @@ import Foundation
 public enum WeeklyContestEndpoint {
     case getContest(SearchWeeklyContestRequestDTO)
     case postContest(PostWeeklyContestRequestDTO)
-    case getDetailContest(postId: String)
-    case deleteContest(postId: String)
-    case patchContest(postId: String)
+    case getDetailContest(postId: Int)
+    case deleteContest(postId: Int)
+    case patchContest(postId: Int)
     case getContestList
     case getMyContest(SearchMyContestRequestDTO)
 }

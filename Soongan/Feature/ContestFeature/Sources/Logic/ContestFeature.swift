@@ -78,7 +78,7 @@ public struct ContestFeature {
         case chagneContestIndex
         case dismissContestSheet(Bool)
         case dismissSortContestSheet(Bool)
-        case contestDetailImageTapped(String)
+        case contestDetailImageTapped(Int)
         case sortContestContentTapped
         case changeSortContestType(SortContestDataType)
     }
@@ -146,7 +146,7 @@ public struct ContestFeature {
                 state.rightContestImageList.removeAll()
                 
                 for (index, item) in response.posts.enumerated() {
-                    let model = ContestImageModel(id: String(item.postId), imageUrl: item.imageUrl, nickname: item.nickname)
+                    let model = ContestImageModel(id: item.postId, imageUrl: item.imageUrl, nickname: item.nickname)
                     if index % 2 == 0 {
                         state.leftContestImageList.append(model)
                     } else {

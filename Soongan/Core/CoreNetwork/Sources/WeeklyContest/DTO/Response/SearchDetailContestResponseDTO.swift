@@ -9,6 +9,7 @@ import Foundation
 
 public struct SearchDetailContestResponseDTO: Decodable {
     public let memberId: Int?
+    public let authorMemberId: Int
     public let postId: Int
     public let title: String
     public let imageUrl: String

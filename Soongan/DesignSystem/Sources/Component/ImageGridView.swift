@@ -122,11 +122,11 @@ public struct ImageGridView: View {
 //}
 
 public struct ContestImageModel: Identifiable, Hashable {
-    public var id: String
+    public var id: Int
     public let imageUrl: String
     public let nickname: String?
     
-    public init(id: String, imageUrl: String, nickname: String? = nil) {
+    public init(id: Int, imageUrl: String, nickname: String? = nil) {
         self.id = id
         self.imageUrl = imageUrl
         self.nickname = nickname
