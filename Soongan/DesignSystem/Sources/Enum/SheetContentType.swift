@@ -18,11 +18,11 @@ public enum SheetContentType: Identifiable, Equatable {
     case alarmSetting
     case contestReport
     case spam
-    case infringement
+    case infringement(inputState: Bool)
     case inappropriateContent
     case hateSpeech
     case promotion
-    case other
+    case other(inputState: Bool)
     case reportComplete(type: ContestReportReasonType)
     case detailContestOption(isWriter: Bool)
     case sortContest
@@ -75,8 +75,16 @@ public enum SheetContentType: Identifiable, Equatable {
         case .alarmSetting: return [.height(380)]
         case .contestReport: return [.height(432)]
         case .spam, .inappropriateContent, .hateSpeech, .promotion: return [.height(288)]
-        case .infringement, .other: return [.height(404)]
-        case .reportComplete: return [.height(456)]
+        case .infringement(let inputState), .other(let inputState):
+            return inputState == true ? [.height(288)] : [.height(390)]
+            
+        case .reportComplete(let type):
+            switch type {
+            case .infringement, .other:
+                return [.height(456)]
+            default:
+                return [.height(384)]
+            }
         case .detailContestOption, .sortContest: return [.height(240)]
         case .selectProfile: return [.height(165)]
         }

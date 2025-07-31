@@ -122,12 +122,12 @@ extension AppDelegate: MessagingDelegate {
         }
         
         // 토큰이 변경되었음을 알리는 노티피케이션 발송
-        let dataDict: [String: String] = ["token": fcmToken ?? ""]
-        NotificationCenter.default.post(
-            name: Notification.Name("FCMToken"),
-            object: nil,
-            userInfo: dataDict
-        )
+//        let dataDict: [String: String] = ["token": fcmToken ?? ""]
+//        NotificationCenter.default.post(
+//            name: Notification.Name("FCMToken"),
+//            object: nil,
+//            userInfo: dataDict
+//        )
         
         // 서버에 토큰 전송 (필요시)
         Task {
@@ -205,7 +205,7 @@ extension AppDelegate: UNUserNotificationCenterDelegate {
         
         let userInfo = response.notification.request.content.userInfo
         print("알림 탭:", userInfo)
-//        decodeUserInfo(userInfo)
+        decodeUserInfo(userInfo)
         
         // TODO: 알림 탭 시 특정 화면으로 이동하는 로직 구현
         

@@ -21,8 +21,8 @@ public struct ContestDetailFeature {
     
     @ObservableState
     public struct State: Equatable {
-        var postId: String
-        var userId: Int?
+        var postId: Int
+        var postUserId: Int?
         var myNickname: String?
         
         var contestTitle: String?
@@ -30,6 +30,8 @@ public struct ContestDetailFeature {
         var contestAuthor: String?
         var isLiked: Bool?
         var likeCount: String?
+        
+        var reportReason: String?
         
         var isDeleteAlertPresented: Bool = false
         var isDeleteCompleteAlertPresented: Bool = false
@@ -40,13 +42,14 @@ public struct ContestDetailFeature {
         
         var activeSheet: SheetContentType?
         var reportReasonSheet: SheetContentType?
+        var completeReportSheet: SheetContentType?
         
         var isWriter: Bool {
             return myNickname == contestAuthor
         }
         
         public init (
-            postId: String
+            postId: Int
         ) {
             self.postId = postId
         }
@@ -67,8 +70,8 @@ public struct ContestDetailFeature {
         
         case onAppear
         case reportReasonButtonTapped(type: ContestReportReasonType, reason: String)
-        case postReport(type: ContestReportReasonType, reason: String?)
-        case reportSuccess(ReportResponseDTO)
+        case postReport(type: ContestReportReasonType)
+        case reportSuccess(ReportResponseDTO, ContestReportReasonType)
         
         case likeButtonTapped
         case optionButtonTapped
@@ -78,6 +81,7 @@ public struct ContestDetailFeature {
         
         case reportSheetIsPresented
         case optionSheetIsPresented(ContestReportReasonType)
+        case completeReportSheetIsPresented(ContestReportReasonType)
         case dismissOptionSheet(Bool)
         case dismissReportOptionSheet(Bool)
         case dismissFullSizeImageSheet(Bool)
@@ -130,7 +134,7 @@ public struct ContestDetailFeature {
                 }
                 
             case .onAppearSuccess(let response):
-                state.userId = response.memberId
+                state.postUserId = response.authorMemberId
                 state.contestTitle = response.title
                 state.contestAuthor = response.nickname
                 state.imageUrl = response.imageUrl
@@ -156,7 +160,7 @@ public struct ContestDetailFeature {
                     state.activeSheet = .hateSpeech
                     
                 case .infringement:
-                    state.activeSheet = .infringement
+                    state.reportReasonSheet = .infringement(inputState: false)
                     
                 case .spam:
                     state.activeSheet = .spam
@@ -165,8 +169,13 @@ public struct ContestDetailFeature {
                     state.activeSheet = .promotion
                     
                 case .other:
-                    state.activeSheet = .other
+                    state.reportReasonSheet = .other(inputState: false)
                 }
+                
+                return .none
+                
+            case .completeReportSheetIsPresented(let type):
+                state.completeReportSheet = .reportComplete(type: type)
                 
                 return .none
                 
@@ -282,14 +291,12 @@ public struct ContestDetailFeature {
             case .backButtonTapped:
                 return .send(.delegate(.backConfirmed))
                 
-            case .postReport(let type, let reason):
-                guard let id = state.userId else { return .none }
-                
+            case .postReport(let type):
                 let dto = ReportRequestDTO(
-                    targetId: id,
+                    targetId: state.postId,
                     targetType: "WEEKLY_POST",
                     reportType: type.typeTitle,
-                    reason: reason
+                    reason: state.reportReason
                 )
                 
                 return .run { send in
@@ -297,18 +304,21 @@ public struct ContestDetailFeature {
                     
                     switch result {
                     case .success(let responseResult):
-                        await send(.reportSuccess(responseResult))
+                        await send(.reportSuccess(responseResult, type))
                     case .failure(let error):
                         break
                     }
                 }
                 
-            case .reportSuccess(let response):
-                
-                return .none
+            case .reportSuccess(let response, let type):
+                state.reportReason = nil
+                return .send(.completeReportSheetIsPresented(type))
                 
             case .reportReasonButtonTapped(let type, let reason):
-                return .send(.postReport(type: type, reason: reason))
+                state.reportReason = reason
+                state.activeSheet = type == .other ? .other(inputState: true) : .infringement(inputState: true)
+                
+                return .none
                 
             default:
                 return .none
