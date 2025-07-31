@@ -316,7 +316,15 @@ public struct ContestDetailFeature {
                 
             case .reportReasonButtonTapped(let type, let reason):
                 state.reportReason = reason
-                state.activeSheet = type == .other ? .other(inputState: true) : .infringement(inputState: true)
+
+                switch type {
+                  case .other:
+                      state.activeSheet = .other(inputState: true)
+                  case .infringement:
+                      state.activeSheet = .infringement(inputState: true)
+                  default:
+                      break
+                  }
                 
                 return .none
                 
