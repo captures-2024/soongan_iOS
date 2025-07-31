@@ -14,6 +14,6 @@ public struct ReportResponseDTO: Decodable {
     let targetId: Int
     let targetType: String
     let reportType: String
-    let reason: String
+    let reason: String?
     let reportHistories: [ReportHistoryData]
 }

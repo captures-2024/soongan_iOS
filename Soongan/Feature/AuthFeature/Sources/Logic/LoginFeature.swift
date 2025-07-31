@@ -10,6 +10,7 @@ import SwiftUI
 import CoreAppleLogin
 import CoreKakaoLogin
 import CoreKeyChain
+import CoreUserDefault
 import CoreNetwork
 import DesignSystem
 import Shared
@@ -50,6 +51,7 @@ public struct LoginFeature {
     
     @Dependency(\.appleLoginService) var appleLoginService
     @Dependency(\.kakaoLoginService) var kakaoLoginService
+    @Dependency(\.userDefaultsClient) var userDefaultsClient
     @Dependency(\.openURL) var openURL
     
     // MARK: - Action
@@ -146,6 +148,9 @@ public struct LoginFeature {
                         if myResult.nickname == nil && myResult.birthYear == nil {
                             await send(.isSignupComplete(false))
                         } else {
+                            if let nickname = myResult.nickname {
+                                await userDefaultsClient.setString(nickname, forKey: UserDefaultKeys.User.username.rawValue)
+                            }
                             await send(.isSignupComplete(true))
                         }
                         
@@ -195,13 +200,8 @@ public struct LoginFeature {
                 return .none
             
             case .path(.element(id: _, action: .signupSuccess(.delegate(.showMainTab)))):
-                print("LoginFeature 로 데이터 옴")
                 return .send(.delegate(.loginSuccess))
-//            case .path(.element(id: _, action: .signupSuccess(T##SignupSuccessFeature.Action)))
-//            case .path(.element(id: _, action: .signup(.showSignupView))):
-//                state.path.append(.signup(SignupFeature.State()))
-//                return .none
-                
+
             case .path(.element(id: _, action: .signup(.backButtonTapped))):
                 state.path.removeLast()
                 return .none

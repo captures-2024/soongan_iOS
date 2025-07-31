@@ -91,7 +91,7 @@ public struct MypageFeature {
         
         case myInfoActionSuccess(MyprofileOptionType)
         case successSheetComplete(MypageSuccessSheetType)
-        case contestDetailImageTapped(String)
+        case contestDetailImageTapped(Int)
         
         case deleteMyInfomation
         
@@ -147,7 +147,7 @@ public struct MypageFeature {
                 state.rightContestImageList.removeAll()
                 
                 for (index, item) in response.postInfo.enumerated() {
-                    let model = ContestImageModel(id: String(item.postId), imageUrl: item.imageUrl)
+                    let model = ContestImageModel(id: item.postId, imageUrl: item.imageUrl)
                     if index % 2 == 0 {
                         state.leftContestImageList.append(model)
                     } else {
@@ -160,6 +160,10 @@ public struct MypageFeature {
             case let .path(.element(id: _, action: action)):
                 switch action {
                 case .editProfile(.backButtonTapped), .editProfile(.delegate(.backButtonTapped)), .alarmList(.backButtonTapped), .questionsList(.backButtonTapped):
+                    state.path.removeLast()
+                    return .none
+                    
+                case .contestDetail(.delegate(.backConfirmed)):
                     state.path.removeLast()
                     return .none
                     

@@ -122,32 +122,54 @@ public struct CustomSheetView<T: Equatable & CaseIterable>: View {
                 .padding(.top, 12)
                 
             case .spam:
-                reportContentSection(reportType: .spam, action: {})
+                reportContentSection(reportType: .spam, action: { type in
+                    reportAction?(type, "")
+                })
                     .padding(.top, 40)
                 
-            case .infringement:
-                ReportInputReasonConestSection(action: reportAction ?? { _, _ in }, type: .infringement)
-                .padding(.top, 40)
+            case .infringement(let inputState):
+                if inputState {
+                    reportContentSection(reportType: .infringement, action: { type in
+                        reportAction?(type, "")
+                    })
+                        .padding(.top, 40)
+                } else {
+                    ReportInputReasonConestSection(action: reportAction ?? { _, _ in }, type: .infringement)
+                    .padding(.top, 40)
+                }
                 
             case .inappropriateContent:
-                reportContentSection(reportType: .inappropriateContent, action: {})
+                reportContentSection(reportType: .inappropriateContent, action: { type in
+                    reportAction?(type, "")
+                })
                     .padding(.top, 40)
                 
             case .hateSpeech:
-                reportContentSection(reportType: .hateSpeech, action: {})
+                reportContentSection(reportType: .hateSpeech, action: { type in
+                    reportAction?(type, "")
+                })
+                    .padding(.top, 40)
+                
+            case .promotion:
+                reportContentSection(reportType: .promotion, action: { type in
+                    reportAction?(type, "")
+                })
                     .padding(.top, 40)
                 
             case .reportComplete(let type):
                 reportCompleteContentSection(type: type, action: {})
                     .padding(.top, 40)
-                
-            case .promotion:
-                reportContentSection(reportType: .promotion, action: {})
-                    .padding(.top, 40)
             
-            case .other:
-                ReportInputReasonConestSection(action: reportAction ?? { _, _ in }, type: .other)
-                .padding(.top, 40)
+            case .other(let inputState):
+                if inputState {
+                    reportContentSection(reportType: .other, action: { type in
+                        reportAction?(type, "")
+                    })
+                        .padding(.top, 40)
+                } else {
+                    ReportInputReasonConestSection(action: reportAction ?? { _, _ in }, type: .other)
+                    .padding(.top, 40)
+                }
                 
             case .detailContestOption(let isWriter):
                 detailContestOptionSection(isWriter: isWriter, action: { optionType in
@@ -174,7 +196,7 @@ public struct CustomSheetView<T: Equatable & CaseIterable>: View {
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         .presentationDetents(type.height)
-        .presentationBackground(Color.white)
+        .presentationBackground(DesignSystem.Color.soonganBG)
         .presentationCornerRadius(20)
     }
 }
@@ -550,23 +572,21 @@ private extension CustomSheetView {
         }
     }
     
-    func reportContentSection(reportType: ContestReportReasonType, action: @escaping () -> Void) -> some View {
+    func reportContentSection(reportType: ContestReportReasonType, action: @escaping (_ type: ContestReportReasonType) -> Void) -> some View {
         VStack(spacing: 0) {
             VStack(alignment: .leading, spacing: 4) {
-                Text("이 댓글을")
-                    .font(DesignSystem.Font.regular16, lineHeight: 24)
+                Text("이 게시물을")
                 
                 HStack(spacing: 0) {
                     Text(reportType.title)
                         .font(DesignSystem.Font.bold16, lineHeight: 24)
                     
                     Text("(으)로")
-                        .font(DesignSystem.Font.regular16, lineHeight: 24)
                 }
                 
                 Text("정말 신고하겠습니까?")
-                    .font(DesignSystem.Font.regular16, lineHeight: 24)
             }
+            .font(DesignSystem.Font.regular16, lineHeight: 24)
             .padding(.horizontal, 4)
             .foregroundStyle(Color.black100)
             .frame(maxWidth: .infinity, alignment: .leading)
@@ -575,7 +595,7 @@ private extension CustomSheetView {
             CustomBottomButton(
                 type: .comfirm,
                 action: {
-                    action()
+                    action(reportType)
                     dismiss()
                 }
             )
@@ -587,17 +607,24 @@ private extension CustomSheetView {
     func reportCompleteContentSection(type: ContestReportReasonType, action: @escaping () -> Void) -> some View {
         VStack(spacing: 0) {
             VStack(alignment: .leading, spacing: 0) {
-                Text("신고가 완료됐습니다.\n\n해당 게시물은 숨김처리되었습니다.\n\n3일 이내로 검토 후 조치가 이뤄질 예정입니다. 결과가 나오면 알림으로 알려드리겠습니다.")
-                    .padding(.bottom, 20)
+                Text("신고가 완료됐습니다.\n")
+                    .font(DesignSystem.Font.regular16, lineHeight: 24)
                 
-                if type == .infringement {
-                    Text("신고 내용의 구체적인 확인이 더 필요한 경우\n이메일로 연락드릴 예정입니다.")
+                Text("해당 게시물은 숨김처리되었습니다.\n")
+                    .font(DesignSystem.Font.regular16, lineHeight: 24)
+                
+                Text("3일 이내로 검토 후 조치가 이뤄질 예정입니다. 결과가 나오면 알림으로 알려드리겠습니다.")
+                    .font(DesignSystem.Font.regular16, lineHeight: 24)
+                
+                if type == .infringement || type == .other  {
+                    Text("\n신고 내용의 구체적인 확인이 더 필요한 경우\n이메일로 연락드릴 예정입니다.")
+                        .font(DesignSystem.Font.regular16, lineHeight: 24)
                         .underline(color: DesignSystem.Color.black100)
                 }
-                Text("감사합니다")
                 
+                Text("감사합니다.")
+                    .font(DesignSystem.Font.regular16, lineHeight: 24)
             }
-            .font(DesignSystem.Font.regular16, lineHeight: 24)
             .foregroundStyle(DesignSystem.Color.black100)
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(.horizontal, 4)

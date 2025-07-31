@@ -34,11 +34,11 @@ public struct CustomTextEditor: View {
     public var body: some View {
         ZStack(alignment: .topLeading) {
             TextEditor(text: $text)
+                .font(DesignSystem.Font.regular16, lineHeight: 20)
                 .scrollContentBackground(.hidden)
                 .background(DesignSystem.Color.soonganBG)
                 .padding(10)
                 .focused($isFocused)
-                .font(DesignSystem.Font.regular16)
                 .onChange(of: text) { _, newValue in
                     if newValue.count > characterLimit {
                         text = String(newValue.prefix(characterLimit))
@@ -50,7 +50,7 @@ public struct CustomTextEditor: View {
                 Text(placeholder)
                     .font(DesignSystem.Font.regular16)
                     .foregroundColor(DesignSystem.Color.black60)
-                    .padding(15)
+                    .padding(16)
                     .allowsHitTesting(false)
             }
             

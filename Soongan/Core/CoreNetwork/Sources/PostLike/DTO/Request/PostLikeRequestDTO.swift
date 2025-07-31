@@ -8,10 +8,10 @@
 import Foundation
 
 public struct PostLikeRequestDTO: Encodable {
-    let postId: String
+    let postId: Int
     let contestType: String
     
-    public init(postId: String, contestType: String) {
+    public init(postId: Int, contestType: String) {
         self.postId = postId
         self.contestType = contestType
     }

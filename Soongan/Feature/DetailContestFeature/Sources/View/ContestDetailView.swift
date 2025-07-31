@@ -29,9 +29,6 @@ public struct ContestDetailView: View {
     
     public var body: some View {
         baseView
-            .onAppear {
-                store.send(.onAppear)
-            }
             .ignoresSafeArea(edges: .bottom)
             .background(DesignSystem.Color.soonganBG)
             .background(InteractivePopGestureEnabler())
@@ -79,31 +76,16 @@ public struct ContestDetailView: View {
             }
             .sheet(item: $store.activeSheet) { sheetType in
                 CustomSheetView<ContestReportReasonType>(type: sheetType) { type, reportReason in
-                    
-                    switch type {
-                    case .inappropriateContent:
-                        store.isReportInputReasonSheetPresented = true
-                    case .hateSpeech:
-                        break
-                    case .infringement:
-                        break
-                    case .spam:
-                        break
-                    case .promotion:
-                        break
-                    case .other:
-                        store.isReportInputReasonSheetPresented = true
-                    }
+                    store.send(.postReport(type: type))
                 }
             }
-            .sheet(
-                isPresented: $store.isReportInputReasonSheetPresented.sending(\.dismissReportOptionSheet)
-            ) {
-                if let type = store.reportReasonSheet {
-                    CustomSheetView<NeverOption>(type: type) { reportType, reasonText in
-                        store.send(.reportReasonButtonTapped(type: reportType, reason: reasonText))
-                    }
+            .sheet(item: $store.reportReasonSheet) { sheetType in
+                CustomSheetView<NeverOption>(type: sheetType) { reportType, reasonText in
+                    store.send(.reportReasonButtonTapped(type: reportType, reason: reasonText))
                 }
+            }
+            .sheet(item : $store.completeReportSheet) { sheetType in
+                CustomSheetView<ContestReportReasonType>(type: sheetType) { _ in }
             }
             .fullScreenCover(
                 isPresented: $store.isFullSizeImageSheetPresented.sending(\.dismissFullSizeImageSheet)
@@ -213,7 +195,7 @@ public struct ContestDetailView: View {
     NavigationStack {
         ContestDetailView(
             store: Store(initialState:
-                            ContestDetailFeature.State(postId: String(10))) {
+                            ContestDetailFeature.State(postId: 10)) {
                                 ContestDetailFeature()
                             }
         )
