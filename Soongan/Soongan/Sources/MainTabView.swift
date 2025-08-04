@@ -106,7 +106,7 @@ public struct MainTabView: View {
 
 #Preview {
     MainTabView(store:
-        Store(initialState: MainTabFeature.State()) {
+            Store(initialState: MainTabFeature.State(selectedTab: .home)) {
             MainTabFeature()
         }
     )

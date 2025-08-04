@@ -70,6 +70,10 @@ public struct MypageView: View {
             .frame(maxHeight: .infinity)
             .toolbar(.hidden, for: .tabBar)
             .background(DesignSystem.Color.soonganBG)
+            .background(alertHostingView)
+            .onAppear {
+                store.send(.onAppear)
+            }
             .sheet(
                 isPresented: $store.isOptionSheetPresented.sending(\.dismissOptionSheet)
             ) {
@@ -87,9 +91,6 @@ public struct MypageView: View {
                     store.successSheet = nil
                     store.send(.deleteMyInfomation)
                 }
-            }
-            .onAppear {
-                store.send(.onAppear)
             }
         } destination: { store in
             switch store.case {
@@ -112,7 +113,7 @@ private extension MypageView {
     func rightButtonsSection() -> some View {
         HStack(spacing: 28) {
             Button(action: {
-                store.send(.alarmButtonTapped)
+                store.send(.uiAction(.alarmButtonTapped))
             }){
                 Image.alarmIcon
                     .resizable()
@@ -140,7 +141,7 @@ private extension MypageView {
                 .padding(.bottom, 12)
             
             Button(action: {
-                store.send(.joinToContestButtonTapped)
+                store.send(.uiAction(.joinToContestButtonTapped))
             }) {
                 VStack(spacing: 4) {
                     Text("참가하러 가기")
@@ -155,6 +156,25 @@ private extension MypageView {
             Spacer(minLength: 370)
         }
         .foregroundStyle(Color.black100)
+    }
+    
+    @ViewBuilder
+    var alertHostingView: some View {
+        Color.clear.fullScreenCover(isPresented: $store.isLoginAlertPresented) {
+            CustomAlertView(
+                type: .showLoginView,
+                onBackgroundTap: {
+                    store.send(.dismissLoginAlert)
+                },
+                centerButtonAction: {
+                    store.send(.dismissAlertButtonTapped)
+                }
+            )
+            .presentationBackground(.clear)
+        }
+        .transaction { transaction in
+            transaction.disablesAnimations = true
+        }
     }
 }
 

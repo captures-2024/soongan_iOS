@@ -81,6 +81,12 @@ public struct ContestFeature {
         case contestDetailImageTapped(Int)
         case sortContestContentTapped
         case changeSortContestType(SortContestDataType)
+        
+        case delegate(DelegateAction)
+
+        public enum DelegateAction {
+            case logoutRequested
+        }
     }
     
     // MARK: - Body
@@ -166,6 +172,8 @@ public struct ContestFeature {
                 case .contestDetail(.delegate(.backConfirmed)):
                     state.path.removeLast()
                     return .none
+                case .contestDetail(.delegate(.didRequestLogout)):
+                    return .send(.delegate(.logoutRequested))
                 default:
                     return .none
                 }
@@ -208,6 +216,9 @@ public struct ContestFeature {
                 state.isSortSheetPresented = false
                 
                 return .send(.fetchContestPosts)
+                
+            case .delegate:
+                return .none
                 
             default:
                 return .none

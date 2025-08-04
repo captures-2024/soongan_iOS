@@ -62,6 +62,7 @@ public struct AllTimeContestFeature {
                 
         public enum Delegate {
             case moveToContestTab
+            case logoutRequested
         }
     }
     
@@ -104,6 +105,9 @@ public struct AllTimeContestFeature {
                 case .contestDetail(.backButtonTapped):
                     state.path.removeLast()
                     return .none
+                    
+                case .contestDetail(.delegate(.didRequestLogout)):
+                    return .send(.delegate(.logoutRequested))
                     
                 case .detailContest(.delegate(.showContestDetail(let postId))):
                     state.path.append(.contestDetail(ContestDetailFeature.State(postId: postId)))

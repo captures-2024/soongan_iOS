@@ -76,6 +76,7 @@ public struct HomeFeature {
         
         case showNotLoginUserAlert
         case dismissAlertButtonTapped
+        case dismissLoginAlert
         
         case homeInfoSuccess(SearchHomeInfoResponseDTO)
         
@@ -83,6 +84,7 @@ public struct HomeFeature {
                 
         public enum Delegate {
             case moveToContestTab
+            case didRequestLogout
         }
     }
     
@@ -159,6 +161,11 @@ public struct HomeFeature {
                 return .none
                 
             case .dismissAlertButtonTapped:
+                state.isAlertPresented = false
+                
+                return .send(.delegate(.didRequestLogout))
+                
+            case .dismissLoginAlert:
                 state.isAlertPresented = false
                 
                 return .none

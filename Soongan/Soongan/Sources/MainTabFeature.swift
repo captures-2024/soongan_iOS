@@ -23,7 +23,7 @@ public struct MainTabFeature {
     
     @ObservableState
     public struct State: Equatable {
-        var selectedTab: Tab = .home
+        var selectedTab: Tab// = .home
         var home: HomeFeature.State = .init(weekTopic: "평화", startPeriod: "2024.05.10 09:00:00", endPeriod: "2024.05.16 23:59:59")
         var contest: ContestFeature.State = .init()
         var allTimeContest: AllTimeContestFeature.State = .init()
@@ -59,6 +59,12 @@ public struct MainTabFeature {
         case contest(ContestFeature.Action)
         case allTimeContest(AllTimeContestFeature.Action)
         case mypage(MypageFeature.Action)
+        
+        case delegate(Delegate)
+                
+        public enum Delegate {
+            case logoutCompleted
+        }
     }
     
     // MARK: - Body
@@ -91,18 +97,30 @@ public struct MainTabFeature {
                 case .delegate(.moveToContestTab):
                     state.selectedTab = .contest
                     return .none
+                    
+                case .delegate(.didRequestLogout):
+                    return .send(.delegate(.logoutCompleted))
+                    
                 default:
                     return .none
                 }
                 
-            case .contest:
-                return .none
+            case .contest(let contestAction):
+                switch contestAction {
+                case .delegate(.logoutRequested):
+                    return .send(.delegate(.logoutCompleted))
+                default:
+                    return .none
+                }
                 
             case .allTimeContest(let allTimeAction):
                 switch allTimeAction {
                 case .delegate(.moveToContestTab):
                     state.selectedTab = .contest
                     return .none
+                    
+                case .delegate(.logoutRequested):
+                    return .send(.delegate(.logoutCompleted))
                     
                 default:
                     return .none
@@ -114,9 +132,15 @@ public struct MainTabFeature {
                     state.selectedTab = .home
                     return .none
                     
+                case .delegate(.didRequestLogout):
+                    return .send(.delegate(.logoutCompleted))
+                    
                 default:
                     return .none
                 }
+                
+            case .delegate:
+                return .none
             }
         }
     }
