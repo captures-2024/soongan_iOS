@@ -10,7 +10,7 @@ import SwiftUI
 public struct CustomAlertView: View {
     
     private var type: AlertType
-
+    private var onBackgroundTap: (() -> Void)?
     private var centerButtonAction: (() -> Void)?
     private var leftButtonAction: (() -> Void)?
     private var rightButtonAction: (() -> Void)?
@@ -19,11 +19,13 @@ public struct CustomAlertView: View {
     
     public init(
         type: AlertType,
+        onBackgroundTap: (() -> Void)? = nil,
         centerButtonAction: (() -> Void)? = nil,
         leftButtonAction: (() -> Void)? = nil,
         rightButtonAction: (() -> Void)? = nil
     ) {
         self.type = type
+        self.onBackgroundTap = onBackgroundTap
         self.centerButtonAction = centerButtonAction
         self.leftButtonAction = leftButtonAction
         self.rightButtonAction = rightButtonAction
@@ -36,6 +38,9 @@ public struct CustomAlertView: View {
             DesignSystem.Color.black100
                 .opacity(0.5)
                 .ignoresSafeArea()
+                .onTapGesture {
+                    onBackgroundTap?()
+                }
             
             VStack {
                 Image.soonganLogo
