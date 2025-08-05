@@ -226,7 +226,7 @@ public struct ContestDetailFeature {
                     case .success(let responseResult):
                         await send(.networkAction(.likeContestSuccess(isLike: isLiked, responseResult)))
                     case .failure(let error):
-                        await send(.networkAction(.onAppearDetailContestFailure(error)))
+                        await send(.networkAction(.likeContestFailure(error)))
                     }
                 }
             
@@ -234,6 +234,10 @@ public struct ContestDetailFeature {
                 state.likeCount = formatLikeCount(response.likeCount)
                 state.isLiked = !isLike
                 
+                return .none
+            
+            case .networkAction(.likeContestFailure(let error)):
+                // TODO: - 좋아요 에러
                 return .none
                 
             case .deleteButtonTapped:
