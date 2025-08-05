@@ -21,6 +21,8 @@ public struct ContestDetailFeature {
     
     @ObservableState
     public struct State: Equatable {
+        @Shared(.appStorage("AuthState")) var authState: AuthType = .loggedOut
+        
         var postId: Int
         var postUserId: Int?
         var myNickname: String?
@@ -39,6 +41,7 @@ public struct ContestDetailFeature {
         var isReportOptionSheetPresented: Bool = false
         var isFullSizeImageSheetPresented: Bool = false
         var isReportInputReasonSheetPresented: Bool = false
+        var isLoginAlertPresented: Bool = false
         
         var activeSheet: SheetContentType?
         var reportReasonSheet: SheetContentType?
@@ -68,13 +71,15 @@ public struct ContestDetailFeature {
     public enum Action: BindableAction {
         case binding(BindingAction<State>)
         
+        case alertAction(AlertAction)
+        case networkAction(NetworkAction)
+        case uiAction(UIAction)
+        
         case onAppear
         case reportReasonButtonTapped(type: ContestReportReasonType, reason: String)
         case postReport(type: ContestReportReasonType)
         case reportSuccess(ReportResponseDTO, ContestReportReasonType)
         
-        case likeButtonTapped
-        case optionButtonTapped
         case deleteOptionButtonTapped
         case deleteButtonTapped
         case contestImageTapped
@@ -91,19 +96,37 @@ public struct ContestDetailFeature {
         
         case backButtonTapped
         
-        case onAppearSuccess(SearchDetailContestResponseDTO)
-        case likeButtonTappedSuccess(isLike: Bool, PostLikeResponseDTO)
         case deleteActionResult(Bool)
         case deleteCompletedButtonTapped
         case presentDeleteAlert
         case dismissDeleteAlert
-        case contestDetailError(Error)
         
         case delegate(DelegateAction)
 
         public enum DelegateAction {
             case backConfirmed
+            case didRequestLogout
         }
+    }
+    
+    public enum AlertAction {
+        case notAuthUserAlert
+        case presentLoginAlert
+        case dismissAlertButtonTapped
+        case dismissLoginAlert
+    }
+    
+    public enum NetworkAction {
+        case onAppearDetailContestSuccess(SearchDetailContestResponseDTO)
+        case onAppearDetailContestFailure(NetworkError)
+        case fetchLikeContest
+        case likeContestSuccess(isLike: Bool, PostLikeResponseDTO)
+        case likeContestFailure(NetworkError)
+    }
+    
+    public enum UIAction {
+        case likeButtonTapped
+        case optionButtonTapped
     }
     
     // MARK: - Body
@@ -127,19 +150,24 @@ public struct ContestDetailFeature {
                     
                     switch contestResult {
                     case .success(let responseResult):
-                        await send(.onAppearSuccess(responseResult))
+                        await send(.networkAction(.onAppearDetailContestSuccess(responseResult)))
                     case .failure(let error):
-                        await send(.contestDetailError(error))
+                        await send(.networkAction(.onAppearDetailContestFailure(error)))
                     }
                 }
                 
-            case .onAppearSuccess(let response):
+            case .networkAction(.onAppearDetailContestSuccess(let response)):
                 state.postUserId = response.authorMemberId
                 state.contestTitle = response.title
                 state.contestAuthor = response.nickname
                 state.imageUrl = response.imageUrl
                 state.isLiked = response.isLiked
                 state.likeCount = formatLikeCount(response.likeCount)
+                
+                return .none
+                
+            case .networkAction(.onAppearDetailContestFailure(let error)):
+                // TODO: - Error 처리
                 
                 return .none
                 
@@ -179,7 +207,14 @@ public struct ContestDetailFeature {
                 
                 return .none
                 
-            case .likeButtonTapped:
+            case .uiAction(.likeButtonTapped):
+                if state.authState == .skipped {
+                    return .send(.alertAction(.presentLoginAlert))
+                }
+                    
+                return .send(.networkAction(.fetchLikeContest))
+                
+            case .networkAction(.fetchLikeContest):
                 let dto = PostLikeRequestDTO(postId: state.postId, contestType: "WEEKLY")
                 
                 let isLiked = state.isLiked ?? false
@@ -189,16 +224,20 @@ public struct ContestDetailFeature {
                     
                     switch result {
                     case .success(let responseResult):
-                        await send(.likeButtonTappedSuccess(isLike: isLiked, responseResult))
+                        await send(.networkAction(.likeContestSuccess(isLike: isLiked, responseResult)))
                     case .failure(let error):
-                        await send(.contestDetailError(error))
+                        await send(.networkAction(.likeContestFailure(error)))
                     }
                 }
             
-            case .likeButtonTappedSuccess(let isLike, let response):
+            case .networkAction(.likeContestSuccess(let isLike, let response)):
                 state.likeCount = formatLikeCount(response.likeCount)
                 state.isLiked = !isLike
                 
+                return .none
+            
+            case .networkAction(.likeContestFailure(let error)):
+                // TODO: - 좋아요 에러
                 return .none
                 
             case .deleteButtonTapped:
@@ -279,7 +318,7 @@ public struct ContestDetailFeature {
                 
                 return .none
                 
-            case .optionButtonTapped:
+            case .uiAction(.optionButtonTapped):
                 state.isContestOptionSheetPresented = true
                 
                 return .none
@@ -326,6 +365,26 @@ public struct ContestDetailFeature {
                       break
                   }
                 
+                return .none
+                
+            case .alertAction(.notAuthUserAlert):
+                state.isContestOptionSheetPresented = false
+
+                return .run { send in
+                    try await Task.sleep(nanoseconds: 100_000_000)
+                    await send(.alertAction(.presentLoginAlert))
+                }
+                
+            case .alertAction(.presentLoginAlert):
+                state.isLoginAlertPresented = true
+                return .none
+            
+            case .alertAction(.dismissAlertButtonTapped):
+                state.isLoginAlertPresented = false
+                return .send(.delegate(.didRequestLogout))
+                
+            case .alertAction(.dismissLoginAlert):
+                state.isLoginAlertPresented = false
                 return .none
                 
             default:

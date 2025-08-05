@@ -19,8 +19,20 @@ public struct AppFeature {
     @ObservableState
     public struct State: Equatable {
         @Shared(.appStorage("AuthState")) var authState: AuthType = .loggedOut
-        var login: LoginFeature.State = LoginFeature.State()
-        var mainTab: MainTabFeature.State = MainTabFeature.State()
+        
+        var login: LoginFeature.State?
+        var mainTab: MainTabFeature.State?
+        
+        public init() {
+            // 앱 시작 시 authState에 따라 초기 상태를 설정
+            if authState == .loggedOut {
+                self.login = LoginFeature.State()
+                self.mainTab = nil
+            } else {
+                self.login = nil
+                self.mainTab = MainTabFeature.State(selectedTab: .home)
+            }
+        }
     }
     
     public enum Action {
@@ -29,33 +41,39 @@ public struct AppFeature {
     }
     
     public var body: some ReducerOf<Self> {
-        Scope(state: \.login, action: \.login) {
-            LoginFeature()
-        }
-        
-        Scope(state: \.mainTab, action: \.mainTab) {
-            MainTabFeature()
-        }
-        
         Reduce { state, action in
             switch action {
-            case .login(.delegate(.loginSuccess)):
-                
-                print("AppFeature 로 데이터 옴")
-                state.$authState.withLock { $0 = .loggedIn }
+            case .login(.delegate(let delegateAction)):
+                switch delegateAction {
+                case .loginSuccess:
+                    state.$authState.withLock { $0 = .loggedIn }
+                    state.mainTab = MainTabFeature.State(selectedTab: .home)
+                    state.login = nil
+                    
+                case .skippAuth:
+                    state.$authState.withLock { $0 = .skipped }
+                    state.mainTab = MainTabFeature.State(selectedTab: .home)
+                    state.login = nil
+                }
                 
                 return .none
                 
-            case .login(.delegate(.skippAuth)):
-                state.$authState.withLock { $0 = .skipped }
-                return .none
-            
-            case .mainTab:
+            case .mainTab(.delegate(.logoutCompleted)):
+                state.$authState.withLock { $0 = .loggedOut }
+                state.login = LoginFeature.State()
+                state.mainTab = nil
+                
                 return .none
                 
             default:
                 return .none
             }
+        }
+        .ifLet(\.login, action: \.login) {
+            LoginFeature()
+        }
+        .ifLet(\.mainTab, action: \.mainTab) {
+            MainTabFeature()
         }
     }
 }

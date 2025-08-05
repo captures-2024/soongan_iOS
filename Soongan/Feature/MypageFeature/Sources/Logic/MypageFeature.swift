@@ -42,6 +42,7 @@ public struct MypageFeature {
         var isOptionSheetPresented: Bool = false
         var shouldNavigateToEditProfile: Bool = false
         var shouldNavigateToQuestionsList: Bool = false
+        var isLoginAlertPresented: Bool = false
         
         var userName = ""
         var userIntroduce = ""
@@ -64,6 +65,7 @@ public struct MypageFeature {
     
     // MARK: - Dependency
     
+    @Dependency(\.userDefaultsClient) var userDefaultsClient
     @Dependency(\.openURL) var openURL
     
     // MARK: - Action
@@ -74,17 +76,18 @@ public struct MypageFeature {
         case binding(BindingAction<State>)
         
         case onAppear
-        case alarmButtonTapped
-        case joinToContestButtonTapped
+        case alertAction(AlertAction)
+        case networkAction(NetworkAction)
+        case uiAction(UIAction)
+        
         case optionButtonTapped
         case optionSheetIsPresented(MyprofileOptionType)
         case profileOptionTapped(MyprofileOptionType)
         case presentSheet(SheetContentType)
         case dismissOptionSheet(Bool)
         case dismissSheet
-        
-        case myInfoSuccess(SearchMyProfileResponseDTO)
-        case myContestInfoSuccess(SearchMyContestResponseDTO)
+        case dismissLoginAlert
+        case dismissAlertButtonTapped
         
         case logoutSuccess
         case withdrawSuccess
@@ -99,7 +102,24 @@ public struct MypageFeature {
                 
         public enum Delegate {
             case moveToJoinContest
+            case didRequestLogout
         }
+    }
+    
+    public enum AlertAction {
+        case presentLoginAlert
+    }
+    
+    public enum NetworkAction {
+        case onAppearMyInfoSuccess(SearchMyProfileResponseDTO)
+        case onAppearMyContestInfoSuccess(SearchMyContestResponseDTO)
+        case onAppearMyInfoFailure(NetworkError)
+        case onAppearMyContestInfoFailure(NetworkError)
+    }
+    
+    public enum UIAction {
+        case alarmButtonTapped
+        case joinToContestButtonTapped
     }
     
     // MARK: - Body
@@ -110,6 +130,12 @@ public struct MypageFeature {
         Reduce { state, action in
             switch action {
             case .onAppear:
+                if state.authState == .skipped {
+                    state.userName = "로그인이 필요해요"
+                    state.userIntroduce = "로그인 후 본인을 소개해주세요"
+                    return .none
+                }
+
                 let dto = SearchMyContestRequestDTO(page: 0, pageSize: 50)
                 
                 return .run { send in
@@ -120,29 +146,27 @@ public struct MypageFeature {
                     
                     switch infoResult {
                     case .success(let info):
-                        await send(.myInfoSuccess(info))
+                        await send(.networkAction(.onAppearMyInfoSuccess(info)))
                     case .failure(let error):
-                        print("Profile Error: \(error.localizedDescription)")
-//                        await send(.myInfoFailure(error))
+                        await send(.networkAction(.onAppearMyInfoFailure(error)))
                     }
 
                     switch contestResult {
                     case .success(let contest):
-                        await send(.myContestInfoSuccess(contest))
+                        await send(.networkAction(.onAppearMyContestInfoSuccess(contest)))
                     case .failure(let error):
-                        print("Contest Error: \(error.localizedDescription)")
-//                        await send(.myContestFailure(error))
+                        await send(.networkAction(.onAppearMyContestInfoFailure(error)))
                     }
                 }
                 
-            case .myInfoSuccess(let response):
+            case .networkAction(.onAppearMyInfoSuccess(let response)):
                 state.userName = response.nickname ?? ""
                 state.userIntroduce = response.selfIntroduction ?? "본인을 소개시켜주세요"
                 state.userProfileImageUrl = response.profileImageUrl
                 
                 return .none
                 
-            case .myContestInfoSuccess(let response):
+            case .networkAction(.onAppearMyContestInfoSuccess(let response)):
                 state.leftContestImageList.removeAll()
                 state.rightContestImageList.removeAll()
                 
@@ -155,6 +179,16 @@ public struct MypageFeature {
                     }
                 }
 
+                return .none
+                
+            case .networkAction(.onAppearMyInfoFailure):
+                state.userName = "정보 없음"
+                state.userIntroduce = "본인을 소개시켜주세요"
+                return .none
+                
+            case .networkAction(.onAppearMyContestInfoFailure):
+                state.leftContestImageList.removeAll()
+                state.rightContestImageList.removeAll()
                 return .none
                 
             case let .path(.element(id: _, action: action)):
@@ -174,7 +208,7 @@ public struct MypageFeature {
             case .binding(_):
                 return .none
                 
-            case .alarmButtonTapped:
+            case .uiAction(.alarmButtonTapped):
                 state.path.append(.alarmList(AlarmListFeature.State()))
                 return .none
                 
@@ -187,8 +221,20 @@ public struct MypageFeature {
                 
                 switch tappedOption {
                 case .editMyProfile:
-                    state.shouldNavigateToEditProfile = true
-
+                    switch state.authState {
+                    case .skipped:
+                        state.activeSheet = nil
+                        return .run { send in
+                            try await Task.sleep(nanoseconds: 100_000_000)
+                            await send(.alertAction(.presentLoginAlert))
+                        }
+                        
+                    case .loggedIn:
+                        state.shouldNavigateToEditProfile = true
+                    default:
+                        break
+                    }
+                    
                 case .pushAlarmSetting:
                     state.activeSheet = .alarmSetting
                     
@@ -205,10 +251,34 @@ public struct MypageFeature {
                     state.shouldNavigateToQuestionsList = true
                     
                 case .withdraw:
-                    state.activeSheet = .withdraw
+                    switch state.authState {
+                    case .skipped:
+                        state.activeSheet = nil
+                        return .run { send in
+                            try await Task.sleep(nanoseconds: 100_000_000)
+                            await send(.alertAction(.presentLoginAlert))
+                        }
+
+                    case .loggedIn:
+                        state.activeSheet = .withdraw
+                    default:
+                        break
+                    }
                     
                 case .logout:
-                    state.activeSheet = .logout
+                    switch state.authState {
+                    case .skipped:
+                        state.activeSheet = nil
+                        return .run { send in
+                            try await Task.sleep(nanoseconds: 100_000_000)
+                            await send(.alertAction(.presentLoginAlert))
+                        }
+                        
+                    case .loggedIn:
+                        state.activeSheet = .logout
+                    default:
+                        break
+                    }
                 }
                 
                 return .none
@@ -260,17 +330,41 @@ public struct MypageFeature {
                 return .none
                 
             case .deleteMyInfomation:
-                state.$authState.withLock { $0 = .loggedOut }
+                // 1. Keychain에 저장된 모든 토큰 삭제
                 KeychainManager.shared.clearTokens()
                 
-                return .none
+                // 2. UserDefaults에 저장된 모든 관련 정보 삭제
+                return .run { [userDefaultsClient] send in
+                    // User 관련 정보 삭제
+                    await userDefaultsClient.remove(UserDefaultKeys.User.username.rawValue)
+                    await userDefaultsClient.remove(UserDefaultKeys.User.userID.rawValue)
+                    
+                    // Settings 관련 정보 삭제
+                    await userDefaultsClient.remove(UserDefaultKeys.Settings.isNotificationEnabled.rawValue)
+                    
+                    // 3. 모든 정보 삭제 후, 로그아웃 신호를 부모에게 전달
+                    await send(.delegate(.didRequestLogout))
+                }
                 
             case .contestDetailImageTapped(let postId):
                 state.path.append(.contestDetail(ContestDetailFeature.State(postId: postId)))
                 return .none
                 
-            case .joinToContestButtonTapped:
+            case .uiAction(.joinToContestButtonTapped):
+                if state.authState == .skipped {
+                    state.isLoginAlertPresented = true
+                    return .none
+                }
+                
                 return .send(.delegate(.moveToJoinContest))
+                
+            case .dismissLoginAlert:
+                state.isLoginAlertPresented = false
+                return .none
+                
+            case .dismissAlertButtonTapped:
+                state.isLoginAlertPresented = false
+                return .send(.delegate(.didRequestLogout))
                 
             case .dismissOptionSheet(_):
                 state.isOptionSheetPresented = false
@@ -293,6 +387,10 @@ public struct MypageFeature {
                 
             case .dismissSheet:
                 state.activeSheet = nil
+                return .none
+            
+            case .alertAction(.presentLoginAlert):
+                state.isLoginAlertPresented = true
                 return .none
                 
             default:

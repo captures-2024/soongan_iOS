@@ -257,6 +257,9 @@ private extension HomeView {
         Color.clear.fullScreenCover(isPresented: $store.isAlertPresented) {
             CustomAlertView(
                 type: .showLoginView,
+                onBackgroundTap: {
+                    store.send(.dismissLoginAlert)
+                },
                 centerButtonAction: {
                     store.send(.dismissAlertButtonTapped)
                 }

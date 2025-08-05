@@ -63,7 +63,11 @@ public struct ContestDetailView: View {
                     case .delete:
                         store.send(.deleteOptionButtonTapped)
                     case .report:
-                        store.send(.reportSheetIsPresented)
+                        if store.authState == .skipped {
+                            store.send(.alertAction(.notAuthUserAlert))
+                        } else {
+                            store.send(.reportSheetIsPresented)
+                        }
                     }
                 }
             }
@@ -92,6 +96,7 @@ public struct ContestDetailView: View {
             ) {
                 ZoomableImageView(url: store.imageUrl)
             }
+            .background(alertHostingView)
             .toolbar(.hidden, for: .tabBar)
             .navigationBarBackButtonHidden(true)
             .toolbar {
@@ -156,7 +161,7 @@ public struct ContestDetailView: View {
     func bottomOptionMenuBar(isLiked: Bool, likeCount: String) -> some View {
         HStack(alignment: .top) {
             Button(action: {
-                store.send(.optionButtonTapped)
+                store.send(.uiAction(.optionButtonTapped))
             }) {
                 Image.dotOption
             }
@@ -166,7 +171,7 @@ public struct ContestDetailView: View {
             
             HStack(spacing: 0) {
                 Button(action: {
-                    store.send(.likeButtonTapped)
+                    store.send(.uiAction(.likeButtonTapped))
                 }) {
                     if isLiked {
                         Image.selectLike
@@ -186,6 +191,25 @@ public struct ContestDetailView: View {
         .padding(.bottom, 43)
         .frame(maxWidth: .infinity)
         .background(Color.white)
+    }
+    
+    @ViewBuilder
+    var alertHostingView: some View {
+        Color.clear.fullScreenCover(isPresented: $store.isLoginAlertPresented) {
+            CustomAlertView(
+                type: .showLoginView,
+                onBackgroundTap: {
+                    store.send(.alertAction(.dismissLoginAlert))
+                },
+                centerButtonAction: {
+                    store.send(.alertAction(.dismissAlertButtonTapped))
+                }
+            )
+            .presentationBackground(.clear)
+        }
+        .transaction { transaction in
+            transaction.disablesAnimations = true
+        }
     }
 }
 
