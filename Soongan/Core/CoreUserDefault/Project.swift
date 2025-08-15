@@ -8,7 +8,7 @@ let project = Project(
             destinations: .iOS,
             product: .staticFramework,
             bundleId: "com.captures.CoreUserDefault.Soongan",
-            deploymentTargets: .iOS("17.0"),
+            deploymentTargets: .iOS("18.0"),
             infoPlist: .default,
             sources: ["Sources/**"],
             resources: [],

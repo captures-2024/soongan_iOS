@@ -49,6 +49,7 @@ let project = Project(
             destinations: .iOS,
             product: .framework, // 다른 곳에서 import해서 쓸 수 있도록 .framework로 설정
             bundleId: "com.soongan.\(featureName).Soongan",
+            deploymentTargets: .iOS("18.0"),
             sources: ["Sources/**"], // Feature의 핵심 소스 코드는 Sources 폴더에 위치
             resources: [], // 리소스가 있다면 ["Resources/**"] 추가
             dependencies: [
@@ -69,6 +70,7 @@ let project = Project(
                 destinations: .iOS,
                 product: .app, // 실행 가능한 앱이므로 .app으로 설정
                 bundleId: "com.soongan.\(featureName)App",
+                deploymentTargets: .iOS("18.0"),
                 infoPlist: .extendingDefault(
                     with: [
                         "UILaunchScreen": [

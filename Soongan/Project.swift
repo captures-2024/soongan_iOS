@@ -18,6 +18,7 @@ let project = Project(
             destinations: .iOS,
             product: .app,
             bundleId: "com.captures.Soongan",
+            deploymentTargets: .iOS("18.0"),
             infoPlist: .extendingDefault(
                 with: [
                     "UILaunchScreen": [
