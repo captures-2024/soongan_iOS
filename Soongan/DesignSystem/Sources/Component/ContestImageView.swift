@@ -6,6 +6,9 @@
 //
 
 import SwiftUI
+
+import Shared
+
 import Kingfisher
 
 /// Contest, Mypage View 에 표시될 개별 이미지 뷰입니다.
