@@ -45,13 +45,13 @@ public struct UserProfileView: View {
             if store.leftContestImageList.isEmpty {
                 EmptyView()
             } else {
-                ImageGridView(
-                    leftImageList: store.leftContestImageList,
-                    rightImageList: store.rightContestImageList,
-                    onImageTap: { _ in
-                        
-                })
-                .padding(.bottom, 50)
+//                ImageGridView(
+//                    leftImageList: store.leftContestImageList,
+//                    rightImageList: store.rightContestImageList,
+//                    onImageTap: { _ in
+//                        
+//                })
+//                .padding(.bottom, 50)
             }
         }
         .onAppear {

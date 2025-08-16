@@ -31,6 +31,9 @@ public struct ContestFeature {
         var path = StackState<ContestPath.State>()
         
         var contestOptions = [ContestIndexModel]()
+        var scrollPosition: ScrollPosition = ScrollPosition(idType: ContestIndexModel.ID.self)
+        var scrollOffset: CGFloat = 0
+        
         var contestIndex: Int = 0
         var weekTopic: String = ""
         
@@ -81,6 +84,9 @@ public struct ContestFeature {
         case contestDetailImageTapped(Int)
         case sortContestContentTapped
         case changeSortContestType(SortContestDataType)
+        
+        case updateLeftImageModel(Int, CGFloat)
+        case updateRightImageModel(Int, CGFloat)
         
         case delegate(DelegateAction)
 
@@ -216,6 +222,20 @@ public struct ContestFeature {
                 state.isSortSheetPresented = false
                 
                 return .send(.fetchContestPosts)
+                
+            case .updateLeftImageModel(let modelId, let imageRatio):
+                if let index = state.leftContestImageList.firstIndex(where: { $0.id == modelId }) {
+                    state.leftContestImageList[index].height = imageRatio
+                }
+                
+                return .none
+                
+            case .updateRightImageModel(let modelId, let imageRatio):
+                if let index = state.rightContestImageList.firstIndex(where: { $0.id == modelId }) {
+                    state.rightContestImageList[index].height = imageRatio
+                }
+                
+                return .none
                 
             case .delegate:
                 return .none
