@@ -38,6 +38,9 @@ public struct MypageFeature {
         var leftContestImageList = [ContestImageModel]()
         var rightContestImageList = [ContestImageModel]()
         
+        var scrollPosition: ScrollPosition = ScrollPosition(idType: ContestIndexModel.ID.self)
+        var scrollOffset: CGFloat = 0
+        
         var drawInputText = ""
         var isOptionSheetPresented: Bool = false
         var shouldNavigateToEditProfile: Bool = false
@@ -95,6 +98,9 @@ public struct MypageFeature {
         case myInfoActionSuccess(MyprofileOptionType)
         case successSheetComplete(MypageSuccessSheetType)
         case contestDetailImageTapped(Int)
+        
+        case updateLeftImageModel(Int, CGFloat)
+        case updateRightImageModel(Int, CGFloat)
         
         case deleteMyInfomation
         
@@ -392,6 +398,21 @@ public struct MypageFeature {
             case .alertAction(.presentLoginAlert):
                 state.isLoginAlertPresented = true
                 return .none
+                
+            case .updateLeftImageModel(let modelId, let imageRatio):
+                if let index = state.leftContestImageList.firstIndex(where: { $0.id == modelId }) {
+                    state.leftContestImageList[index].height = imageRatio
+                }
+                
+                return .none
+                
+            case .updateRightImageModel(let modelId, let imageRatio):
+                if let index = state.rightContestImageList.firstIndex(where: { $0.id == modelId }) {
+                    state.rightContestImageList[index].height = imageRatio
+                }
+                
+                return .none
+                
                 
             default:
                 return .none

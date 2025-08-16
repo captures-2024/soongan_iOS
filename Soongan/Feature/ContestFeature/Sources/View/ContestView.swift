@@ -10,8 +10,10 @@ import PhotosUI
 
 import DetailContestFeature
 import DesignSystem
+import Shared
 
 import ComposableArchitecture
+import Kingfisher
 
 public struct ContestView: View {
 
@@ -31,19 +33,53 @@ public struct ContestView: View {
         NavigationStack(
             path: $store.scope(state: \.path, action: \.path)
         ) {
-            VStack(spacing: 0) {
-                navigationTitle(contestIndex: store.contestIndex, weekTopic: store.weekTopic)
-                
-                ImageGridView(
-                    leftImageList: store.leftContestImageList,
-                    rightImageList: store.rightContestImageList,
-                    onImageTap: { tappedImage in
-                        store.send(.contestDetailImageTapped(tappedImage.id))
-                })
-                .padding(.bottom, 50)
-                .refreshable {
-                    try? await Task.sleep(nanoseconds: 1000_000_000)
-                    store.send(.refreshTriggered)
+            GeometryReader { geometry in
+                VStack(spacing: 0) {
+                    navigationTitle(contestIndex: store.contestIndex, weekTopic: store.weekTopic)
+                    
+                    ZStack(alignment: .bottomTrailing) {
+                        ScrollView {
+                            HStack(alignment: .top, spacing: 8) {
+                                imageGridSection(imageList: store.leftContestImageList, geometry: geometry, direction: .left)
+                                imageGridSection(imageList: store.rightContestImageList, geometry: geometry, direction: .right)
+                            }
+                            .padding(.horizontal, 8)
+                            .scrollTargetLayout()
+                        }
+                        .scrollPosition($store.scrollPosition, anchor: .bottom)
+                        .refreshable {
+                            try? await Task.sleep(nanoseconds: 1000_000_000)
+                            store.send(.refreshTriggered)
+                        }
+                        .onScrollGeometryChange(for: CGFloat.self,
+                            of: { geometry in
+                                return geometry.bounds.origin.y
+                            },
+                            action: { oldValue, newValue in
+                                withAnimation {
+                                    store.scrollOffset = newValue
+                                }
+                            }
+                        )
+                        
+                        Button {
+                            withAnimation(.easeInOut) {
+                                store.scrollPosition.scrollTo(edge: .top)
+                            }
+                        } label: {
+                            Image(systemName: "arrow.up")
+                                .padding()
+                                .background(Color.white)
+                                .foregroundColor(DesignSystem.Color.black100)
+                                .clipShape(Circle())
+                                .shadow(radius: 4)
+                                .padding()
+                        }
+                        .opacity(store.scrollOffset > 200 ? 1 : 0)
+                        .allowsHitTesting(store.scrollOffset > 200)
+                        .animation(.easeInOut, value: store.scrollOffset > 200)
+                    }
+                    .padding(.bottom, 50)
                 }
             }
             .background(DesignSystem.Color.soonganBG)
@@ -104,6 +140,28 @@ public struct ContestView: View {
         .foregroundStyle(Color.black100)
         .padding(.vertical, 14)
         .background(DesignSystem.Color.soonganBG)
+    }
+    
+    func imageGridSection(imageList: [ContestImageModel], geometry: GeometryProxy, direction: Direction) -> some View {
+        LazyVStack(spacing: 8) {
+            ForEach(imageList) { model in
+                ContestImageView(
+                    model: model,
+                    geometry: geometry,
+                    onSuccessAction: { modelId, calculatedHeight in
+                        switch direction {
+                        case .left:
+                            store.send(.updateLeftImageModel(modelId, calculatedHeight))
+                        case .right:
+                            store.send(.updateRightImageModel(modelId, calculatedHeight))
+                        }
+                    },
+                    onTapAction: { modelId in
+                        store.send(.contestDetailImageTapped(modelId))
+                    }
+                )
+            }
+        }
     }
 }
 
