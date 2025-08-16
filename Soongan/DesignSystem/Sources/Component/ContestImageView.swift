@@ -46,7 +46,7 @@ public struct ContestImageView: View {
     // MARK: - Body
 
     public var body: some View {
-        KFImage(URL(string: model.imageUrl)!)
+        KFImage(URL(string: model.imageUrl))
             .placeholder {
                 ProgressView()
                     .frame(maxWidth: .infinity, maxHeight: 300)

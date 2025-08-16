@@ -117,7 +117,9 @@ public struct MypageView: View {
                         return geometry.bounds.origin.y
                     },
                     action: { oldValue, newValue in
-                        store.scrollOffset = newValue
+                        withAnimation {
+                            store.scrollOffset = newValue
+                        }
                     }
                 )
                 

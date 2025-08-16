@@ -17,11 +17,11 @@ public struct ContestImageModel: Identifiable, Hashable {
         id: Int,
         imageUrl: String,
         nickname: String? = nil,
-        ratio: CGFloat? = nil
+        height: CGFloat? = nil
     ) {
         self.id = id
         self.imageUrl = imageUrl
         self.nickname = nickname
-        self.height = ratio
+        self.height = height
     }
 }

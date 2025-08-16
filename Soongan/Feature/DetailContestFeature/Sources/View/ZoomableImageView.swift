@@ -20,7 +20,6 @@ struct ZoomableImageView: View {
     @State private var offset: CGSize = .zero
     @State private var lastOffset: CGSize = .zero
     @State private var anchor: UnitPoint = .center
-    @State private var magnifyLocation: CGPoint = .zero
     @Environment(\.dismiss) var dismiss
     
     let url: String?
@@ -129,7 +128,6 @@ struct ZoomableImageView: View {
                         x: location.x / geometry.size.width,
                         y: location.y / (geometry.size.height * 0.8)  // 이미지 영역 높이 고려
                     )
-                    magnifyLocation = location  // 디버깅용 위치 저장
                 }
                 
                 // 실시간 배율 업데이트 (최소 1.0 유지)
