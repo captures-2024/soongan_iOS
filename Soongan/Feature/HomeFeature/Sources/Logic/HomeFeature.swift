@@ -32,6 +32,8 @@ public struct HomeFeature {
         @Shared(.appStorage("AuthState")) var authState: AuthType = .loggedOut
         var path = StackState<HomePath.State>()
         
+        var homeState: HomeStateType?
+        
         var postImageData = [PostImageModel]()
         var weekTopic: String = ""
         var startPeriod: String = ""
@@ -64,28 +66,37 @@ public struct HomeFeature {
     
     public enum Action: BindableAction {
         case binding(BindingAction<State>)
-        
         case path(StackActionOf<HomePath>)
         
+        case alertAction(AlertAction)
+        case networkAction(NetworkAction)
+        case uiAction(UIAction)
+        
         case onAppear
-        case addPictureButtonTapped
-        case pictureTapped(Int)
-        case infoButtonTapped
-        case showContest
-        case dismissInfoSheet(Bool)
-        
-        case showNotLoginUserAlert
-        case dismissAlertButtonTapped
-        case dismissLoginAlert
-        
-        case homeInfoSuccess(SearchHomeInfoResponseDTO)
-        
         case delegate(Delegate)
                 
         public enum Delegate {
             case moveToContestTab
             case didRequestLogout
         }
+    }
+    
+    public enum AlertAction {
+        case showNotLoginUserAlert
+        case dismissLoginAlert
+        case dismissAlertButtonTapped
+    }
+    
+    public enum NetworkAction {
+        case homeInfoSuccess(SearchHomeInfoResponseDTO)
+        case homeInfoFailure(NetworkError)
+    }
+    
+    public enum UIAction {
+        case infoButtonTapped
+        case showContestButtonTapped
+        case addPictureButtonTapped
+        case pictureTapped(Int)
     }
     
     // MARK: - Body
@@ -101,20 +112,22 @@ public struct HomeFeature {
                     
                     switch result {
                     case .success(let responseResult):
-                        return await send(.homeInfoSuccess(responseResult))
+                        return await send(.networkAction(.homeInfoSuccess(responseResult)))
                     case .failure(let error):
-                        print(error.localizedDescription)
+                        return await send(.networkAction(.homeInfoFailure(error)))
                     }
                 }
                 
-            case .homeInfoSuccess(let result):
+            case .networkAction(.homeInfoSuccess(let result)):
+                state.homeState = .inProgress
+                
                 let contestData = result.contestInfo
                 let postData = result.postInfo
                 
                 state.startPeriod = contestData.startAt.toFormattedDateString()
                 state.endPeriod = contestData.endAt.toFormattedDateString()
                 state.weekTopic = contestData.subject
-                state.isAddPostImage = postData.count == 3 ? true : false
+                state.isAddPostImage = postData.count == 3
                 
                 state.postImageData = postData.map {
                     PostImageModel(
@@ -128,44 +141,44 @@ public struct HomeFeature {
                 
                 return .none
                 
-            case .addPictureButtonTapped:
-                switch state.authState {
-                case .skipped:
-                    return .send(.showNotLoginUserAlert)
-                case .loggedIn:
-                    state.path.append(.postPicture(PostPictureFeature.State(weekTopic: state.weekTopic)))
-                default:
-                    break
+            case .networkAction(.homeInfoFailure(let error)):
+                print(error)
+                return .none
+                
+            case .uiAction(let type):
+                switch type {
+                case .pictureTapped(let id):
+                    state.path.append(.contestDetail(ContestDetailFeature.State(postId: id)))
+                    
+                case .infoButtonTapped:
+                    state.isInfoSheetPresented = true
+                    
+                case .showContestButtonTapped:
+                    return .send(.delegate(.moveToContestTab))
+                    
+                case .addPictureButtonTapped:
+                    switch state.authState {
+                    case .skipped:
+                        return .send(.alertAction(.showNotLoginUserAlert))
+                    case .loggedIn:
+                        state.path.append(.postPicture(PostPictureFeature.State(weekTopic: state.weekTopic)))
+                    default:
+                        break
+                    }
                 }
                 
                 return .none
-                
-            case .pictureTapped(let id):
-                state.path.append(.contestDetail(ContestDetailFeature.State(postId: id)))
-                
-                return .none
-                
-            case .infoButtonTapped:
-                state.isInfoSheetPresented = true
-                return .none
-                
-            case .showContest:
-                return .send(.delegate(.moveToContestTab))
-                
-            case .dismissInfoSheet(let isPresented):
-                state.isInfoSheetPresented = isPresented
-                return .none
-                
-            case .showNotLoginUserAlert:
+                    
+            case .alertAction(.showNotLoginUserAlert):
                 state.isAlertPresented = true
                 return .none
                 
-            case .dismissAlertButtonTapped:
+            case .alertAction(.dismissAlertButtonTapped):
                 state.isAlertPresented = false
                 
                 return .send(.delegate(.didRequestLogout))
                 
-            case .dismissLoginAlert:
+            case .alertAction(.dismissLoginAlert):
                 state.isAlertPresented = false
                 
                 return .none

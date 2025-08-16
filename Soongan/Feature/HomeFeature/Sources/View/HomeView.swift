@@ -35,74 +35,14 @@ public struct HomeView: View {
                 DesignSystem.Color.soonganBG.ignoresSafeArea()
                 
                 VStack(spacing: 0) {
-                    HStack {
-                        ZStack(alignment: .top) {
-                            Circle()
-                                .fill(DesignSystem.Color.primary)
-                                .frame(width: 40, height: 40)
-                                .offset(x: -35, y: -16)
-                            
-                            Text(store.weekTopic)
-                                .font(DesignSystem.Font.bold42)
-                                .foregroundStyle(Color.black100)
-                        }
-                        
-                        Spacer()
-                        
-                        Image.soonganLogo
-                            .resizable()
-                            .frame(width: 33, height: 50)
-                    }
-                    .padding(.top, 108)
-                    .padding(.horizontal, 36)
-                    .padding(.bottom, 63)
+                    topheaderView()
+                        .padding(.top, store.homeState == .inProgress ? 128 : 65)
+                        .padding(.horizontal, 36)
+                        .padding(.bottom, store.homeState == .inProgress ? 63 : 216)
                     
-                    if store.postImageData.isEmpty {
-                        Button(action: {
-                            store.send(.addPictureButtonTapped)
-                        }) {
-                            ZStack(alignment: .center) {
-                                Rectangle()
-                                    .fill(Color.white)
-                                    .frame(width: 257, height: 257)
-                                    .shadow(
-                                        color: Color.black.opacity(0.25),
-                                        radius: 5, x: 0, y: 4)
-                                
-                                VStack(spacing: 16) {
-                                    Image.addPlus
-                                        .resizable()
-                                        .scaledToFit()
-                                        .frame(width: 40, height: 40)
-                                    
-                                    Text("출품하기")
-                                        .font(DesignSystem.Font.regular14, lineHeight: 16)
-                                        .foregroundStyle(Color.black100)
-                                }
-                            }
-                        }
-                    } else {
-                        postImageSection(postImageList: store.postImageData)
-                    }
+                    topicMainSection()
                     
-                    Spacer(minLength: 76)
-
-                    periodSection(startPeriod: store.startPeriod, endPeriod: store.endPeriod)
-                        .padding(.bottom, 32)
-                    
-                    HStack {
-                        CircleButton(type: .info) {
-                            store.send(.infoButtonTapped)
-                        }
-                        
-                        Spacer()
-                        
-                        CircleButton(type: .rightArrow) {
-                            store.send(.showContest)
-                        }
-                    }
-                    .padding(.horizontal, 32)
-                    .padding(.bottom, 55)
+                    Spacer()
                 }
                 .toolbar(.hidden, for: .tabBar)
                 .safeAreaInset(edge: .bottom, spacing: 0) {
@@ -112,9 +52,7 @@ public struct HomeView: View {
             .onAppear {
                 store.send(.onAppear)
             }
-            .sheet(
-                isPresented: $store.isInfoSheetPresented.sending(\.dismissInfoSheet)
-            ) {
+            .sheet(isPresented: $store.isInfoSheetPresented) {
                 CustomSheetView<NeverOption>(type: .contestInfo) { }
             }
             .background(alertHostingView)
@@ -132,11 +70,120 @@ public struct HomeView: View {
 // MARK: - Private Extension View
 
 private extension HomeView {
+    func topheaderView() -> some View {
+        HStack(spacing: 0) {
+            weekTopicTopHeader()
+            
+            Spacer()
+            
+            Image.soonganLogo
+                .resizable()
+                .frame(width: 33, height: 50)
+        }
+    }
+    
+    func weekTopicTopHeader() -> some View {
+        ZStack(alignment: .topLeading) {
+            Circle()
+                .fill(DesignSystem.Color.primary)
+                .frame(width: 40, height: 40)
+                .offset(x: -20, y: -20)
+            
+            Text(store.homeState == .inProgress ? store.weekTopic : "-회차 종료-")
+                .font(store.homeState == .inProgress ? DesignSystem.Font.bold42 : DesignSystem.Font.bold24, lineHeight: 40)
+                .foregroundStyle(DesignSystem.Color.black100)
+        }
+    }
+    
+    @ViewBuilder
+    func topicMainSection() -> some View {
+        if store.homeState == .inProgress {
+            inProgressMainSection()
+        } else if store.homeState == .endTopic {
+            endTopicMainSection()
+        } else {
+            EmptyView()
+        }
+    }
+    
+    func inProgressMainSection() -> some View {
+        VStack(spacing: 0) {
+            if store.postImageData.isEmpty {
+                Button(action: {
+                    store.send(.uiAction(.addPictureButtonTapped))
+                }) {
+                    ZStack(alignment: .center) {
+                        Rectangle()
+                            .fill(Color.white)
+                            .frame(width: 257, height: 257)
+                            .shadow(
+                                color: Color.black.opacity(0.25),
+                                radius: 5, x: 0, y: 4)
+                        
+                        VStack(spacing: 16) {
+                            Image.addPlus
+                                .resizable()
+                                .scaledToFit()
+                                .frame(width: 40, height: 40)
+                            
+                            Text("출품하기")
+                                .font(DesignSystem.Font.regular14, lineHeight: 16)
+                                .foregroundStyle(Color.black100)
+                        }
+                    }
+                }
+            } else {
+                postImageSection(postImageList: store.postImageData)
+            }
+            
+            Spacer(minLength: 76)
+
+            periodSection(startPeriod: store.startPeriod, endPeriod: store.endPeriod)
+                .padding(.bottom, 32)
+            
+            HStack(spacing: 0) {
+                CircleButton(type: .info) {
+                    store.send(.uiAction(.infoButtonTapped))
+                }
+                
+                Spacer()
+                
+                CircleButton(type: .rightArrow) {
+                    store.send(.uiAction(.showContestButtonTapped))
+                }
+            }
+            .padding(.horizontal, 32)
+            .padding(.bottom, 55)
+        }
+    }
+    
+    func endTopicMainSection() -> some View {
+        VStack(spacing: 0) {
+            VStack(spacing: 0) {
+                Text("회차가 끝나고")
+                Text("잠시 쉬어가는 중이에요\n")
+                Text("어떤 작품들이 나왔는지 보러가고 싶다면")
+            }
+            .font(DesignSystem.Font.regular15)
+            .foregroundStyle(DesignSystem.Color.black100)
+            .padding(.bottom, 50)
+            
+            Button(action: {
+                    
+            }) {
+                Text("보러가기")
+                    .font(DesignSystem.Font.regular15)
+                    .foregroundStyle(DesignSystem.Color.black100)
+                    .underline(color: DesignSystem.Color.black100)
+            }
+        }
+    }
+    
     func postImageSection(postImageList: [PostImageModel]) -> some View {
         ScrollView(.horizontal, showsIndicators: false) {
             HStack(alignment: .top, spacing: 16) {
                 Button(action: {
-                    store.send(.addPictureButtonTapped)
+                    store.send(.uiAction(.addPictureButtonTapped))
                 }) {
                     ZStack(alignment: .bottom) {
                         ZStack {
@@ -192,7 +239,7 @@ private extension HomeView {
                                         color: Color.black.opacity(0.25),
                                         radius: 5, x: 0, y: 4)
                                     .onTapGesture {
-                                        store.send(.pictureTapped(image.id))
+                                        store.send(.uiAction(.pictureTapped(image.id)))
                                     }
                                 
                                 HStack(spacing: 16) {
@@ -258,10 +305,10 @@ private extension HomeView {
             CustomAlertView(
                 type: .showLoginView,
                 onBackgroundTap: {
-                    store.send(.dismissLoginAlert)
+                    store.send(.alertAction(.dismissLoginAlert))
                 },
                 centerButtonAction: {
-                    store.send(.dismissAlertButtonTapped)
+                    store.send(.alertAction(.dismissAlertButtonTapped))
                 }
             )
             .presentationBackground(.clear)
