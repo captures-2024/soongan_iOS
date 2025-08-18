@@ -8,6 +8,7 @@
 import Foundation
 
 enum HomeStateType {
+    case loading
     case endTopic
     case inProgress
 }
