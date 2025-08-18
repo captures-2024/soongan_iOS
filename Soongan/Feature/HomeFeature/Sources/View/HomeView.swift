@@ -36,17 +36,31 @@ public struct HomeView: View {
                 
                 VStack(spacing: 0) {
                     topheaderView()
-                        .padding(.top, store.homeState == .inProgress ? 128 : 65)
                         .padding(.horizontal, 36)
-                        .padding(.bottom, store.homeState == .inProgress ? 63 : 216)
+                        .padding(.bottom, 60)
                     
-                    topicMainSection()
-                    
-                    Spacer()
+                    switch store.homeState {
+                    case .loading:
+                        VStack {
+                            Spacer()
+                            
+                            ProgressView()
+                                .scaleEffect(1.5)
+                            
+                            Spacer()
+                        }
+                    case .inProgress:
+                        inProgressMainSection()
+                    case .endTopic:
+                        endTopicMainSection()
+                    }
                 }
+                .padding(.top, 69)
+                .padding(.bottom, 40)
+                .animation(.easeInOut, value: store.homeState)
                 .toolbar(.hidden, for: .tabBar)
                 .safeAreaInset(edge: .bottom, spacing: 0) {
-                    Color.clear.frame(height: 83)
+                    Color.clear.frame(height: 50)
                 }
             }
             .onAppear {
@@ -89,23 +103,12 @@ private extension HomeView {
                 .frame(width: 40, height: 40)
                 .offset(x: -20, y: -20)
             
-            Text(store.homeState == .inProgress ? store.weekTopic : "-회차 종료-")
+            Text(store.weekTopic)
                 .font(store.homeState == .inProgress ? DesignSystem.Font.bold42 : DesignSystem.Font.bold24, lineHeight: 40)
                 .foregroundStyle(DesignSystem.Color.black100)
         }
     }
-    
-    @ViewBuilder
-    func topicMainSection() -> some View {
-        if store.homeState == .inProgress {
-            inProgressMainSection()
-        } else if store.homeState == .endTopic {
-            endTopicMainSection()
-        } else {
-            EmptyView()
-        }
-    }
-    
+
     func inProgressMainSection() -> some View {
         VStack(spacing: 0) {
             if store.postImageData.isEmpty {
@@ -153,12 +156,13 @@ private extension HomeView {
                 }
             }
             .padding(.horizontal, 32)
-            .padding(.bottom, 55)
         }
     }
     
     func endTopicMainSection() -> some View {
         VStack(spacing: 0) {
+            Spacer()
+            
             VStack(spacing: 0) {
                 Text("회차가 끝나고")
                 Text("잠시 쉬어가는 중이에요\n")
@@ -169,13 +173,15 @@ private extension HomeView {
             .padding(.bottom, 50)
             
             Button(action: {
-                    
+                store.send(.uiAction(.showContestButtonTapped))
             }) {
                 Text("보러가기")
                     .font(DesignSystem.Font.regular15)
                     .foregroundStyle(DesignSystem.Color.black100)
                     .underline(color: DesignSystem.Color.black100)
             }
+            
+            Spacer(minLength: 220)
         }
     }
     
@@ -324,7 +330,7 @@ private extension HomeView {
 #Preview {
     HomeView(
         store: Store(initialState:
-            HomeFeature.State(weekTopic: "평화", startPeriod: "2024.05.10 09:00:00", endPeriod: "2024.05.16 23:59:59")) {
+            HomeFeature.State()) {
                 HomeFeature()
             }
     )
