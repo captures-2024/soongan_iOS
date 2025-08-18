@@ -32,7 +32,7 @@ public struct HomeFeature {
         @Shared(.appStorage("AuthState")) var authState: AuthType = .loggedOut
         var path = StackState<HomePath.State>()
         
-        var homeState: HomeStateType?
+        var homeState: HomeStateType = .loading
         
         var postImageData = [PostImageModel]()
         var weekTopic: String = ""
@@ -47,15 +47,7 @@ public struct HomeFeature {
             path.isEmpty
         }
         
-        public init(
-            weekTopic: String,
-            startPeriod: String,
-            endPeriod: String
-        ) {
-            self.weekTopic = weekTopic
-            self.startPeriod = startPeriod
-            self.endPeriod = endPeriod
-        }
+        public init() { }
     }
     
     // MARK: - Init
@@ -107,6 +99,10 @@ public struct HomeFeature {
         Reduce { state, action in
             switch action {
             case .onAppear:
+                if state.weekTopic.isEmpty {
+                    state.homeState = .loading
+                }
+                
                 return .run { send in
                     let result: Result<SearchHomeInfoResponseDTO, NetworkError> = await NetworkManager.shared.request(HomeEndpoint.getHomeInfo)
                     
@@ -117,28 +113,38 @@ public struct HomeFeature {
                         return await send(.networkAction(.homeInfoFailure(error)))
                     }
                 }
-                
+
             case .networkAction(.homeInfoSuccess(let result)):
-                state.homeState = .inProgress
+                let dateFormatter = DateFormatter()
+                dateFormatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss"
                 
                 let contestData = result.contestInfo
                 let postData = result.postInfo
-                
-                state.startPeriod = contestData.startAt.toFormattedDateString()
-                state.endPeriod = contestData.endAt.toFormattedDateString()
-                state.weekTopic = contestData.subject
                 state.isAddPostImage = postData.count == 3
                 
-                state.postImageData = postData.map {
-                    PostImageModel(
-                        id: $0.postId,
-                        imageURL: $0.imageUrl,
-                        likeCount: $0.likeCount,
-                        commentCount: $0.commentCount,
-                        isLiked: $0.isLiked
-                    )
+                if let endDate = dateFormatter.date(from: contestData.endAt) {
+                    if endDate < Date() {
+                        state.weekTopic = "-회차 종료-"
+                        state.homeState = .endTopic
+                    } else {
+                        state.weekTopic = contestData.subject
+                        state.startPeriod = contestData.startAt.toFormattedDateString()
+                        state.endPeriod = contestData.endAt.toFormattedDateString()
+                        
+                        state.postImageData = postData.map {
+                            PostImageModel(
+                                id: $0.postId,
+                                imageURL: $0.imageUrl,
+                                likeCount: $0.likeCount,
+                                commentCount: $0.commentCount,
+                                isLiked: $0.isLiked
+                            )
+                        }
+                        
+                        state.homeState = .inProgress
+                    }
                 }
-                
+
                 return .none
                 
             case .networkAction(.homeInfoFailure(let error)):
