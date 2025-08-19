@@ -164,9 +164,8 @@ private extension HomeView {
             Spacer()
             
             VStack(spacing: 0) {
-                Text("회차가 끝나고")
-                Text("잠시 쉬어가는 중이에요\n")
-                Text("어떤 작품들이 나왔는지 보러가고 싶다면")
+                Text("회차가 끝나고\n잠시 쉬어가는 중이에요\n\n어떤 작품들이 나왔는지 보러가고 싶다면")
+                    .multilineTextAlignment(.center)
             }
             .font(DesignSystem.Font.regular15)
             .foregroundStyle(DesignSystem.Color.black100)
@@ -180,8 +179,9 @@ private extension HomeView {
                     .foregroundStyle(DesignSystem.Color.black100)
                     .underline(color: DesignSystem.Color.black100)
             }
+            .padding(.bottom, 100)
             
-            Spacer(minLength: 220)
+            Spacer()
         }
     }
     
