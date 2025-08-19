@@ -17,6 +17,13 @@ import ComposableArchitecture
 @Reducer
 public struct HomeFeature {
     
+    private static let dateFormatter: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss"
+        formatter.locale = Locale(identifier: "en_US_POSIX")
+        return formatter
+    }()
+    
     // MARK: - Path
     
     @Reducer(state: .equatable)
@@ -115,19 +122,15 @@ public struct HomeFeature {
                 }
 
             case .networkAction(.homeInfoSuccess(let result)):
-                let dateFormatter = DateFormatter()
-                dateFormatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss"
-                
                 let contestData = result.contestInfo
                 let postData = result.postInfo
                 state.isAddPostImage = postData.count == 3
                 
-                if let endDate = dateFormatter.date(from: contestData.endAt) {
+                if let endDate = Self.dateFormatter.date(from: contestData.endAt) {
                     if endDate < Date() {
                         state.weekTopic = "-회차 종료-"
                         state.homeState = .endTopic
                     } else {
-                        state.weekTopic = contestData.subject
                         state.startPeriod = contestData.startAt.toFormattedDateString()
                         state.endPeriod = contestData.endAt.toFormattedDateString()
                         
@@ -142,7 +145,11 @@ public struct HomeFeature {
                         }
                         
                         state.homeState = .inProgress
+                        state.weekTopic = contestData.subject
                     }
+                } else {
+                    state.weekTopic = "-회차 종료-"
+                    state.homeState = .endTopic
                 }
 
                 return .none
