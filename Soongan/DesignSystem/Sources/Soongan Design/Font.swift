@@ -34,6 +34,7 @@ public extension DesignSystem {
         public static var bold16: FontStyle { FontStyle(name: ResourceFontFamily.Pretendard.bold.name, size: 16) }
         public static var bold18: FontStyle { FontStyle(name: ResourceFontFamily.Pretendard.bold.name, size: 18) }
         public static var bold20: FontStyle { FontStyle(name: ResourceFontFamily.Pretendard.bold.name, size: 20) }
+        public static var bold24: FontStyle { FontStyle(name: ResourceFontFamily.Pretendard.bold.name, size: 24) }
         public static var bold42: FontStyle { FontStyle(name: ResourceFontFamily.Pretendard.bold.name, size: 42) }
         
         // MARK: - SemiBold
@@ -57,6 +58,7 @@ public extension DesignSystem {
         public static var regular8: FontStyle { FontStyle(name: ResourceFontFamily.Pretendard.regular.name, size: 8) }
         public static var regular12: FontStyle { FontStyle(name: ResourceFontFamily.Pretendard.regular.name, size: 12) }
         public static var regular14: FontStyle { FontStyle(name: ResourceFontFamily.Pretendard.regular.name, size: 14) }
+        public static var regular15: FontStyle { FontStyle(name: ResourceFontFamily.Pretendard.regular.name, size: 15) }
         public static var regular16: FontStyle { FontStyle(name: ResourceFontFamily.Pretendard.regular.name, size: 16) }
         public static var regular18: FontStyle { FontStyle(name: ResourceFontFamily.Pretendard.regular.name, size: 18) }
 
