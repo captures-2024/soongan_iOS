@@ -51,8 +51,8 @@ public struct AllTimeContestView: View {
                             }
                             .listRowSeparator(.hidden)
                             .listRowInsets(EdgeInsets.init(top: 0, leading: 0, bottom: 0, trailing: 0))
-                            .listRowSpacing(12)
                         }
+                        .listRowSpacing(12)
                         .listStyle(.plain)
                         .refreshable {
                             try? await Task.sleep(nanoseconds: 1000_000_000)
