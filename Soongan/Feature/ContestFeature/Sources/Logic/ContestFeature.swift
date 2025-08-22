@@ -153,7 +153,13 @@ public struct ContestFeature {
                 
             // fetchContestPosts 액션을 받아 올바른 contestIndex로 게시물을 요청합니다.
             case .networkAction(.fetchContestPosts), .networkAction(.refreshTriggered):
-                state.initPageLoading = true
+                switch action {
+                case .networkAction(.fetchContestPosts):
+                    state.initPageLoading = true
+                default:
+                    break
+                }
+                
                 state.scrollPosition.scrollTo(edge: .top)
                 state.currentPageNum = 0
                 
@@ -162,7 +168,7 @@ public struct ContestFeature {
                     round: state.contestIndex,
                     orderCriteria: order,
                     page: 0,
-                    pageSize: 10
+                    pageSize: 20
                 )
                 
                 return .run { send in
@@ -185,11 +191,11 @@ public struct ContestFeature {
                     round: state.contestIndex,
                     orderCriteria: state.sortSelectType.rawValue,
                     page: state.currentPageNum,
-                    pageSize: 10
+                    pageSize: 20
                 )
                 
                 return .run { send in
-                    try await Task.sleep(nanoseconds: 3000_000_000)
+                    try await Task.sleep(nanoseconds: 1000_000_000)
                     
                     let result: Result<SearchWeeklyContestResponseDTO, NetworkError> = await NetworkManager.shared.request(WeeklyContestEndpoint.getContest(dto))
                     
