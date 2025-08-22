@@ -37,50 +37,84 @@ public struct ContestView: View {
                 VStack(spacing: 0) {
                     navigationTitle(contestIndex: store.contestIndex, weekTopic: store.weekTopic)
                     
-                    ZStack(alignment: .bottomTrailing) {
-                        ScrollView {
-                            HStack(alignment: .top, spacing: 8) {
-                                imageGridSection(imageList: store.leftContestImageList, geometry: geometry, direction: .left)
-                                imageGridSection(imageList: store.rightContestImageList, geometry: geometry, direction: .right)
-                            }
-                            .padding(.horizontal, 8)
-                            .scrollTargetLayout()
+                    if store.initPageLoading {
+                        VStack {
+                            Spacer()
+                            
+                            ProgressView()
+                                .progressViewStyle(CircularProgressViewStyle())
+                                .scaleEffect(2.0)
+                            
+                            Spacer()
                         }
-                        .scrollPosition($store.scrollPosition, anchor: .bottom)
-                        .refreshable {
-                            try? await Task.sleep(nanoseconds: 1000_000_000)
-                            store.send(.refreshTriggered)
-                        }
-                        .onScrollGeometryChange(for: CGFloat.self,
-                            of: { geometry in
-                                return geometry.bounds.origin.y
-                            },
-                            action: { oldValue, newValue in
-                                withAnimation {
-                                    store.scrollOffset = newValue
+                    } else {
+                        ZStack(alignment: .bottomTrailing) {
+                            ZStack(alignment: .bottom) {
+                                ScrollView {
+                                    HStack(alignment: .top, spacing: 8) {
+                                        imageGridSection(imageList: store.leftContestImageList, geometry: geometry, direction: .left)
+                                        imageGridSection(imageList: store.rightContestImageList, geometry: geometry, direction: .right)
+                                    }
+                                    .padding(.horizontal, 8)
+                                    .scrollTargetLayout()
+                                    .padding(.bottom, store.isNextPageLoading && store.hasNextPage ? 60 : 0)  // 로딩 공간 확보
+                                }
+                                
+                                // 하단에 고정된 로딩 인디케이터
+                                if store.isNextPageLoading && store.hasNextPage {
+                                    VStack {
+                                        ProgressView()
+                                            .padding(.vertical, 20)
+                                            .frame(maxWidth: .infinity)
+                                            .transition(.move(edge: .bottom))
+                                    }
+                                    .ignoresSafeArea(.container, edges: .bottom)
                                 }
                             }
-                        )
-                        
-                        Button {
-                            withAnimation(.easeInOut) {
-                                store.scrollPosition.scrollTo(edge: .top)
+                            .animation(.easeOut(duration: 0.1), value: store.isNextPageLoading)
+                            .scrollPosition($store.scrollPosition, anchor: .bottom)
+                            .refreshable {
+                                try? await Task.sleep(nanoseconds: 1000_000_000)
+                                store.send(.networkAction(.refreshTriggered))
                             }
-                        } label: {
-                            Image(systemName: "arrow.up")
-                                .padding()
-                                .background(Color.white)
-                                .foregroundColor(DesignSystem.Color.black100)
-                                .clipShape(Circle())
-                                .shadow(radius: 4)
-                                .padding()
+                            .onScrollGeometryChange(for: ScrollPositionState.self) { geometry in
+                                let offsetY = geometry.bounds.origin.y
+                                let reachedBottom = geometry.visibleRect.maxY >= geometry.contentSize.height + 100
+                                return ScrollPositionState(offsetY: offsetY, reachedBottom: reachedBottom)
+                            } action: { oldValue, newValue in
+                                // ScrollView 스크롤 위치가 bottom 에 위치하는지
+                                if oldValue.reachedBottom != newValue.reachedBottom, newValue.reachedBottom {
+                                    if !store.isNextPageLoading {
+                                        store.send(.view(.updateMoreNextPage(newValue.reachedBottom)))
+                                    }
+                                }
+                                
+                                // ScrollView 스크롤 위치를 top 으로 변경
+                                store.send(.view(.updateTopButtonVisibility(newValue.offsetY)))
+                            }
+                            
+                            Button {
+                                withAnimation(.easeInOut) {
+                                    store.scrollPosition.scrollTo(edge: .top)
+                                }
+                            } label: {
+                                Image(systemName: "arrow.up")
+                                    .padding()
+                                    .background(Color.white)
+                                    .foregroundColor(DesignSystem.Color.black100)
+                                    .clipShape(Circle())
+                                    .shadow(radius: 4)
+                                    .padding()
+                            }
+                            .opacity(store.isTopButtonVisibility ? 1 : 0)
+                            .allowsHitTesting(store.isTopButtonVisibility)
+                            .animation(.easeInOut, value: store.isTopButtonVisibility)
                         }
-                        .opacity(store.scrollOffset > 200 ? 1 : 0)
-                        .allowsHitTesting(store.scrollOffset > 200)
-                        .animation(.easeInOut, value: store.scrollOffset > 200)
                     }
-                    .padding(.bottom, 50)
                 }
+            }
+            .safeAreaInset(edge: .bottom, spacing: 0) {
+                Color.clear.frame(height: 50)
             }
             .background(DesignSystem.Color.soonganBG)
             .toolbar(.hidden, for: .tabBar)
@@ -90,14 +124,14 @@ public struct ContestView: View {
                 }
             }
             .sheet(
-                isPresented: $store.isContestSheetPresented.sending(\.dismissContestSheet)
+                isPresented: $store.isContestSheetPresented.sending(\.sheet.dismissContest)
             ) {
                 changeContestIndexSheet()
                     .presentationDetents([.height(280)])
             }
-            .sheet(isPresented: $store.isSortSheetPresented.sending(\.dismissSortContestSheet)) {
+            .sheet(isPresented: $store.isSortSheetPresented.sending(\.sheet.dismissSortContest)) {
                 CustomSheetView<SortContestDataType>(type: .sortContest, isSelectType: store.sortSelectType) { optionType in
-                    store.send(.changeSortContestType(optionType))
+                    store.send(.view(.changeSortContestType(optionType)))
                 }
             }
         } destination: { store in
@@ -121,7 +155,7 @@ public struct ContestView: View {
                 .frame(width: 150)
                 
                 Button(action: {
-                    store.send(.presentSheet)
+                    store.send(.sheet(.present))
                 }) {
                     Image.downArrow
                         .scaleEffect(x: 1, y: store.isContestSheetPresented ? -1 : 1)
@@ -130,7 +164,7 @@ public struct ContestView: View {
             .frame(maxWidth: .infinity)
             
             Button {
-                store.send(.sortContestContentTapped)
+                store.send(.uiAction(.sortContestContentTapped))
             } label: {
                 Image.sortOption
                     .padding(.trailing, 14)
@@ -151,15 +185,16 @@ public struct ContestView: View {
                     onSuccessAction: { modelId, calculatedHeight in
                         switch direction {
                         case .left:
-                            store.send(.updateLeftImageModel(modelId, calculatedHeight))
+                            store.send(.view(.updateLeftImageModel(modelId, calculatedHeight)))
                         case .right:
-                            store.send(.updateRightImageModel(modelId, calculatedHeight))
+                            store.send(.view(.updateRightImageModel(modelId, calculatedHeight)))
                         }
                     },
                     onTapAction: { modelId in
-                        store.send(.contestDetailImageTapped(modelId))
+                        store.send(.uiAction(.contestDetailImageTapped(modelId)))
                     }
                 )
+                .id(model.id)
             }
         }
     }
@@ -170,7 +205,7 @@ private extension ContestView {
         VStack {
             HStack {
                 Button(action: {
-                    store.send(.dismissContestSheet(false))
+                    store.send(.sheet(.dismissContest(false)))
                 }) {
                     Text("취소")
                         .font(DesignSystem.Font.semibold16, lineHeight: 19)
@@ -184,7 +219,7 @@ private extension ContestView {
                 Spacer()
                 
                 Button(action: {
-                    store.send(.chagneContestIndex)
+                    store.send(.view(.changeContestIndex))
                 }) {
                     Text("확인")
                         .font(DesignSystem.Font.semibold16, lineHeight: 19)

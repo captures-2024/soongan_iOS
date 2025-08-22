@@ -31,8 +31,9 @@ public struct ContestFeature {
         var path = StackState<ContestPath.State>()
         
         var contestOptions = [ContestIndexModel]()
-        var scrollPosition: ScrollPosition = ScrollPosition(idType: ContestIndexModel.ID.self)
-        var scrollOffset: CGFloat = 0
+        var scrollPosition: ScrollPosition = ScrollPosition(idType: ContestImageModel.ID.self)
+        
+        var isTopButtonVisibility: Bool = false
         
         var contestIndex: Int = 0
         var weekTopic: String = ""
@@ -46,8 +47,9 @@ public struct ContestFeature {
             }
         }
         
-        var isLoading = false
-        var isNext = false
+        var initPageLoading: Bool = false
+        var isNextPageLoading: Bool = false
+        
         var isContestSheetPresented: Bool = false
         var isSortSheetPresented: Bool = false
         var sortSelectType: SortContestDataType = .newest
@@ -56,6 +58,9 @@ public struct ContestFeature {
         public var isTabBarVisible: Bool {
             path.isEmpty
         }
+        
+        var currentPageNum: Int = 0
+        var hasNextPage: Bool = false
         
         public init() {}
     }
@@ -72,26 +77,46 @@ public struct ContestFeature {
         case binding(BindingAction<State>)
     
         case onAppear
-        case refreshTriggered
-        case fetchContestPosts
-        case getContestSuccess(SearchWeeklyContestResponseDTO)
-        case getContestListSuccess(SearchContestListResponseDTO)
-        
-        case presentSheet
-        case chagneContestIndex
-        case dismissContestSheet(Bool)
-        case dismissSortContestSheet(Bool)
-        case contestDetailImageTapped(Int)
-        case sortContestContentTapped
-        case changeSortContestType(SortContestDataType)
-        
-        case updateLeftImageModel(Int, CGFloat)
-        case updateRightImageModel(Int, CGFloat)
-        
+        case networkAction(NetworkAction)
+        case uiAction(UIAction)
+        case view(ViewAction)
+        case sheet(SheetAction)
+ 
         case delegate(DelegateAction)
-
+        
         public enum DelegateAction {
             case logoutRequested
+        }
+        
+        public enum NetworkAction {
+            case fetchContestPosts
+            case getContestSuccess(SearchWeeklyContestResponseDTO)
+            case getContestListSuccess(SearchContestListResponseDTO)
+            case loadMoreContestsPosts
+            case updateContestPageInfo(PageInfoData)
+            case refreshTriggered
+        }
+        
+        public enum UIAction {
+            case contestDetailImageTapped(Int)
+            case sortContestContentTapped
+        }
+        
+        @CasePathable
+        public enum SheetAction {
+            case present
+            case dismissContest(Bool)
+            case dismissSortContest(Bool)
+        }
+        
+        // 뷰 상태나 레이아웃 관련
+        public enum ViewAction {
+            case changeContestIndex
+            case changeSortContestType(SortContestDataType)
+            case updateTopButtonVisibility(CGFloat)
+            case updateLeftImageModel(Int, CGFloat)
+            case updateRightImageModel(Int, CGFloat)
+            case updateMoreNextPage(Bool)
         }
     }
     
@@ -102,22 +127,20 @@ public struct ContestFeature {
         
         Reduce { state, action in
             switch action {
-            case .onAppear, .refreshTriggered:
-                state.isLoading.toggle()
-                
+            case .onAppear:
                 return .run { send in
                     let result: Result<SearchContestListResponseDTO, NetworkError> = await NetworkManager.shared.request(WeeklyContestEndpoint.getContestList)
                     
                     switch result {
                     case .success(let response):
-                        await send(.getContestListSuccess(response))
+                        await send(.networkAction(.getContestListSuccess(response)))
                     case .failure(let error):
                         print(error.localizedDescription)
                     }
                 }
               
             // 콘테스트 목록을 성공적으로 가져온 후, '게시물'을 가져오는 새 액션을 보냅니다.
-            case .getContestListSuccess(let response):
+            case .networkAction(.getContestListSuccess(let response)):
                 state.contestOptions = response.contests.map {
                     ContestIndexModel(id: $0.id, round: $0.round, subject: $0.subject)
                 }
@@ -126,16 +149,26 @@ public struct ContestFeature {
                 state.weekTopic = state.contestOptions.last?.subject ?? "정보없음"
                 state.selectedContestIndex = state.contestOptions.count - 1
                 
-                return .send(.fetchContestPosts)
+                return .send(.networkAction(.fetchContestPosts))
                 
             // fetchContestPosts 액션을 받아 올바른 contestIndex로 게시물을 요청합니다.
-            case .fetchContestPosts:
+            case .networkAction(.fetchContestPosts), .networkAction(.refreshTriggered):
+                switch action {
+                case .networkAction(.fetchContestPosts):
+                    state.initPageLoading = true
+                default:
+                    break
+                }
+                
+                state.scrollPosition.scrollTo(edge: .top)
+                state.currentPageNum = 0
+                
                 let order = state.sortSelectType.rawValue
                 let dto = SearchWeeklyContestRequestDTO(
                     round: state.contestIndex,
                     orderCriteria: order,
                     page: 0,
-                    pageSize: 50
+                    pageSize: 20
                 )
                 
                 return .run { send in
@@ -143,33 +176,74 @@ public struct ContestFeature {
                     
                     switch result {
                     case .success(let response):
-                        await send(.getContestSuccess(response))
+                        await send(.networkAction(.getContestSuccess(response)))
+                    case .failure(let error):
+                        print(error.localizedDescription)
+                    }
+                }
+            
+            // 다음 페이지가 존재할때 게시물을 요청합니다.
+            case .networkAction(.loadMoreContestsPosts):
+                state.isNextPageLoading = true
+                state.currentPageNum += 1
+                
+                let dto = SearchWeeklyContestRequestDTO(
+                    round: state.contestIndex,
+                    orderCriteria: state.sortSelectType.rawValue,
+                    page: state.currentPageNum,
+                    pageSize: 20
+                )
+                
+                return .run { send in
+                    try await Task.sleep(nanoseconds: 1000_000_000)
+                    
+                    let result: Result<SearchWeeklyContestResponseDTO, NetworkError> = await NetworkManager.shared.request(WeeklyContestEndpoint.getContest(dto))
+                    
+                    switch result {
+                    case .success(let response):
+                        await send(.networkAction(.getContestSuccess(response)))
                     case .failure(let error):
                         print(error.localizedDescription)
                     }
                 }
                 
             // 게시물 데이터를 성공적으로 받으면 상태를 업데이트합니다.
-            case .getContestSuccess(let response):
+            case .networkAction(.getContestSuccess(let response)):
                 state.contestIndex = response.round
                 state.weekTopic = response.subject
                 
-                state.leftContestImageList.removeAll()
-                state.rightContestImageList.removeAll()
+                state.currentPageNum = response.pageInfo.page
+                state.hasNextPage = response.pageInfo.hasNext
+                
+                if state.currentPageNum == 0 {
+                    state.leftContestImageList.removeAll()
+                    state.rightContestImageList.removeAll()
+                }
+                
+                let totalCount = state.leftContestImageList.count + state.rightContestImageList.count
+                
+                var tempLeftConestImageData = [ContestImageModel]()
+                var tempRightConestImageData = [ContestImageModel]()
                 
                 for (index, item) in response.posts.enumerated() {
                     let model = ContestImageModel(id: item.postId, imageUrl: item.imageUrl, nickname: item.nickname)
-                    if index % 2 == 0 {
-                        state.leftContestImageList.append(model)
+                    
+                    if (totalCount + index) % 2 == 0 {
+                        tempLeftConestImageData.append(model)
                     } else {
-                        state.rightContestImageList.append(model)
+                        tempRightConestImageData.append(model)
                     }
                 }
                 
-                state.isNext = response.pageInfo.hasNext
+                state.leftContestImageList += tempLeftConestImageData
+                state.rightContestImageList += tempRightConestImageData
+                
+                state.hasNextPage = response.pageInfo.hasNext
                 state.weekTopic = response.subject
                 
-                state.isLoading.toggle()
+                state.isNextPageLoading = false
+                state.initPageLoading = false
+                
                 return .none
 
                 
@@ -187,19 +261,29 @@ public struct ContestFeature {
             case .binding(_):
                 return .none
             
-            case .contestDetailImageTapped(let postId):
+            case .uiAction(.contestDetailImageTapped(let postId)):
                 state.path.append(.contestDetail(ContestDetailFeature.State(postId: postId)))
                 return .none
                 
-            case .sortContestContentTapped:
+            case .uiAction(.sortContestContentTapped):
                 state.isSortSheetPresented = true
                 return .none
                 
-            case .presentSheet:
-                state.isContestSheetPresented = true
+            case .sheet(let action):
+                switch action {
+                case .present:
+                    state.isContestSheetPresented = true
+                
+                case .dismissContest:
+                    state.isContestSheetPresented = false
+                    
+                case .dismissSortContest:
+                    state.isSortSheetPresented = false
+                }
+                
                 return .none
                 
-            case .chagneContestIndex:
+            case .view(.changeContestIndex):
                 let contest = state.contestOptions[state.selectedContestIndex]
                 
                 state.contestIndex = contest.round
@@ -207,32 +291,37 @@ public struct ContestFeature {
                 
                 state.isContestSheetPresented = false
                 
-                return .send(.fetchContestPosts)
+                return .send(.networkAction(.fetchContestPosts))
                 
-            case .dismissContestSheet:
-                state.isContestSheetPresented = false
-                return .none
-                
-            case .dismissSortContestSheet:
-                state.isSortSheetPresented = false
-                return .none
-                
-            case .changeSortContestType(let type):
+            case .view(.changeSortContestType(let type)):
                 state.sortSelectType = type
                 state.isSortSheetPresented = false
                 
-                return .send(.fetchContestPosts)
+                return .send(.networkAction(.fetchContestPosts))
                 
-            case .updateLeftImageModel(let modelId, let imageRatio):
+            case .view(.updateLeftImageModel(let modelId, let imageRatio)):
                 if let index = state.leftContestImageList.firstIndex(where: { $0.id == modelId }) {
                     state.leftContestImageList[index].height = imageRatio
                 }
                 
                 return .none
                 
-            case .updateRightImageModel(let modelId, let imageRatio):
+            case .view(.updateRightImageModel(let modelId, let imageRatio)):
                 if let index = state.rightContestImageList.firstIndex(where: { $0.id == modelId }) {
                     state.rightContestImageList[index].height = imageRatio
+                }
+                
+                return .none
+                
+            case .view(.updateTopButtonVisibility(let scrollOffset)):
+                state.isTopButtonVisibility = scrollOffset > 200
+
+                return .none
+                
+            case .view(.updateMoreNextPage(let isloading)):
+                if state.hasNextPage {
+                    state.isNextPageLoading = isloading
+                    return .send(.networkAction(.loadMoreContestsPosts))
                 }
                 
                 return .none
