@@ -23,8 +23,8 @@ public struct MainTabFeature {
     
     @ObservableState
     public struct State: Equatable {
-        var selectedTab: Tab// = .home
-        var home: HomeFeature.State = .init(weekTopic: "평화", startPeriod: "2024.05.10 09:00:00", endPeriod: "2024.05.16 23:59:59")
+        var selectedTab: Tab
+        var home: HomeFeature.State = .init()
         var contest: ContestFeature.State = .init()
         var allTimeContest: AllTimeContestFeature.State = .init()
         var mypage: MypageFeature.State = .init()

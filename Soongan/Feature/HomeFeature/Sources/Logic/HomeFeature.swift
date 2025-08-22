@@ -17,6 +17,13 @@ import ComposableArchitecture
 @Reducer
 public struct HomeFeature {
     
+    private static let dateFormatter: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss"
+        formatter.locale = Locale(identifier: "en_US_POSIX")
+        return formatter
+    }()
+    
     // MARK: - Path
     
     @Reducer(state: .equatable)
@@ -32,6 +39,8 @@ public struct HomeFeature {
         @Shared(.appStorage("AuthState")) var authState: AuthType = .loggedOut
         var path = StackState<HomePath.State>()
         
+        var homeState: HomeStateType = .loading
+        
         var postImageData = [PostImageModel]()
         var weekTopic: String = ""
         var startPeriod: String = ""
@@ -45,15 +54,7 @@ public struct HomeFeature {
             path.isEmpty
         }
         
-        public init(
-            weekTopic: String,
-            startPeriod: String,
-            endPeriod: String
-        ) {
-            self.weekTopic = weekTopic
-            self.startPeriod = startPeriod
-            self.endPeriod = endPeriod
-        }
+        public init() { }
     }
     
     // MARK: - Init
@@ -64,28 +65,37 @@ public struct HomeFeature {
     
     public enum Action: BindableAction {
         case binding(BindingAction<State>)
-        
         case path(StackActionOf<HomePath>)
         
+        case alertAction(AlertAction)
+        case networkAction(NetworkAction)
+        case uiAction(UIAction)
+        
         case onAppear
-        case addPictureButtonTapped
-        case pictureTapped(Int)
-        case infoButtonTapped
-        case showContest
-        case dismissInfoSheet(Bool)
-        
-        case showNotLoginUserAlert
-        case dismissAlertButtonTapped
-        case dismissLoginAlert
-        
-        case homeInfoSuccess(SearchHomeInfoResponseDTO)
-        
         case delegate(Delegate)
                 
         public enum Delegate {
             case moveToContestTab
             case didRequestLogout
         }
+    }
+    
+    public enum AlertAction {
+        case showNotLoginUserAlert
+        case dismissLoginAlert
+        case dismissAlertButtonTapped
+    }
+    
+    public enum NetworkAction {
+        case homeInfoSuccess(SearchHomeInfoResponseDTO)
+        case homeInfoFailure(NetworkError)
+    }
+    
+    public enum UIAction {
+        case infoButtonTapped
+        case showContestButtonTapped
+        case addPictureButtonTapped
+        case pictureTapped(Int)
     }
     
     // MARK: - Body
@@ -96,76 +106,92 @@ public struct HomeFeature {
         Reduce { state, action in
             switch action {
             case .onAppear:
+                if state.weekTopic.isEmpty {
+                    state.homeState = .loading
+                }
+                
                 return .run { send in
                     let result: Result<SearchHomeInfoResponseDTO, NetworkError> = await NetworkManager.shared.request(HomeEndpoint.getHomeInfo)
                     
                     switch result {
                     case .success(let responseResult):
-                        return await send(.homeInfoSuccess(responseResult))
+                        return await send(.networkAction(.homeInfoSuccess(responseResult)))
                     case .failure(let error):
-                        print(error.localizedDescription)
+                        return await send(.networkAction(.homeInfoFailure(error)))
+                    }
+                }
+
+            case .networkAction(.homeInfoSuccess(let result)):
+                let contestData = result.contestInfo
+                let postData = result.postInfo
+                state.isAddPostImage = postData.count == 3
+                
+                if let endDate = Self.dateFormatter.date(from: contestData.endAt) {
+                    if endDate < Date() {
+                        state.weekTopic = "-회차 종료-"
+                        state.homeState = .endTopic
+                    } else {
+                        state.startPeriod = contestData.startAt.toFormattedDateString()
+                        state.endPeriod = contestData.endAt.toFormattedDateString()
+                        
+                        state.postImageData = postData.map {
+                            PostImageModel(
+                                id: $0.postId,
+                                imageURL: $0.imageUrl,
+                                likeCount: $0.likeCount,
+                                commentCount: $0.commentCount,
+                                isLiked: $0.isLiked
+                            )
+                        }
+                        
+                        state.homeState = .inProgress
+                        state.weekTopic = contestData.subject
+                    }
+                } else {
+                    state.weekTopic = "-회차 종료-"
+                    state.homeState = .endTopic
+                }
+
+                return .none
+                
+            case .networkAction(.homeInfoFailure(let error)):
+                print(error)
+                return .none
+                
+            case .uiAction(let type):
+                switch type {
+                case .pictureTapped(let id):
+                    state.path.append(.contestDetail(ContestDetailFeature.State(postId: id)))
+                    
+                case .infoButtonTapped:
+                    state.isInfoSheetPresented = true
+                    
+                case .showContestButtonTapped:
+                    return .send(.delegate(.moveToContestTab))
+                    
+                case .addPictureButtonTapped:
+                    switch state.authState {
+                    case .skipped:
+                        return .send(.alertAction(.showNotLoginUserAlert))
+                    case .loggedIn:
+                        state.path.append(.postPicture(PostPictureFeature.State(weekTopic: state.weekTopic)))
+                    default:
+                        break
                     }
                 }
                 
-            case .homeInfoSuccess(let result):
-                let contestData = result.contestInfo
-                let postData = result.postInfo
-                
-                state.startPeriod = contestData.startAt.toFormattedDateString()
-                state.endPeriod = contestData.endAt.toFormattedDateString()
-                state.weekTopic = contestData.subject
-                state.isAddPostImage = postData.count == 3 ? true : false
-                
-                state.postImageData = postData.map {
-                    PostImageModel(
-                        id: $0.postId,
-                        imageURL: $0.imageUrl,
-                        likeCount: $0.likeCount,
-                        commentCount: $0.commentCount,
-                        isLiked: $0.isLiked
-                    )
-                }
-                
                 return .none
-                
-            case .addPictureButtonTapped:
-                switch state.authState {
-                case .skipped:
-                    return .send(.showNotLoginUserAlert)
-                case .loggedIn:
-                    state.path.append(.postPicture(PostPictureFeature.State(weekTopic: state.weekTopic)))
-                default:
-                    break
-                }
-                
-                return .none
-                
-            case .pictureTapped(let id):
-                state.path.append(.contestDetail(ContestDetailFeature.State(postId: id)))
-                
-                return .none
-                
-            case .infoButtonTapped:
-                state.isInfoSheetPresented = true
-                return .none
-                
-            case .showContest:
-                return .send(.delegate(.moveToContestTab))
-                
-            case .dismissInfoSheet(let isPresented):
-                state.isInfoSheetPresented = isPresented
-                return .none
-                
-            case .showNotLoginUserAlert:
+                    
+            case .alertAction(.showNotLoginUserAlert):
                 state.isAlertPresented = true
                 return .none
                 
-            case .dismissAlertButtonTapped:
+            case .alertAction(.dismissAlertButtonTapped):
                 state.isAlertPresented = false
                 
                 return .send(.delegate(.didRequestLogout))
                 
-            case .dismissLoginAlert:
+            case .alertAction(.dismissLoginAlert):
                 state.isAlertPresented = false
                 
                 return .none

@@ -1,8 +1,19 @@
 {
   "images" : [
     {
-      "filename" : "SoonganLogo.svg",
-      "idiom" : "universal"
+      "filename" : "SoonganLogo.png",
+      "idiom" : "universal",
+      "scale" : "1x"
+    },
+    {
+      "filename" : "SoonganLogo@2x.png",
+      "idiom" : "universal",
+      "scale" : "2x"
+    },
+    {
+      "filename" : "SoonganLogo@3x.png",
+      "idiom" : "universal",
+      "scale" : "3x"
     }
   ],
   "info" : {
