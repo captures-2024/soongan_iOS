@@ -42,7 +42,7 @@ public struct SplashFeature {
         case binding(BindingAction<State>)
         case onAppear
         case delayCompleted
-        case appVersionResponse(String)
+        case appVersionResponse(String?)
         
         case fetchRequiredVersion
         case requiredVersionResponse(Result<String, Error>)
