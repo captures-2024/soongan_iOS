@@ -283,7 +283,7 @@ private extension HomeView {
     }
     
     func periodSection(startPeriod: String, endPeriod: String) -> some View {
-        VStack(spacing: 8) {
+        VStack(alignment: .leading, spacing: 8) {
             HStack(spacing: 4) {
                 Text("시작일")
                 
@@ -291,7 +291,6 @@ private extension HomeView {
                     
                 Text(startPeriod)
             }
-            .font(DesignSystem.Font.medium14)
             
             HStack(spacing: 4) {
                 Text("마감일")
@@ -300,9 +299,9 @@ private extension HomeView {
                     
                 Text(endPeriod)
             }
-            .font(DesignSystem.Font.medium14)
-            .foregroundStyle(DesignSystem.Color.black100)
         }
+        .font(DesignSystem.Font.medium14)
+        .foregroundStyle(DesignSystem.Color.black100)
     }
     
     @ViewBuilder

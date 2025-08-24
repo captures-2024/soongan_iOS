@@ -103,6 +103,9 @@ public struct LoginView: View {
                     }
                 }
             }
+            .onAppear {
+                store.send(.onAppear)
+            }
         } destination: { store in
             switch store.case {
             case .signup(let store):

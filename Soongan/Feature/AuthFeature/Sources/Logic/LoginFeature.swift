@@ -52,6 +52,7 @@ public struct LoginFeature {
     @Dependency(\.appleLoginService) var appleLoginService
     @Dependency(\.kakaoLoginService) var kakaoLoginService
     @Dependency(\.userDefaultsClient) var userDefaultsClient
+    @Dependency(\.notificationClient) var notificationClient
     @Dependency(\.openURL) var openURL
     
     // MARK: - Action
@@ -60,6 +61,7 @@ public struct LoginFeature {
         case path(StackActionOf<LoginPath>)
         
         case binding(BindingAction<State>)
+        case onAppear
         case kakaoButtonTapped
         case appleButtonTapped
         
@@ -81,8 +83,6 @@ public struct LoginFeature {
             case loginSuccess
             case skippAuth
         }
-        
-//        case successSignup(SignupFeature.Action)
     }
     
     // MARK: - Body
@@ -90,6 +90,11 @@ public struct LoginFeature {
     public var body: some ReducerOf<Self> {
         Reduce { state, action in
             switch action {
+            case .onAppear:
+                return .run { _ in
+                    let _  = await self.notificationClient.requestAuthorization()
+                }
+                
             case .binding(_):
                 return .none
                 
