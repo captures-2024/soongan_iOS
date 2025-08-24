@@ -11,38 +11,49 @@ import SwiftUI
 import ComposableArchitecture
 
 import AuthFeature
+import SplashFeature
 import Shared
 
 @Reducer
 public struct AppFeature {
     
+    // MARK: - State
+    
     @ObservableState
     public struct State: Equatable {
         @Shared(.appStorage("AuthState")) var authState: AuthType = .loggedOut
         
+        var splash: SplashFeature.State?
         var login: LoginFeature.State?
         var mainTab: MainTabFeature.State?
         
-        public init() {
-            // 앱 시작 시 authState에 따라 초기 상태를 설정
-            if authState == .loggedOut {
-                self.login = LoginFeature.State()
-                self.mainTab = nil
-            } else {
-                self.login = nil
-                self.mainTab = MainTabFeature.State(selectedTab: .home)
-            }
+        public init()  {
+            self.splash = SplashFeature.State()
         }
     }
     
+    // MARK: - Action
+    
     public enum Action {
+        case splash(SplashFeature.Action)
         case login(LoginFeature.Action)
         case mainTab(MainTabFeature.Action)
     }
     
+    // MARK: - Body
+    
     public var body: some ReducerOf<Self> {
         Reduce { state, action in
             switch action {
+            case .splash(.delegate(.versionCheckCompleted)):
+                state.splash = nil
+                if state.authState == .loggedOut {
+                    state.login = LoginFeature.State()
+                } else {
+                    state.mainTab = MainTabFeature.State(selectedTab: .home)
+                }
+                return .none
+                
             case .login(.delegate(let delegateAction)):
                 switch delegateAction {
                 case .loginSuccess:
@@ -68,6 +79,9 @@ public struct AppFeature {
             default:
                 return .none
             }
+        }
+        .ifLet(\.splash, action: \.splash) {
+            SplashFeature()
         }
         .ifLet(\.login, action: \.login) {
             LoginFeature()

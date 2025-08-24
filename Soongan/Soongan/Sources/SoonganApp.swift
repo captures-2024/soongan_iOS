@@ -62,9 +62,6 @@ class AppDelegate: NSObject, UIApplicationDelegate {
         // UNUserNotificationCenter delegate 설정
         UNUserNotificationCenter.current().delegate = self
         
-        // 원격 알림 권한 요청
-        requestNotificationPermission()
-        
         return true
     }
     
