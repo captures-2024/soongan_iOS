@@ -11,7 +11,7 @@ import Dependencies
 // MARK: - AppVersionClient
 
 public struct AppVersionClient {
-    public var getCurrentVersion: () -> String
+    public var getCurrentVersion: () -> String?
 }
 
 // MARK: - Dependency (Live)
@@ -20,7 +20,7 @@ extension AppVersionClient: DependencyKey {
     public static let liveValue = Self(
         getCurrentVersion: {
             guard let version = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String else {
-                return "버전 정보 없음"
+                return nil
             }
             return version
         }

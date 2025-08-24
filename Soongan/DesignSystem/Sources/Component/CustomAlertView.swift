@@ -151,6 +151,8 @@ public enum AlertType: Identifiable {
     
     var centerButtonTitle: String {
         switch self {
+        case .showLoginView:
+            return "로그인하기"
         case .forceUpdate:
             return "업데이트 하러가기"
         default:

@@ -23,12 +23,14 @@ extension NotificationClient: DependencyKey {
             let authOptions: UNAuthorizationOptions = [.alert, .badge, .sound]
             do {
                 let granted = try await UNUserNotificationCenter.current().requestAuthorization(options: authOptions)
-                DispatchQueue.main.async {
-                    UIApplication.shared.registerForRemoteNotifications()
+                if granted {
+                    DispatchQueue.main.async {
+                        UIApplication.shared.registerForRemoteNotifications()
+                    }
                 }
                 return granted
             } catch {
-                // 실제로는 에러 처리를 하는 것이 좋습니다.
+                print("Failed to request notification authorization: \(error.localizedDescription)")
                 return false
             }
         }
