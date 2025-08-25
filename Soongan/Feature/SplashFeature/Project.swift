@@ -1,13 +1,13 @@
 import ProjectDescription
 
 let project = Project(
-    name: "AuthFeature",
+    name: "SplashFeature",
     targets: [
         .target(
-            name: "AuthFeature",
+            name: "SplashFeature",
             destinations: .iOS,
             product: .staticFramework,
-            bundleId: "com.captures.AuthFeature.Soongan",
+            bundleId: "com.captures.SplashFeature.Soongan",
             deploymentTargets: .iOS("18.0"),
             infoPlist: .default,
             sources: ["Sources/**"],
@@ -15,8 +15,6 @@ let project = Project(
             dependencies: [
                 .external(name: "ComposableArchitecture"),
                 .project(target: "DesignSystem", path: "../../DesignSystem"),
-                .project(target: "CoreKakaoLogin", path: "../../Core/CoreKakaoLogin"),
-                .project(target: "CoreAppleLogin", path: "../../Core/CoreAppleLogin"),
                 .project(target: "CoreNetwork", path: "../../Core/CoreNetwork"),
                 .project(target: "AppDependencies", path: "../../AppDependencies")
             ]

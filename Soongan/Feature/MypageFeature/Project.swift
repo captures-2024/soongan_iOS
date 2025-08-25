@@ -2,12 +2,6 @@ import ProjectDescription
 
 let project = Project(
     name: "MypageFeature",
-    packages: [
-      .package(
-        url: "https://github.com/pointfreeco/swift-composable-architecture.git",
-        from: "1.17.0"
-      ),
-    ],
     targets: [
         .target(
             name: "MypageFeature",

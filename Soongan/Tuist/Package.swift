@@ -9,18 +9,8 @@ import PackageDescription
         // Default is .staticFramework
         // productTypes: ["Alamofire": .framework,]
         productTypes: [
-            "KakaoSDKCommon": .framework,
-            "KakaoSDKAuth": .framework,
-            "KakaoSDKUser": .framework,
-            "ComposableArchitecture": .framework,
             "ComposableArchitectureMacros": .macro,
             "Alamofire": .framework,
-//            "FirebaseAnalytics": .framework,
-//            "FirebaseMessaging": .framework,
-//            "FirebaseCore": .framework,
-//            "FirebaseCoreInternal": .framework,
-//            "FirebaseInstallations": .framework,
-//            "GoogleUtilities": .framework,
         ]
     )
 #endif

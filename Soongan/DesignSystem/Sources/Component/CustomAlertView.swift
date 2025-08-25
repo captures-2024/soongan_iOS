@@ -71,7 +71,7 @@ public struct CustomAlertView: View {
                 Button(action: {
                     centerButtonAction?()
                 }) {
-                    Text(type == .showLoginView ? "로그인하기" : "확인")
+                    Text(type.centerButtonTitle)
                         .font(DesignSystem.Font.semibold14)
                         .foregroundStyle(Color.black100)
                         .frame(height: 40)
@@ -126,6 +126,7 @@ public enum AlertType: Identifiable {
     case showLoginView
     case deletePost
     case deletePostComplete
+    case forceUpdate
     
     public var id: Self {
         self
@@ -143,6 +144,20 @@ public enum AlertType: Identifiable {
             return "정말 작품을\n삭제하시겠습니까?"
         case .deletePostComplete:
             return "삭제가 완료되었습니다"
+        case .forceUpdate:
+            return "원활한 앱 활동을 위해\n버전 업데이트가 필요합니다."
+        }
+    }
+    
+    var centerButtonTitle: String {
+        switch self {
+        case .showLoginView:
+            return "로그인하기"
+        case .forceUpdate:
+            return "업데이트 하러가기"
+        default:
+            return "확인"
+        
         }
     }
 }
