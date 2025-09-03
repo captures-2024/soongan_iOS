@@ -10,6 +10,7 @@ import PhotosUI
 
 import DetailContestFeature
 import DesignSystem
+import PostPictureFeature
 import Shared
 
 import ComposableArchitecture
@@ -138,6 +139,8 @@ public struct ContestView: View {
             switch store.case {
             case .contestDetail(let store):
                 ContestDetailView(store: store)
+            case .editPost(let store):
+                PostPictureView(store: store)
             }
         }
     }

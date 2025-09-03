@@ -10,6 +10,7 @@ import SwiftUI
 import CoreNetwork
 import DetailContestFeature
 import DesignSystem
+import PostPictureFeature
 import Shared
 
 import ComposableArchitecture
@@ -22,6 +23,7 @@ public struct ContestFeature {
     @Reducer(state: .equatable)
     public enum ContestPath {
         case contestDetail(ContestDetailFeature)
+        case editPost(PostPictureFeature)
     }
     
     // MARK: - State
@@ -254,6 +256,23 @@ public struct ContestFeature {
                     return .none
                 case .contestDetail(.delegate(.didRequestLogout)):
                     return .send(.delegate(.logoutRequested))
+                case .contestDetail(.delegate(.editRequested(let contestId, let title, let imageURL, let weekTopic))):
+                    let editState = PostPictureFeature.State(
+                        mode: .edit(
+                            contestId: contestId,
+                            weekTopic: weekTopic,
+                            existingTitle: title,
+                            imageURL: imageURL
+                        )
+                    )
+                    state.path.append(.editPost(editState))
+                    return .none
+                case .editPost(.delegate(.editCompleted)):
+                    state.path.removeLast()
+                    return .send(.networkAction(.refreshTriggered)) // 수정 완료 후 새로고침
+                case .editPost(.delegate(.backConfirmed)):
+                    state.path.removeLast()
+                    return .none
                 default:
                     return .none
                 }
@@ -262,7 +281,7 @@ public struct ContestFeature {
                 return .none
             
             case .uiAction(.contestDetailImageTapped(let postId)):
-                state.path.append(.contestDetail(ContestDetailFeature.State(postId: postId)))
+                state.path.append(.contestDetail(ContestDetailFeature.State(postId: postId, weekTopic: state.weekTopic)))
                 return .none
                 
             case .uiAction(.sortContestContentTapped):
