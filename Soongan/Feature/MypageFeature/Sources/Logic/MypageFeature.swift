@@ -11,6 +11,7 @@ import CoreNetwork
 import CoreKeyChain
 import DetailContestFeature
 import DesignSystem
+import PostPictureFeature
 import Shared
 
 import ComposableArchitecture
@@ -25,6 +26,7 @@ public struct MypageFeature {
         case editProfile(EditProfileFeature)
         case alarmList(AlarmListFeature)
         case questionsList(QuestionsListFeature)
+        case postPicture(PostPictureFeature)
         case contestDetail(ContestDetailFeature)
     }
     
@@ -207,6 +209,26 @@ public struct MypageFeature {
                     state.path.removeLast()
                     return .none
                     
+                case .contestDetail(.delegate(.editRequested(let contestId, let title, let imageURL, let weekTopic))):
+                    let editState = PostPictureFeature.State(
+                        mode: .edit(
+                            contestId: contestId,
+                            weekTopic: weekTopic,
+                            existingTitle: title,
+                            imageURL: imageURL
+                        )
+                    )
+                    state.path.append(.postPicture(editState))
+                    return .none
+                    
+                case .postPicture(.delegate(.editCompleted)):
+                    state.path.removeLast()
+                    return .send(.onAppear) // 수정 완료 후 새로고침
+                
+                case .postPicture(.delegate(.backConfirmed)):
+                    state.path.removeLast()
+                    return .none
+                    
                 default:
                     return .none
                 }
@@ -353,7 +375,7 @@ public struct MypageFeature {
                 }
                 
             case .contestDetailImageTapped(let postId):
-                state.path.append(.contestDetail(ContestDetailFeature.State(postId: postId)))
+                state.path.append(.contestDetail(ContestDetailFeature.State(postId: postId, weekTopic: "")))
                 return .none
                 
             case .uiAction(.joinToContestButtonTapped):
