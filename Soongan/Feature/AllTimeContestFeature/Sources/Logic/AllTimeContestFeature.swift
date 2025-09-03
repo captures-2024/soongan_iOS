@@ -110,7 +110,7 @@ public struct AllTimeContestFeature {
                     return .send(.delegate(.logoutRequested))
                     
                 case .detailContest(.delegate(.showContestDetail(let postId))):
-                    state.path.append(.contestDetail(ContestDetailFeature.State(postId: postId)))
+                    state.path.append(.contestDetail(ContestDetailFeature.State(postId: postId, weekTopic: "")))
                     return .none
                     
                 case .detailContest(.delegate(.moveToContestTab)):
