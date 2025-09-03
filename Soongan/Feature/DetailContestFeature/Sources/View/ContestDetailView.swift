@@ -8,6 +8,7 @@
 import SwiftUI
 
 import DesignSystem
+import PostPictureFeature
 import Shared
 
 import ComposableArchitecture
@@ -59,7 +60,7 @@ public struct ContestDetailView: View {
                 CustomSheetView<DetailContestOptionType>(type: .detailContestOption(isWriter: store.isWriter)) { type in
                     switch type {
                     case .edit:
-                        break
+                        store.send(.editButtonTapped)
                     case .delete:
                         store.send(.deleteOptionButtonTapped)
                     case .report:
@@ -219,7 +220,7 @@ public struct ContestDetailView: View {
     NavigationStack {
         ContestDetailView(
             store: Store(initialState:
-                            ContestDetailFeature.State(postId: 10)) {
+                            ContestDetailFeature.State(postId: 10, weekTopic: "")) {
                                 ContestDetailFeature()
                             }
         )

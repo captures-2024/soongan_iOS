@@ -26,6 +26,7 @@ public struct ContestDetailFeature {
         var postId: Int
         var postUserId: Int?
         var myNickname: String?
+        var weekTopic: String
         
         var contestTitle: String?
         var imageUrl: String?
@@ -52,9 +53,11 @@ public struct ContestDetailFeature {
         }
         
         public init (
-            postId: Int
+            postId: Int,
+            weekTopic: String
         ) {
             self.postId = postId
+            self.weekTopic = weekTopic
         }
     }
     
@@ -76,6 +79,7 @@ public struct ContestDetailFeature {
         case uiAction(UIAction)
         
         case onAppear
+        case editButtonTapped
         case reportReasonButtonTapped(type: ContestReportReasonType, reason: String)
         case postReport(type: ContestReportReasonType)
         case reportSuccess(ReportResponseDTO, ContestReportReasonType)
@@ -106,6 +110,7 @@ public struct ContestDetailFeature {
         public enum DelegateAction {
             case backConfirmed
             case didRequestLogout
+            case editRequested(contestId: Int, title: String, imageURL: String, weekTopic: String)
         }
     }
     
@@ -154,6 +159,22 @@ public struct ContestDetailFeature {
                     case .failure(let error):
                         await send(.networkAction(.onAppearDetailContestFailure(error)))
                     }
+                }
+                
+            case .editButtonTapped:
+                state.isContestOptionSheetPresented = false
+                
+                guard let title = state.contestTitle,
+                      let imageURL = state.imageUrl else { return .none }
+                
+                return .run { [contestId = state.postId, weekTopic = state.weekTopic] send in
+                    try await Task.sleep(nanoseconds: 500_000_000)
+                    await send(.delegate(.editRequested(
+                        contestId: contestId,
+                        title: title,
+                        imageURL: imageURL,
+                        weekTopic: weekTopic
+                    )))
                 }
                 
             case .networkAction(.onAppearDetailContestSuccess(let response)):
