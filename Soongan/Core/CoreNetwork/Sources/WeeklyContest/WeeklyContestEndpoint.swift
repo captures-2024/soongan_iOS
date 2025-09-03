@@ -13,7 +13,7 @@ public enum WeeklyContestEndpoint {
     case postContest(PostWeeklyContestRequestDTO)
     case getDetailContest(postId: Int)
     case deleteContest(postId: Int)
-    case patchContest(postId: Int)
+    case patchContest(postId: Int, PutWeeklyContestRequestDTO)
     case getContestList
     case getMyContest(SearchMyContestRequestDTO)
 }
@@ -27,7 +27,7 @@ extension WeeklyContestEndpoint: APIEndpoint {
         switch self {
         case .getContest, .postContest:
             return basePath.rawValue + "/posts"
-        case .getDetailContest(let postId), .deleteContest(let postId), .patchContest(let postId):
+        case .getDetailContest(let postId), .deleteContest(let postId), .patchContest(let postId, _):
             return basePath.rawValue + "/posts/\(postId)"
         case .getContestList:
             return basePath.rawValue
@@ -81,6 +81,8 @@ extension WeeklyContestEndpoint: APIEndpoint {
     public var body: (any Encodable)? {
         switch self {
         case .postContest(let dto):
+            return dto
+        case .patchContest(_, let dto):
             return dto
         default:
             return nil
