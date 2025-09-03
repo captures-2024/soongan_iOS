@@ -123,6 +123,7 @@ public struct CustomAlertView: View {
 public enum AlertType: Identifiable {
     case postContestError
     case backPostContest
+    case backEditContest
     case showLoginView
     case deletePost
     case deletePostComplete
@@ -138,6 +139,8 @@ public enum AlertType: Identifiable {
             return "콘테스트가 마감됐어요."
         case .backPostContest:
             return "정말 작품 등록을\n하지 않으시겠어요?"
+        case .backEditContest:
+            return "정말 작품 수정을\n하지 않으시겠어요?"
         case .showLoginView:
             return "해당 기능은\n로그인이 필요한 기능입니다."
         case .deletePost:

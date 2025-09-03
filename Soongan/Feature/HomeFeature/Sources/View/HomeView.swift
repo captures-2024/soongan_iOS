@@ -9,6 +9,7 @@ import SwiftUI
 
 import DetailContestFeature
 import DesignSystem
+import PostPictureFeature
 
 import ComposableArchitecture
 import Kingfisher

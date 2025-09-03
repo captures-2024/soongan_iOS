@@ -10,6 +10,7 @@ import SwiftUI
 import DetailContestFeature
 import DesignSystem
 import Shared
+import PostPictureFeature
 
 import ComposableArchitecture
 import Kingfisher
@@ -96,6 +97,8 @@ public struct MypageView: View {
                 QuestionsListView(store: store)
             case .contestDetail(let store):
                 ContestDetailView(store: store)
+            case .postPicture(let store):
+                PostPictureView(store: store)
             }
         }
     }

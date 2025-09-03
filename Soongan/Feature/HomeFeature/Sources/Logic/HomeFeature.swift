@@ -10,6 +10,7 @@ import SwiftUI
 import CoreNetwork
 import DetailContestFeature
 import DesignSystem
+import PostPictureFeature
 import Shared
 
 import ComposableArchitecture
@@ -161,7 +162,7 @@ public struct HomeFeature {
             case .uiAction(let type):
                 switch type {
                 case .pictureTapped(let id):
-                    state.path.append(.contestDetail(ContestDetailFeature.State(postId: id)))
+                    state.path.append(.contestDetail(ContestDetailFeature.State(postId: id, weekTopic: state.weekTopic)))
                     
                 case .infoButtonTapped:
                     state.isInfoSheetPresented = true
@@ -174,7 +175,7 @@ public struct HomeFeature {
                     case .skipped:
                         return .send(.alertAction(.showNotLoginUserAlert))
                     case .loggedIn:
-                        state.path.append(.postPicture(PostPictureFeature.State(weekTopic: state.weekTopic)))
+                        state.path.append(.postPicture(PostPictureFeature.State(mode: .create(weekTopic: state.weekTopic))))
                     default:
                         break
                     }
@@ -208,6 +209,20 @@ public struct HomeFeature {
                 case .contestDetail(.delegate(.backConfirmed)):
                     state.path.removeLast()
                     return .none
+                case .contestDetail(.delegate(.editRequested(let contestId, let title, let imageURL, let weekTopic))):
+                    let editState = PostPictureFeature.State(
+                        mode: .edit(
+                            contestId: contestId,
+                            weekTopic: weekTopic,
+                            existingTitle: title,
+                            imageURL: imageURL
+                        )
+                    )
+                    state.path.append(.postPicture(editState))
+                    return .none
+                case .postPicture(.delegate(.editCompleted)):
+                    state.path.removeLast()
+                    return .send(.onAppear) // 수정 완료 후 새로고침
                 default:
                     return .none
                 }

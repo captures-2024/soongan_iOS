@@ -59,9 +59,8 @@ struct ContestPictureView: View {
                 Spacer()
                 
                 ContestPictureTextView(title: "\(likeCount)")
-                    .padding(.bottom, 8)
             }
-            .padding(.horizontal, 8)
+            .padding([.horizontal, .bottom], 4)
         }
     }
     

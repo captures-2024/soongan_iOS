@@ -18,6 +18,7 @@ let project = Project(
                 .project(target: "CoreNetwork", path: "../../Core/CoreNetwork"),
                 .project(target: "CoreUserDefault", path: "../../Core/CoreUserDefault"),
                 .project(target: "UserProfileFeature", path: "../UserProfileFeature"),
+                .project(target: "PostPictureFeature", path: "../PostPictureFeature"),
             ]
         )
     ]
