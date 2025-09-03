@@ -1,6 +1,6 @@
 //
 //  PostPictureView.swift
-//  HomeFeature
+//  PostPictureFeature
 //
 //  Created by ParkJunHyuk on 5/14/25.
 //
@@ -76,7 +76,10 @@ public struct PostPictureView: View {
                 
                 Spacer(minLength: 50)
                 
-                CustomBottomButton(type: .submit, isEnable: $store.isButtonEnabled) {
+                CustomBottomButton(
+                    type: store.isEditMode ? .editComplete : .submit,
+                    isEnable: $store.isButtonEnabled
+                ) {
                     store.send(.postButtonTapped)
                 }
                 .padding(.horizontal, 136)
@@ -116,6 +119,10 @@ public struct PostPictureView: View {
             }
         }
         .background(alertHostingView)
+        .gesture(
+            DragGesture()
+                .onChanged { _ in }
+        )
     }
     
     @ViewBuilder
@@ -123,7 +130,7 @@ public struct PostPictureView: View {
         Color.clear.fullScreenCover(isPresented: $store.isAlertPresented) {
             if let type = store.alertPresentedType {
                 switch type {
-                case .backPostContest:
+                case .backPostContest, .backEditContest:
                     CustomAlertView(
                         type: type,
                         leftButtonAction: {
@@ -176,7 +183,7 @@ private extension PostPictureView {
                 Image(uiImage: image)
                     .resizable()
                     .scaledToFit()
-                    .frame(width: 353)//, height: 353)
+                    .frame(width: 353)
                     .shadow(
                         color: Color.black.opacity(0.25),
                         radius: 5, x: 0, y: 4)
@@ -199,7 +206,7 @@ private extension PostPictureView {
                                     .scaledToFit()
                                     .frame(width: 40, height: 40)
                                 
-                                Text("출품하기")
+                                Text(store.isEditMode ? "이미지 변경" : "출품하기")
                                     .font(DesignSystem.Font.regular14)
                                     .foregroundStyle(Color.black100)
                             }
@@ -211,8 +218,6 @@ private extension PostPictureView {
                                let uiImage = UIImage(data: data) {
                                 store.selectedImage = uiImage
                                 store.imageData = data
-                            } else {
-                                // 실패 처리
                             }
                         }
                     }
@@ -236,11 +241,11 @@ private extension PostPictureView {
 
 // MARK: - Preview
 
-#Preview {
-    PostPictureView(
-        store: Store(initialState:
-                        PostPictureFeature.State(weekTopic: "")) {
-                            PostPictureFeature()
-                        }
-    )
-}
+//#Preview {
+//    PostPictureView(
+//        store: Store(initialState:
+//                        PostPictureFeature.State(weekTopic: "")) {
+//                            PostPictureFeature()
+//                        }
+//    )
+//}
