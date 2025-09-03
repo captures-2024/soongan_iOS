@@ -55,7 +55,9 @@ public struct ContestDetailView: View {
             .transaction { transaction in
                 transaction.disablesAnimations = true
             }
-            .sheet(isPresented: $store.isContestOptionSheetPresented.sending(\.dismissOptionSheet)
+            .sheet(
+                isPresented: $store.isContestOptionSheetPresented.sending(\.dismissOptionSheet),
+                onDismiss: { store.send(.optionSheetDismissed) }
             ) {
                 CustomSheetView<DetailContestOptionType>(type: .detailContestOption(isWriter: store.isWriter)) { type in
                     switch type {

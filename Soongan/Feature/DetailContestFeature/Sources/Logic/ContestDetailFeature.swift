@@ -48,6 +48,8 @@ public struct ContestDetailFeature {
         var reportReasonSheet: SheetContentType?
         var completeReportSheet: SheetContentType?
         
+        var pendingSheetAction: DetailContestOptionType? = nil
+        
         var isWriter: Bool {
             return myNickname == contestAuthor
         }
@@ -105,6 +107,8 @@ public struct ContestDetailFeature {
         case presentDeleteAlert
         case dismissDeleteAlert
         
+        case optionSheetDismissed
+        
         case delegate(DelegateAction)
 
         public enum DelegateAction {
@@ -161,22 +165,6 @@ public struct ContestDetailFeature {
                     }
                 }
                 
-            case .editButtonTapped:
-                state.isContestOptionSheetPresented = false
-                
-                guard let title = state.contestTitle,
-                      let imageURL = state.imageUrl else { return .none }
-                
-                return .run { [contestId = state.postId, weekTopic = state.weekTopic] send in
-                    try await Task.sleep(nanoseconds: 500_000_000)
-                    await send(.delegate(.editRequested(
-                        contestId: contestId,
-                        title: title,
-                        imageURL: imageURL,
-                        weekTopic: weekTopic
-                    )))
-                }
-                
             case .networkAction(.onAppearDetailContestSuccess(let response)):
                 state.postUserId = response.authorMemberId
                 state.contestTitle = response.title
@@ -193,8 +181,8 @@ public struct ContestDetailFeature {
                 return .none
                 
             case .reportSheetIsPresented:
+                state.pendingSheetAction = .report
                 state.isContestOptionSheetPresented = false
-                state.isReportOptionSheetPresented = true
                 
                 return .none
                 
@@ -219,6 +207,33 @@ public struct ContestDetailFeature {
                     
                 case .other:
                     state.reportReasonSheet = .other(inputState: false)
+                }
+                
+                return .none
+                
+            case .optionSheetDismissed:
+                guard let action = state.pendingSheetAction else { return .none }
+                state.pendingSheetAction = nil
+                
+                switch action {
+                case .edit:
+                    guard let title = state.contestTitle,
+                          let imageURL = state.imageUrl else { return .none }
+                    
+                    return .run { [contestId = state.postId, weekTopic = state.weekTopic] send in
+                        await send(.delegate(.editRequested(
+                            contestId: contestId,
+                            title: title,
+                            imageURL: imageURL,
+                            weekTopic: weekTopic
+                        )))
+                    }
+                    
+                case .delete:
+                    return .send(.presentDeleteAlert)
+                    
+                case .report:
+                    state.isReportOptionSheetPresented = true
                 }
                 
                 return .none
@@ -261,7 +276,14 @@ public struct ContestDetailFeature {
                 // TODO: - 좋아요 에러
                 return .none
                 
+            case .editButtonTapped:
+                state.pendingSheetAction = .edit
+                state.isContestOptionSheetPresented = false
+                
+                return .none
+                
             case .deleteButtonTapped:
+                state.pendingSheetAction = .delete
                 state.isDeleteAlertPresented = false
                 
                 let postId = state.postId
