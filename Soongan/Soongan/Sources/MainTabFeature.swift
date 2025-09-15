@@ -59,6 +59,7 @@ public struct MainTabFeature {
         case contest(ContestFeature.Action)
         case allTimeContest(AllTimeContestFeature.Action)
         case mypage(MypageFeature.Action)
+        case handlePushNotification(reportId: Int, targetType: String)
         
         case delegate(Delegate)
                 
@@ -137,6 +138,19 @@ public struct MainTabFeature {
                     
                 default:
                     return .none
+                }
+                
+            case .handlePushNotification(let reportId, let targetType):
+                // 현재 활성화된 탭에 따라 ExplainFeature로 이동
+                switch state.selectedTab {
+                case .home:
+                    return .send(.home(.showExplain(reportId: reportId, targetType: targetType)))
+                case .contest:
+                    return .send(.contest(.showExplain(reportId: reportId, targetType: targetType)))
+                case .allTimeContest:
+                    return .send(.allTimeContest(.showExplain(reportId: reportId, targetType: targetType)))
+                case .myPage:
+                    return .send(.mypage(.showExplain(reportId: reportId, targetType: targetType)))
                 }
                 
             case .delegate:

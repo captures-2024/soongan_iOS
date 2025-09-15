@@ -38,6 +38,7 @@ public struct AppFeature {
         case splash(SplashFeature.Action)
         case login(LoginFeature.Action)
         case mainTab(MainTabFeature.Action)
+        case pushNotificationTapped(reportId: Int, targetType: String)
     }
     
     // MARK: - Body
@@ -74,6 +75,13 @@ public struct AppFeature {
                 state.login = LoginFeature.State()
                 state.mainTab = nil
                 
+                return .none
+                
+            case .pushNotificationTapped(let reportId, let targetType):
+                // 로그인된 상태에서만 처리
+                if state.mainTab != nil {
+                    return .send(.mainTab(.handlePushNotification(reportId: reportId, targetType: targetType)))
+                }
                 return .none
                 
             default:

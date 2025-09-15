@@ -11,6 +11,7 @@ import DetailContestFeature
 import DesignSystem
 import Shared
 import PostPictureFeature
+import ExplainFeature
 
 import ComposableArchitecture
 import Kingfisher
@@ -99,6 +100,10 @@ public struct MypageView: View {
                 ContestDetailView(store: store)
             case .postPicture(let store):
                 PostPictureView(store: store)
+            case .explain(let store):
+                ExplainView(store: store)
+            case .completeExplain(let store):
+                CompleteExplainView(store: store)
             }
         }
     }

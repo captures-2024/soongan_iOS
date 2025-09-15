@@ -10,6 +10,7 @@ import PhotosUI
 
 import DetailContestFeature
 import DesignSystem
+import ExplainFeature
 
 import ComposableArchitecture
 import Kingfisher
@@ -85,6 +86,10 @@ public struct AllTimeContestView: View {
                 DetailContestView(store: store)
             case .contestDetail(let store):
                 ContestDetailView(store: store)
+            case .explain(let store):
+                ExplainView(store: store)
+            case .completeExplain(let store):
+                CompleteExplainView(store: store)
             }
         }
     }

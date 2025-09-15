@@ -12,6 +12,7 @@ import CoreKeyChain
 import DetailContestFeature
 import DesignSystem
 import PostPictureFeature
+import ExplainFeature
 import Shared
 
 import ComposableArchitecture
@@ -28,6 +29,8 @@ public struct MypageFeature {
         case questionsList(QuestionsListFeature)
         case postPicture(PostPictureFeature)
         case contestDetail(ContestDetailFeature)
+        case explain(ExplainFeature)
+        case completeExplain(CompleteExplainFeature)
     }
     
     // MARK: - State
@@ -81,6 +84,7 @@ public struct MypageFeature {
         case binding(BindingAction<State>)
         
         case onAppear
+        case showExplain(reportId: Int, targetType: String)
         case alertAction(AlertAction)
         case networkAction(NetworkAction)
         case uiAction(UIAction)
@@ -167,6 +171,10 @@ public struct MypageFeature {
                     }
                 }
                 
+            case .showExplain(let reportId, let targetType):
+                state.path.append(.explain(ExplainFeature.State(reportId: reportId, targetType: targetType)))
+                return .none
+                
             case .networkAction(.onAppearMyInfoSuccess(let response)):
                 state.userName = response.nickname ?? ""
                 state.userIntroduce = response.selfIntroduction ?? "본인을 소개시켜주세요"
@@ -227,6 +235,22 @@ public struct MypageFeature {
                 
                 case .postPicture(.delegate(.backConfirmed)):
                     state.path.removeLast()
+                    return .none
+                    
+                case .explain(.delegate(.backConfirmed)):
+                    state.path.removeLast()
+                    return .none
+                    
+                case .explain(.delegate(.dismissExplain)):
+                    state.path.removeLast()
+                    return .none
+                    
+                case .explain(.delegate(.showCompleteExplain(let completeState))):
+                    state.path.append(.completeExplain(completeState))
+                    return .none
+                    
+                case .completeExplain(.delegate(.dismissCompleteExplain)):
+                    state.path.removeLast(2)
                     return .none
                     
                 default:

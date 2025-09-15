@@ -48,8 +48,7 @@ public struct ContestImageView: View {
     public var body: some View {
         KFImage(URL(string: model.imageUrl))
             .placeholder {
-                ProgressView()
-                    .frame(maxWidth: .infinity, maxHeight: 300)
+                SkeletonView()
             }
             .onSuccess { result in
                 // 원본 이미지의 사이즈와 비율을 가져옴

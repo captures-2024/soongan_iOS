@@ -1,19 +1,17 @@
 //
 //  ZoomableImageView.swift
-//  DetailContestFeature
+//  DesignSystem
 //
-//  Created by ParkJunHyuk on 7/16/25.
+//  Created by ParkJunHyuk on 9/9/25.
 //
 
 import SwiftUI
 
-import DesignSystem
 import Shared
 
-import ComposableArchitecture
 import Kingfisher
 
-struct ZoomableImageView: View {
+public struct ZoomableImageView: View {
     
     @State private var scale: CGFloat = 1.0
     @State private var lastScale: CGFloat = 1.0
@@ -24,9 +22,13 @@ struct ZoomableImageView: View {
     
     let url: String?
     
+    public init(url: String?) {
+        self.url = url
+    }
+    
     // MARK: - Body
     
-    var body: some View {
+    public var body: some View {
         GeometryReader { geometry in
             ZStack(alignment: .topLeading) {
                 ZStack {

@@ -19,6 +19,7 @@ let project = Project(
                 .project(target: "CoreUserDefault", path: "../../Core/CoreUserDefault"),
                 .project(target: "DetailContestFeature", path: "../DetailContestFeature"),
                 .project(target: "PostPictureFeature", path: "../PostPictureFeature"),
+                .project(target: "ExplainFeature", path: "../ExplainFeature"),
             ]
         )
     ]

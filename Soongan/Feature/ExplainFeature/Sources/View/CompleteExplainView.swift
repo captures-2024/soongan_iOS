@@ -10,11 +10,19 @@ import SwiftUI
 import DesignSystem
 import Shared
 
-struct CompleteExplainView: View {
+import ComposableArchitecture
+
+public struct CompleteExplainView: View {
+    
+    @Bindable var store: StoreOf<CompleteExplainFeature>
+    
+    public init(store: StoreOf<CompleteExplainFeature>) {
+        self.store = store
+    }
     
     // MARK: - Body
     
-    var body: some View {
+    public var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             Spacer()
             
@@ -30,16 +38,28 @@ struct CompleteExplainView: View {
             
             CustomBottomButton(
                 type: .comfirm,
-                action: {}
+                action: {
+                    store.send(.bottomButtonTapped)
+                }
             )
             .padding(.bottom, 12)
         }
         .padding(.horizontal, 20)
+        .background(DesignSystem.Color.soonganBG)
+        .toolbarVisibility(.hidden, for: .navigationBar)
+        .gesture(
+            DragGesture()
+                .onChanged { _ in }
+                .onEnded { _ in }
+        )
+        .interactiveDismissDisabled()
     }
 }
 
 // MARK: - Preview
 
 #Preview {
-    CompleteExplainView()
+    CompleteExplainView(store: Store(initialState: CompleteExplainFeature.State()) {
+        CompleteExplainFeature()
+    })
 }

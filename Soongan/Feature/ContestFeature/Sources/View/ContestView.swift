@@ -11,6 +11,7 @@ import PhotosUI
 import DetailContestFeature
 import DesignSystem
 import PostPictureFeature
+import ExplainFeature
 import Shared
 
 import ComposableArchitecture
@@ -39,15 +40,27 @@ public struct ContestView: View {
                     navigationTitle(contestIndex: store.contestIndex, weekTopic: store.weekTopic)
                     
                     if store.initPageLoading {
-                        VStack {
-                            Spacer()
-                            
-                            ProgressView()
-                                .progressViewStyle(CircularProgressViewStyle())
-                                .scaleEffect(2.0)
-                            
-                            Spacer()
+                        // 로딩 중일 때 보여줄 스켈레톤 그리드
+                        HStack(alignment: .top, spacing: 8) {
+                            // 왼쪽 스켈레톤 컬럼
+                            VStack(spacing: 8) {
+                                ForEach(0..<3, id: \.self) { _ in
+                                    SkeletonView()
+                                        .frame(width: geometry.size.width / 2 - 12, height: 200) // 임시 높이
+                                        .cornerRadius(8)
+                                }
+                            }
+                            // 오른쪽 스켈레톤 컬럼
+                            VStack(spacing: 8) {
+                                ForEach(0..<3, id: \.self) { _ in
+                                    SkeletonView()
+                                        .frame(width: geometry.size.width / 2 - 12, height: 250) // 높이를 약간 다르게 하여 자연스러움 추가
+                                        .cornerRadius(8)
+                                }
+                            }
                         }
+                        .padding(.horizontal, 8)
+                        .transition(.opacity.animation(.easeInOut))
                     } else {
                         ZStack(alignment: .bottomTrailing) {
                             ZStack(alignment: .bottom) {
@@ -141,6 +154,10 @@ public struct ContestView: View {
                 ContestDetailView(store: store)
             case .editPost(let store):
                 PostPictureView(store: store)
+            case .explain(let store):
+                ExplainView(store: store)
+            case .completeExplain(let store):
+                CompleteExplainView(store: store)
             }
         }
     }

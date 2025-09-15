@@ -17,10 +17,7 @@ public struct ExplainView: View {
     
     @Bindable var store: StoreOf<ExplainFeature>
     @FocusState private var isFocused: Bool
-    
-    private enum Field: Hashable {
-        case myTextEditor
-    }
+    @State private var paddingBottomButton: CGFloat = 0
     
     // MARK: - Init
     
@@ -29,16 +26,9 @@ public struct ExplainView: View {
     ) {
         self.store = store
         
-        // UINavigationBar의 외형을 담당하는 객체를 생성합니다.
         let appearance = UINavigationBarAppearance()
-        
-        // 1. 배경을 불투명하게 설정하고 구분선을 없애는 핵심 코드입니다.
-        appearance.shadowColor = .clear // 하단 선 제거
-        
-        // 2. 원하는 배경색을 설정합니다.
+        appearance.shadowColor = .clear
         appearance.backgroundColor = UIColor(DesignSystem.Color.soonganBG)
-        
-        // 3. 네비게이션 바의 표준 모양과 스크롤 될 때의 모양을 모두 설정합니다.
         UINavigationBar.appearance().standardAppearance = appearance
         UINavigationBar.appearance().scrollEdgeAppearance = appearance
     }
@@ -46,59 +36,81 @@ public struct ExplainView: View {
     // MARK: - Body
     
     public var body: some View {
-        ScrollViewReader { proxy in
-            ScrollView {
-                ZStack {
-                    DesignSystem.Color.soonganBG
-                        .ignoresSafeArea()
-                        .onTapGesture {
-                            UIApplication.shared.dismissKeyboard()
+        GeometryReader { geometry in
+            ZStack(alignment: .bottom) {
+                ScrollViewReader { proxy in
+                    ScrollView {
+                        VStack(alignment: .leading, spacing: 0) {
+                            KFImage(store.imageUrl.flatMap(URL.init(string:)))
+                                .placeholder { 
+                                    SkeletonView()
+                                }
+                                .resizable()
+                                .aspectRatio(contentMode: .fit)
+                                .frame(height: 109)
+                                .padding(.bottom, geometry.size.height * 40 / 852)
+                                .onTapGesture {
+                                    store.send(.contestImageTapped)
+                                }
+                            
+                            explainTitleSection(title: store.contestTitle ?? "")
+                                .padding(.bottom, geometry.size.height * 40 / 852)
+                            
+                            CustomTextEditor(
+                                text: $store.inputTextEditor,
+                                placeholder: store.textEditorPlaceHolder,
+                                characterLimit: 1000,
+                                isFocused: $isFocused
+                            )
+                            .frame(height: 200)
+                            .id("textEditor")
+                            
+                            // 스크롤 콘텐츠가 하단 버튼에 가려지지 않도록 여백 추가
+                            Color.clear.frame(height: 100)
                         }
-                    
-                    VStack(alignment: .leading, spacing: 0) {
-                        Image.dumy1
-                            .resizable()
-                            .aspectRatio(contentMode: .fit)
-                            .frame(width: 114, height: 114)
-                            .padding(.bottom, 40)
-                        
-                        explainTitleSection(title: "테스트")
-                            .padding(.bottom, 40)
-                        
-                        CustomTextEditor(
-                            text: $store.inputTextEditor,
-                            placeholder: store.textEditorPlaceHolder,
-                            characterLimit: 1000,
-                            isFocused: $isFocused
-                        )
-                        .frame(height: 234)
-                        .padding(.bottom, 40)
-                        
-                        CustomBottomButton(
-                            type: .submit,
-                            isEnable: $store.isButtonEnable,
-                            action: {
-                                store.send(.bottomButtonTapped)
-                            }
-                        )
+                        .padding(.horizontal, 20)
+                        .scrollIndicators(.hidden)
+                        .background(InteractivePopGestureEnabler())
                     }
-                    .padding(.horizontal, 20)
-                }
-                .scrollIndicators(.hidden)
-                .background(DesignSystem.Color.soonganBG)
-                .background(InteractivePopGestureEnabler())
-            }
-            .scrollBounceBehavior(.basedOnSize, axes: .vertical)
-            .ignoresSafeArea(.keyboard, edges: .bottom)
-            .simultaneousGesture(
-                DragGesture()
-                    .onChanged { _ in
-                        UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
+                    .defaultScrollAnchor(.bottom)
+                    .dismissKeyboardOnTap()
+                    // isFocused 상태가 변경될 때 스크롤 동작 실행
+                    .onChange(of: isFocused) { _, isNowFocused in
+                        store.send(.textEditorFocusChanged(isNowFocused))
                         
-                    })
-            .scrollToMinDistance(minDistance: 32)
+                        if isNowFocused {
+                            // 키보드가 올라오는 시간을 고려하여 딜레이 후 스크롤
+                            DispatchQueue.main.asyncAfter(deadline: .now()) {
+                                withAnimation {
+                                    proxy.scrollTo("textEditor", anchor: .center)
+                                    paddingBottomButton = 10
+                                }
+                            }
+                        } else {
+                            paddingBottomButton = 0
+                        }
+                    }
+                }
+                
+                CustomBottomButton(
+                    type: .submit,
+                    isEnable: $store.isButtonEnable,
+                    action: {
+                        store.send(.bottomButtonTapped)
+                    }
+                )
+                .padding(.horizontal, 20)
+                .padding(.top, 10)
+                .padding(.bottom, paddingBottomButton)
+                .background(DesignSystem.Color.soonganBG)
+            }
+            .padding(.top, 10)
+            .background(DesignSystem.Color.soonganBG)
         }
         .navigationBarBackButtonHidden(true)
+        .onAppear {
+            store.send(.onAppear)
+        }
         .toolbar {
             ToolbarItem(placement: .navigationBarLeading) {
                 Button {
@@ -119,6 +131,11 @@ public struct ExplainView: View {
                     .padding(.top, 10)
             }
         }
+        .fullScreenCover(
+            isPresented: $store.isFullSizeImageSheetPresented.sending(\.dismissFullSizeImageSheet)
+        ) {
+            ZoomableImageView(url: store.imageUrl)
+        }
     }
 }
 
@@ -133,7 +150,7 @@ private extension ExplainView {
                 .font(DesignSystem.Font.bold12, lineHeight: 20)
             Text("신고가 접수됐습니다.")
                 .font(DesignSystem.Font.regular12, lineHeight: 20)
-            Text("이에 따라 소명이 필요한 상황이기에 소명해 주실 것을 요청드립니다.\n\n")
+            Text("이에 따라 소명이 필요한 상황이기에 소명해 주실 것을 요청드립니다.\n")
                 .font(DesignSystem.Font.regular12, lineHeight: 20)
             
             Text("이는 단순 신고가 아닌")
@@ -157,7 +174,7 @@ private extension ExplainView {
 
 #Preview {
     NavigationStack {
-        ExplainView(store: Store(initialState: ExplainFeature.State(reportId: "0")) {
+        ExplainView(store: Store(initialState: ExplainFeature.State(reportId: 0, targetType: "")) {
             ExplainFeature()
         }
         )
