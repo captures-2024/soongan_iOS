@@ -53,7 +53,7 @@ public struct ExplainView: View {
                                     store.send(.contestImageTapped)
                                 }
                             
-                            explainTitleSection(title: "테스트")
+                            explainTitleSection(title: store.contestTitle ?? "")
                                 .padding(.bottom, geometry.size.height * 40 / 852)
                             
                             CustomTextEditor(

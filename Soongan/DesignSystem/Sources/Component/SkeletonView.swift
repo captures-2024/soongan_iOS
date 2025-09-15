@@ -2,7 +2,6 @@ import SwiftUI
 
 public struct SkeletonView: View {
     @State private var isAnimating = false
-    private let debugId = UUID()
 
     private var animation: Animation {
         Animation.linear(duration: 2.0).repeatForever(autoreverses: false)
