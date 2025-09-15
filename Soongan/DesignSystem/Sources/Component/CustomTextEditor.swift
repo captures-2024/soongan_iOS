@@ -44,13 +44,13 @@ public struct CustomTextEditor: View {
                         text = String(newValue.prefix(characterLimit))
                     }
                 }
-                .padding(.bottom, 10)
+                .padding(.bottom, 15)
 
             if text.isEmpty {
                 Text(placeholder)
                     .font(DesignSystem.Font.regular16)
                     .foregroundColor(DesignSystem.Color.black60)
-                    .padding(16)
+                    .padding(18)
                     .allowsHitTesting(false)
             }
             
