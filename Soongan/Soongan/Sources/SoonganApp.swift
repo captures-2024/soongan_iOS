@@ -25,20 +25,21 @@ struct SoonganApp: App {
     
     @UIApplicationDelegateAdaptor(AppDelegate.self) var delegate
     
+    let store = Store(
+        initialState: AppFeature.State(),
+        reducer: {
+            AppFeature()
+        }
+    )
+    
     init() {
         KakaoSDK.initSDK(appKey: Config.kakaoNativeAppKey)
+        delegate.store = store
     }
     
     var body: some Scene {
         WindowGroup {
-            AppView(
-                store: Store(
-                    initialState: AppFeature.State(),
-                    reducer:  {
-                        AppFeature()
-                    }
-                )
-            )
+            AppView(store: store)
             .onOpenURL { url in
                 if (AuthApi.isKakaoTalkLoginUrl(url)) {
                     _ = AuthController.handleOpenUrl(url: url)
@@ -49,6 +50,8 @@ struct SoonganApp: App {
 }
 
 class AppDelegate: NSObject, UIApplicationDelegate {
+    weak var store: StoreOf<AppFeature>?
+    
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey : Any]? = nil) -> Bool {
         
         // MARK: - FireBase 설정
@@ -201,10 +204,11 @@ extension AppDelegate: UNUserNotificationCenterDelegate {
         print("SceneDelegate 푸시 메세지를 받았습니다.")
         
         let userInfo = response.notification.request.content.userInfo
-        print("알림 탭:", userInfo)
+        
         decodeUserInfo(userInfo)
         
-        // TODO: 알림 탭 시 특정 화면으로 이동하는 로직 구현
+        // 푸시 알림 데이터 파싱 및 ExplainFeature로 이동
+        handlePushNotification(userInfo: userInfo)
         
         completionHandler()
     }
@@ -217,6 +221,29 @@ extension AppDelegate: UNUserNotificationCenterDelegate {
             }
         } catch {
             print("Error decoding userInfo: \(error)")
+        }
+    }
+    
+    private func handlePushNotification(userInfo: [AnyHashable: Any]) {
+        // targetId 추출
+        guard let targetIdString = userInfo["targetId"] as? String,
+              let targetId = Int(targetIdString),
+              let targetType = userInfo["targetType"] as? String else {
+            print("⚠️ targetId를 찾을 수 없습니다.")
+            return
+        }
+        
+        // notificationType 확인 (필요시)
+        let notificationType = userInfo["notificationType"] as? String
+        
+        print("📱 푸시 알림 처리:")
+        print("   - targetId: \(targetId)")
+        print("   - notificationType: \(notificationType ?? "nil")")
+        print("   - targetType: \(targetType)")
+        
+        // Store를 통해 AppFeature로 액션 전송
+        DispatchQueue.main.async { [weak self] in
+            self?.store?.send(.pushNotificationTapped(reportId: targetId, targetType: targetType))
         }
     }
 }

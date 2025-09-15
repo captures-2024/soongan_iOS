@@ -11,6 +11,7 @@ import CoreNetwork
 import DetailContestFeature
 import DesignSystem
 import PostPictureFeature
+import ExplainFeature
 import Shared
 
 import ComposableArchitecture
@@ -31,6 +32,8 @@ public struct HomeFeature {
     public enum HomePath {
         case postPicture(PostPictureFeature)
         case contestDetail(ContestDetailFeature)
+        case explain(ExplainFeature)
+        case completeExplain(CompleteExplainFeature)
     }
     
     // MARK: - State
@@ -73,6 +76,7 @@ public struct HomeFeature {
         case uiAction(UIAction)
         
         case onAppear
+        case showExplain(reportId: Int, targetType: String)
         case delegate(Delegate)
                 
         public enum Delegate {
@@ -159,6 +163,10 @@ public struct HomeFeature {
                 print(error)
                 return .none
                 
+            case .showExplain(let reportId, let targetType):
+                state.path.append(.explain(ExplainFeature.State(reportId: reportId, targetType: targetType)))
+                return .none
+                
             case .uiAction(let type):
                 switch type {
                 case .pictureTapped(let id):
@@ -223,6 +231,22 @@ public struct HomeFeature {
                 case .postPicture(.delegate(.editCompleted)):
                     state.path.removeLast()
                     return .send(.onAppear) // 수정 완료 후 새로고침
+                case .explain(.delegate(.backConfirmed)):
+                    state.path.removeLast()
+                    return .none
+                    
+                case .explain(.delegate(.dismissExplain)):
+                    state.path.removeLast()
+                    return .none
+                    
+                case .explain(.delegate(.showCompleteExplain(let completeState))):
+                    state.path.append(.completeExplain(completeState))
+                    return .none
+                    
+                case .completeExplain(.delegate(.dismissCompleteExplain)):
+                    state.path.removeLast(2)
+                    return .none
+                    
                 default:
                     return .none
                 }

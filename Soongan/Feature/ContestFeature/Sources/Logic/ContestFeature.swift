@@ -11,6 +11,7 @@ import CoreNetwork
 import DetailContestFeature
 import DesignSystem
 import PostPictureFeature
+import ExplainFeature
 import Shared
 
 import ComposableArchitecture
@@ -24,6 +25,8 @@ public struct ContestFeature {
     public enum ContestPath {
         case contestDetail(ContestDetailFeature)
         case editPost(PostPictureFeature)
+        case explain(ExplainFeature)
+        case completeExplain(CompleteExplainFeature)
     }
     
     // MARK: - State
@@ -79,6 +82,7 @@ public struct ContestFeature {
         case binding(BindingAction<State>)
     
         case onAppear
+        case showExplain(reportId: Int, targetType: String)
         case networkAction(NetworkAction)
         case uiAction(UIAction)
         case view(ViewAction)
@@ -119,6 +123,7 @@ public struct ContestFeature {
             case updateLeftImageModel(Int, CGFloat)
             case updateRightImageModel(Int, CGFloat)
             case updateMoreNextPage(Bool)
+            case hideInitialLoading
         }
     }
     
@@ -152,6 +157,10 @@ public struct ContestFeature {
                 state.selectedContestIndex = state.contestOptions.count - 1
                 
                 return .send(.networkAction(.fetchContestPosts))
+                
+            case .showExplain(let reportId, let targetType):
+                state.path.append(.explain(ExplainFeature.State(reportId: reportId, targetType: targetType)))
+                return .none
                 
             // fetchContestPosts 액션을 받아 올바른 contestIndex로 게시물을 요청합니다.
             case .networkAction(.fetchContestPosts), .networkAction(.refreshTriggered):
@@ -243,10 +252,10 @@ public struct ContestFeature {
                 state.hasNextPage = response.pageInfo.hasNext
                 state.weekTopic = response.subject
                 
-                state.isNextPageLoading = false
-                state.initPageLoading = false
-                
-                return .none
+                return .run { send in
+                    try await Task.sleep(nanoseconds: 1_000_000_000)
+                    await send(.view(.hideInitialLoading))
+                }
 
                 
             case let .path(.element(id: _, action: action)):
@@ -273,6 +282,23 @@ public struct ContestFeature {
                 case .editPost(.delegate(.backConfirmed)):
                     state.path.removeLast()
                     return .none
+                    
+                case .explain(.delegate(.backConfirmed)):
+                    state.path.removeLast()
+                    return .none
+                    
+                case .explain(.delegate(.dismissExplain)):
+                    state.path.removeLast()
+                    return .none
+                    
+                case .explain(.delegate(.showCompleteExplain(let completeState))):
+                    state.path.append(.completeExplain(completeState))
+                    return .none
+                    
+                case .completeExplain(.delegate(.dismissCompleteExplain)):
+                    state.path.removeLast(2)
+                    return .none
+                    
                 default:
                     return .none
                 }
@@ -343,6 +369,11 @@ public struct ContestFeature {
                     return .send(.networkAction(.loadMoreContestsPosts))
                 }
                 
+                return .none
+                
+            case .view(.hideInitialLoading):
+                state.initPageLoading = false
+                state.isNextPageLoading = false
                 return .none
                 
             case .delegate:

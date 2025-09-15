@@ -10,6 +10,7 @@ import SwiftUI
 import DetailContestFeature
 import DesignSystem
 import PostPictureFeature
+import ExplainFeature
 
 import ComposableArchitecture
 import Kingfisher
@@ -77,6 +78,10 @@ public struct HomeView: View {
                 PostPictureView(store: store)
             case .contestDetail(let store):
                 ContestDetailView(store: store)
+            case .explain(let store):
+                ExplainView(store: store)
+            case .completeExplain(let store):
+                CompleteExplainView(store: store)
             }
         }
     }

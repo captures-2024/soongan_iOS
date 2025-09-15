@@ -10,6 +10,7 @@ import SwiftUI
 import CoreNetwork
 import DetailContestFeature
 import DesignSystem
+import ExplainFeature
 import Shared
 
 import ComposableArchitecture
@@ -23,6 +24,8 @@ public struct AllTimeContestFeature {
     public enum AllTimeContestPath {
         case detailContest(DetailContestFeature)
         case contestDetail(ContestDetailFeature)
+        case explain(ExplainFeature)
+        case completeExplain(CompleteExplainFeature)
     }
     
     // MARK: - State
@@ -57,6 +60,7 @@ public struct AllTimeContestFeature {
         case refreshTriggered
         case historyContestSuccessResponse(SearchAwardContestResponseDTO)
         case contestListTapped(id: Int)
+        case showExplain(reportId: Int, targetType: String)
         
         case delegate(Delegate)
                 
@@ -87,6 +91,10 @@ public struct AllTimeContestFeature {
                 }
                 .cancellable(id: "refresh-task")
                 
+            case .showExplain(let reportId, let targetType):
+                state.path.append(.explain(ExplainFeature.State(reportId: reportId, targetType: targetType)))
+                return .none
+                
             case .historyContestSuccessResponse(let response):
                 response.contests.forEach {
                     state.allTimeDictionaryData[$0.id] = $0
@@ -116,6 +124,22 @@ public struct AllTimeContestFeature {
                 case .detailContest(.delegate(.moveToContestTab)):
                     state.path.removeLast()
                     return .send(.delegate(.moveToContestTab))
+                    
+                case .explain(.delegate(.backConfirmed)):
+                    state.path.removeLast()
+                    return .none
+                    
+                case .explain(.delegate(.dismissExplain)):
+                    state.path.removeLast()
+                    return .none
+                    
+                case .explain(.delegate(.showCompleteExplain(let completeState))):
+                    state.path.append(.completeExplain(completeState))
+                    return .none
+                    
+                case .completeExplain(.delegate(.dismissCompleteExplain)):
+                    state.path.removeLast(2)
+                    return .none
                     
                 default:
                     return .none
