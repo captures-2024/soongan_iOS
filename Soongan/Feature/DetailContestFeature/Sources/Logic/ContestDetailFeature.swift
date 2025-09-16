@@ -24,6 +24,7 @@ public struct ContestDetailFeature {
         @Shared(.appStorage("AuthState")) var authState: AuthType = .loggedOut
         
         var postId: Int
+        var postRound: Int?
         var postUserId: Int?
         var myNickname: String?
         var weekTopic: String
@@ -47,6 +48,8 @@ public struct ContestDetailFeature {
         var activeSheet: SheetContentType?
         var reportReasonSheet: SheetContentType?
         var completeReportSheet: SheetContentType?
+        
+        var alertSheet: AlertType?
         
         var pendingSheetAction: DetailContestOptionType? = nil
         
@@ -79,18 +82,11 @@ public struct ContestDetailFeature {
         case alertAction(AlertAction)
         case networkAction(NetworkAction)
         case uiAction(UIAction)
+        case sheetAction(SheetAction)
         
         case onAppear
-        case editButtonTapped
-        case reportReasonButtonTapped(type: ContestReportReasonType, reason: String)
-        case postReport(type: ContestReportReasonType)
-        case reportSuccess(ReportResponseDTO, ContestReportReasonType)
-        
-        case deleteOptionButtonTapped
+
         case deleteButtonTapped
-        case contestImageTapped
-        
-        case reportSheetIsPresented
         case optionSheetIsPresented(ContestReportReasonType)
         case completeReportSheetIsPresented(ContestReportReasonType)
         case dismissOptionSheet(Bool)
@@ -105,16 +101,13 @@ public struct ContestDetailFeature {
         case deleteActionResult(Bool)
         case deleteCompletedButtonTapped
         case presentDeleteAlert
-        case dismissDeleteAlert
-        
-        case optionSheetDismissed
         
         case delegate(DelegateAction)
 
         public enum DelegateAction {
             case backConfirmed
             case didRequestLogout
-            case editRequested(contestId: Int, title: String, imageURL: String, weekTopic: String)
+            case editRequested(contestId: Int, round: Int, title: String, imageURL: String, weekTopic: String)
         }
     }
     
@@ -123,6 +116,16 @@ public struct ContestDetailFeature {
         case presentLoginAlert
         case dismissAlertButtonTapped
         case dismissLoginAlert
+        case dismissAlert
+    }
+    
+    public enum SheetAction {
+        case optionSheetDismissed
+        
+        case reportReasonButtonTapped(type: ContestReportReasonType, reason: String)
+        case editButtonTapped
+        case deleteOptionButtonTapped
+        case reportSheetIsPresented
     }
     
     public enum NetworkAction {
@@ -131,11 +134,14 @@ public struct ContestDetailFeature {
         case fetchLikeContest
         case likeContestSuccess(isLike: Bool, PostLikeResponseDTO)
         case likeContestFailure(NetworkError)
+        case postReport(type: ContestReportReasonType)
+        case reportSuccess(ReportResponseDTO, ContestReportReasonType)
     }
     
     public enum UIAction {
         case likeButtonTapped
         case optionButtonTapped
+        case contestImageTapped
     }
     
     // MARK: - Body
@@ -167,6 +173,8 @@ public struct ContestDetailFeature {
                 
             case .networkAction(.onAppearDetailContestSuccess(let response)):
                 state.postUserId = response.authorMemberId
+                state.postRound = response.weeklyContestRound
+                state.weekTopic = response.weeklyContestSubject
                 state.contestTitle = response.title
                 state.contestAuthor = response.nickname
                 state.imageUrl = response.imageUrl
@@ -177,12 +185,6 @@ public struct ContestDetailFeature {
                 
             case .networkAction(.onAppearDetailContestFailure(let error)):
                 // TODO: - Error 처리
-                
-                return .none
-                
-            case .reportSheetIsPresented:
-                state.pendingSheetAction = .report
-                state.isContestOptionSheetPresented = false
                 
                 return .none
                 
@@ -211,18 +213,20 @@ public struct ContestDetailFeature {
                 
                 return .none
                 
-            case .optionSheetDismissed:
+            case .sheetAction(.optionSheetDismissed):
                 guard let action = state.pendingSheetAction else { return .none }
                 state.pendingSheetAction = nil
                 
                 switch action {
                 case .edit:
                     guard let title = state.contestTitle,
-                          let imageURL = state.imageUrl else { return .none }
+                          let imageURL = state.imageUrl,
+                          let round = state.postRound else { return .none }
                     
                     return .run { [contestId = state.postId, weekTopic = state.weekTopic] send in
                         await send(.delegate(.editRequested(
                             contestId: contestId,
+                            round: round,
                             title: title,
                             imageURL: imageURL,
                             weekTopic: weekTopic
@@ -234,9 +238,8 @@ public struct ContestDetailFeature {
                     
                 case .report:
                     state.isReportOptionSheetPresented = true
+                    return .none
                 }
-                
-                return .none
                 
             case .completeReportSheetIsPresented(let type):
                 state.completeReportSheet = .reportComplete(type: type)
@@ -276,16 +279,27 @@ public struct ContestDetailFeature {
                 // TODO: - 좋아요 에러
                 return .none
                 
-            case .editButtonTapped:
+            case .sheetAction(.editButtonTapped):
                 state.pendingSheetAction = .edit
+                state.isContestOptionSheetPresented = false
+                
+                return .none
+            
+            case .sheetAction(.deleteOptionButtonTapped):
+                state.pendingSheetAction = .delete
+                state.isContestOptionSheetPresented = false
+
+                return .none
+                
+            case .sheetAction(.reportSheetIsPresented):
+                state.pendingSheetAction = .report
                 state.isContestOptionSheetPresented = false
                 
                 return .none
                 
             case .deleteButtonTapped:
-                state.pendingSheetAction = .delete
-                state.isDeleteAlertPresented = false
-                
+                state.alertSheet = nil
+
                 let postId = state.postId
                 return .run { send in
                     let result: Result<EmptyResponseDTO, NetworkError> = await NetworkManager.shared.request(WeeklyContestEndpoint.deleteContest(postId: postId))
@@ -302,38 +316,24 @@ public struct ContestDetailFeature {
                 
             case .deleteActionResult(let result):
                 if result {
-                    state.isDeleteCompleteAlertPresented = true
+                    state.alertSheet = .deletePostComplete
                     return .none
                 } else {
                     return .none
                 }
-            
-            case .deleteOptionButtonTapped:
-                state.isContestOptionSheetPresented = false
-                
-                return .run { send in
-                    try await Task.sleep(nanoseconds: 500_000_000)
-                    await send(.presentDeleteAlert)
-                }
                 
             case .presentDeleteAlert:
-                state.isDeleteAlertPresented = true
-                
+                state.alertSheet = .deletePost
                 return .none
             
             case .deleteCompletedButtonTapped:
-                state.isDeleteCompleteAlertPresented = false
+                state.alertSheet = nil
                 
                 return .run { send in
                     try await Task.sleep(nanoseconds: 300_000_000)
                     await send(.delegate(.backConfirmed))
                 }
-                
-            case .dismissDeleteAlert:
-                state.isDeleteAlertPresented = false
-                
-                return .none
-                
+            
             case .dismissOptionSheet:
                 state.isContestOptionSheetPresented = false
                 return .none
@@ -346,7 +346,7 @@ public struct ContestDetailFeature {
                 state.activeSheet = nil
                 return .none
             
-            case .contestImageTapped:
+            case .uiAction(.contestImageTapped):
                 state.isFullSizeImageSheetPresented = true
                 
                 return .none
@@ -373,7 +373,7 @@ public struct ContestDetailFeature {
             case .backButtonTapped:
                 return .send(.delegate(.backConfirmed))
                 
-            case .postReport(let type):
+            case .networkAction(.postReport(let type)):
                 let dto = ReportRequestDTO(
                     targetId: state.postId,
                     targetType: "WEEKLY_POST",
@@ -386,17 +386,17 @@ public struct ContestDetailFeature {
                     
                     switch result {
                     case .success(let responseResult):
-                        await send(.reportSuccess(responseResult, type))
+                        await send(.networkAction(.reportSuccess(responseResult, type)))
                     case .failure(let error):
                         break
                     }
                 }
                 
-            case .reportSuccess(let response, let type):
+            case .networkAction(.reportSuccess(let response, let type)):
                 state.reportReason = nil
                 return .send(.completeReportSheetIsPresented(type))
                 
-            case .reportReasonButtonTapped(let type, let reason):
+            case .sheetAction(.reportReasonButtonTapped(let type, let reason)):
                 state.reportReason = reason
 
                 switch type {
@@ -428,6 +428,11 @@ public struct ContestDetailFeature {
                 
             case .alertAction(.dismissLoginAlert):
                 state.isLoginAlertPresented = false
+                return .none
+            
+            case .alertAction(.dismissAlert):
+                state.alertSheet = nil
+                state.pendingSheetAction = nil
                 return .none
                 
             default:
