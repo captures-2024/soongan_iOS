@@ -17,7 +17,7 @@ import Kingfisher
 
 public enum PostPictureMode: Equatable {
     case create(weekTopic: String)
-    case edit(contestId: Int, weekTopic: String, existingTitle: String, imageURL: String)
+    case edit(contestId: Int, weekRound: Int, weekTopic: String, existingTitle: String, imageURL: String)
 }
 
 @Reducer
@@ -47,7 +47,7 @@ public struct PostPictureFeature {
             switch mode {
             case .create(let topic):
                 return topic
-            case .edit(_, let topic, _, _):
+            case .edit(_, _, let topic, _, _):
                 return topic
             }
         }
@@ -65,7 +65,7 @@ public struct PostPictureFeature {
             switch mode {
             case .create:
                 return nil
-            case .edit(let id, _, _, _):
+            case .edit(let id, _, _, _, _):
                 return id
             }
         }
@@ -76,7 +76,8 @@ public struct PostPictureFeature {
             switch mode {
             case .create:
                 break
-            case .edit(_, _, let title, _):
+            case .edit(_, let round, _, let title, _):
+                self.round = round
                 self.postPictureName = title
                 self.textCount = title.count
                 self.isButtonEnabled = (self.textCount > 0) && (self.textCount < 16)
@@ -135,7 +136,7 @@ public struct PostPictureFeature {
                 
             case .onAppear:
                 // Edit 모드일 때 기존 이미지 로드
-                if case .edit(_, _, _, let imageURL) = state.mode {
+                if case .edit(_, _, _, _, let imageURL) = state.mode {
                     return .run { send in
                         guard let url = URL(string: imageURL) else { return }
                         
@@ -175,7 +176,7 @@ public struct PostPictureFeature {
                     state.isPostSheetPresented = true
                     return .none
                     
-                case .edit(let contestId, _, _, _):
+                case .edit(let contestId, _, _, _, _):
                     // 수정 요청
                     let dto = PutWeeklyContestRequestDTO(
                         title: state.postPictureName
