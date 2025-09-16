@@ -34,22 +34,26 @@ public struct ContestDetailView: View {
             .background(DesignSystem.Color.soonganBG)
             .background(InteractivePopGestureEnabler())
             .fullScreenCover(item: $store.alertSheet) { alertType in
-                CustomAlertView(
-                    type: alertType,
-                    leftButtonAction: {
-                        store.send(.alertAction(.dismissAlert))
-                    },
-                    rightButtonAction: {
-                        switch alertType {
-                        case .deletePost:
+                if alertType == .deletePost {
+                    CustomAlertView(
+                        type: alertType,
+                        leftButtonAction: {
+                            store.send(.alertAction(.dismissAlert))
+                        },
+                        rightButtonAction: {
                             store.send(.deleteButtonTapped)
-                        case .deletePostComplete:
-                            store.send(.deleteCompletedButtonTapped)
-                        default:
-                            break
                         }
-                    }
-                ).presentationBackground(.clear)
+                    ).presentationBackground(.clear)
+                }
+                
+                if alertType == .deletePostComplete {
+                    CustomAlertView(
+                        type: alertType,
+                        centerButtonAction: {
+                            store.send(.deleteCompletedButtonTapped)
+                        }
+                    ).presentationBackground(.clear)
+                }
             }
             .transaction { transaction in
                 transaction.disablesAnimations = true
