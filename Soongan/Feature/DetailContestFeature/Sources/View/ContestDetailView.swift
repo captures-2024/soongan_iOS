@@ -33,43 +33,46 @@ public struct ContestDetailView: View {
             .ignoresSafeArea(edges: .bottom)
             .background(DesignSystem.Color.soonganBG)
             .background(InteractivePopGestureEnabler())
-            .fullScreenCover(isPresented: $store.isDeleteAlertPresented) {
-                CustomAlertView(
-                    type: .deletePost,
-                    leftButtonAction: {
-                        store.send(.dismissDeleteAlert)
-                    },
-                    rightButtonAction: {
-                        store.send(.deleteButtonTapped)
-                    }
-                ).presentationBackground(.clear)
-            }
-            .fullScreenCover(isPresented: $store.isDeleteCompleteAlertPresented) {
-                CustomAlertView(
-                    type: .deletePostComplete,
-                    centerButtonAction: {
-                        store.send(.deleteCompletedButtonTapped)
-                    }
-                ).presentationBackground(.clear)
+            .fullScreenCover(item: $store.alertSheet) { alertType in
+                if alertType == .deletePost {
+                    CustomAlertView(
+                        type: alertType,
+                        leftButtonAction: {
+                            store.send(.alertAction(.dismissAlert))
+                        },
+                        rightButtonAction: {
+                            store.send(.deleteButtonTapped)
+                        }
+                    ).presentationBackground(.clear)
+                }
+                
+                if alertType == .deletePostComplete {
+                    CustomAlertView(
+                        type: alertType,
+                        centerButtonAction: {
+                            store.send(.deleteCompletedButtonTapped)
+                        }
+                    ).presentationBackground(.clear)
+                }
             }
             .transaction { transaction in
                 transaction.disablesAnimations = true
             }
             .sheet(
                 isPresented: $store.isContestOptionSheetPresented.sending(\.dismissOptionSheet),
-                onDismiss: { store.send(.optionSheetDismissed) }
+                onDismiss: { store.send(.sheetAction(.optionSheetDismissed)) }
             ) {
                 CustomSheetView<DetailContestOptionType>(type: .detailContestOption(isWriter: store.isWriter)) { type in
                     switch type {
                     case .edit:
-                        store.send(.editButtonTapped)
+                        store.send(.sheetAction(.editButtonTapped))
                     case .delete:
-                        store.send(.deleteOptionButtonTapped)
+                        store.send(.sheetAction(.deleteOptionButtonTapped))
                     case .report:
                         if store.authState == .skipped {
                             store.send(.alertAction(.notAuthUserAlert))
                         } else {
-                            store.send(.reportSheetIsPresented)
+                            store.send(.sheetAction(.reportSheetIsPresented))
                         }
                     }
                 }
@@ -83,12 +86,12 @@ public struct ContestDetailView: View {
             }
             .sheet(item: $store.activeSheet) { sheetType in
                 CustomSheetView<ContestReportReasonType>(type: sheetType) { type, reportReason in
-                    store.send(.postReport(type: type))
+                    store.send(.networkAction(.postReport(type: type)))
                 }
             }
             .sheet(item: $store.reportReasonSheet) { sheetType in
                 CustomSheetView<NeverOption>(type: sheetType) { reportType, reasonText in
-                    store.send(.reportReasonButtonTapped(type: reportType, reason: reasonText))
+                    store.send(.sheetAction(.reportReasonButtonTapped(type: reportType, reason: reasonText)))
                 }
             }
             .sheet(item : $store.completeReportSheet) { sheetType in
@@ -129,7 +132,7 @@ public struct ContestDetailView: View {
                         .aspectRatio(contentMode: .fit)
                         .frame(maxWidth: 360, maxHeight: 460, alignment: .center)
                         .onTapGesture {
-                            store.send(.contestImageTapped)
+                            store.send(.uiAction(.contestImageTapped))
                         }
                 }
                 

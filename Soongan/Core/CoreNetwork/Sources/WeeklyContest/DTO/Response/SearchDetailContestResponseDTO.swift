@@ -17,4 +17,7 @@ public struct SearchDetailContestResponseDTO: Decodable {
     public let likeCount: Int
     public let isLiked: Bool
     public let commentCount: Int
+    public let isTop7: Bool
+    public let weeklyContestRound: Int
+    public let weeklyContestSubject: String
 }

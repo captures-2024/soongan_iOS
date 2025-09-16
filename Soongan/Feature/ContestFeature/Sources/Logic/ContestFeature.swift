@@ -265,10 +265,11 @@ public struct ContestFeature {
                     return .none
                 case .contestDetail(.delegate(.didRequestLogout)):
                     return .send(.delegate(.logoutRequested))
-                case .contestDetail(.delegate(.editRequested(let contestId, let title, let imageURL, let weekTopic))):
+                case .contestDetail(.delegate(.editRequested(let contestId, let round, let title, let imageURL, let weekTopic))):
                     let editState = PostPictureFeature.State(
                         mode: .edit(
                             contestId: contestId,
+                            weekRound: round,
                             weekTopic: weekTopic,
                             existingTitle: title,
                             imageURL: imageURL
