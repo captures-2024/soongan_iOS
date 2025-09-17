@@ -45,7 +45,6 @@ let project = Project(
                     "CFBundleShortVersionString": "$(MARKETING_VERSION)",
                     "CFBundleDisplayName": "순간",
                     "CFBundleVersion": "$(CURRENT_PROJECT_VERSION)",
-                    "UIDeviceFamily": [1],
                     "CFBundleURLTypes": [
                         [
                             "CFBundleURLSchemes": [ "kakao$(KAKAO_NATIVE_APP_KEY)" ]
