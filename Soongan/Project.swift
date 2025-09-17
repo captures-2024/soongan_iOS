@@ -1,21 +1,33 @@
 import ProjectDescription
 
+// MARK: - Settings
+
+let projectSettings: Settings = .settings(
+    base: [
+        "MARKETING_VERSION": "1.0.0",
+        "CURRENT_PROJECT_VERSION": "1",
+        "DEVELOPMENT_TEAM": "9QK3G4VF9N",
+        "OTHER_LDFLAGS": ["-all_load"]
+    ],
+    configurations: [
+        .debug(name: "Debug", xcconfig: .relativeToRoot("Soongan/Configs/Debug.xcconfig")),
+        .release(name: "Release", xcconfig: .relativeToRoot("Soongan/Configs/Release.xcconfig")),
+    ]
+)
+
+
 let project = Project(
     name: "Soongan",
     organizationName: "Captures",
-    settings: .settings(
-        base: [
-            "DEVELOPMENT_TEAM": "N3H27N59VG",
-            "OTHER_LDFLAGS": ["-all_load"]
-        ],
-        configurations: [
-            .debug(name: "Debug", xcconfig: .relativeToRoot("Soongan/Configs/Debug.xcconfig")),
-        ]
+    options: .options(
+        defaultKnownRegions: ["Ko"],
+        developmentRegion: "Ko",
     ),
+    settings: projectSettings,
     targets: [
         .target(
             name: "Soongan",
-            destinations: .iOS,
+            destinations: [.iPhone],
             product: .app,
             bundleId: "com.captures.Soongan",
             deploymentTargets: .iOS("18.0"),
@@ -30,6 +42,9 @@ let project = Project(
                     "ACCESS_TOKEN_KEY": "$(ACCESS_TOKEN_KEY)",
                     "REFRESH_TOKEN_KEY": "$(REFRESH_TOKEN_KEY)",
                     "KAKAO_NATIVE_APP_KEY": "$(KAKAO_NATIVE_APP_KEY)",
+                    "CFBundleShortVersionString": "$(MARKETING_VERSION)",
+                    "CFBundleDisplayName": "순간",
+                    "CFBundleVersion": "$(CURRENT_PROJECT_VERSION)",
                     "CFBundleURLTypes": [
                         [
                             "CFBundleURLSchemes": [ "kakao$(KAKAO_NATIVE_APP_KEY)" ]
