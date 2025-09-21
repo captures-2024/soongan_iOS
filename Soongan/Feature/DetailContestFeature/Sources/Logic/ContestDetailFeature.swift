@@ -34,6 +34,7 @@ public struct ContestDetailFeature {
         var contestAuthor: String?
         var isLiked: Bool?
         var likeCount: String?
+        var isTop7: Bool?
         
         var reportReason: String?
         
@@ -108,6 +109,7 @@ public struct ContestDetailFeature {
             case backConfirmed
             case didRequestLogout
             case editRequested(contestId: Int, round: Int, title: String, imageURL: String, weekTopic: String)
+            case reportCompleted(postId: Int)
         }
     }
     
@@ -117,6 +119,9 @@ public struct ContestDetailFeature {
         case dismissAlertButtonTapped
         case dismissLoginAlert
         case dismissAlert
+        
+        case presentEditTop7Alert
+        case presentDeleteTop7Alert
     }
     
     public enum SheetAction {
@@ -126,6 +131,7 @@ public struct ContestDetailFeature {
         case editButtonTapped
         case deleteOptionButtonTapped
         case reportSheetIsPresented
+        case completeReportButtonTapped
     }
     
     public enum NetworkAction {
@@ -175,6 +181,7 @@ public struct ContestDetailFeature {
                 state.postUserId = response.authorMemberId
                 state.postRound = response.weeklyContestRound
                 state.weekTopic = response.weeklyContestSubject
+                state.isTop7 = response.isTop7
                 state.contestTitle = response.title
                 state.contestAuthor = response.nickname
                 state.imageUrl = response.imageUrl
@@ -278,19 +285,40 @@ public struct ContestDetailFeature {
             case .networkAction(.likeContestFailure(let error)):
                 // TODO: - 좋아요 에러
                 return .none
-                
+              
+            /// 게시글 옵션 Sheet 에서 수정하기 버튼을 눌렀을때
             case .sheetAction(.editButtonTapped):
-                state.pendingSheetAction = .edit
+                guard let isTop7 = state.isTop7 else { return .none }
+                
                 state.isContestOptionSheetPresented = false
                 
-                return .none
+                if isTop7 {
+                    return .run { send in
+                        try await Task.sleep(nanoseconds: 300_000_000)
+                        await send(.alertAction(.presentEditTop7Alert))
+                    }
+                } else {
+                    state.pendingSheetAction = .edit
+                    return .none
+                }
             
+            /// 게시글 옵션 Sheet 에서 삭제하기 버튼을 눌렀을때
             case .sheetAction(.deleteOptionButtonTapped):
-                state.pendingSheetAction = .delete
-                state.isContestOptionSheetPresented = false
-
-                return .none
+                guard let isTop7 = state.isTop7 else { return .none }
                 
+                state.isContestOptionSheetPresented = false
+                
+                if isTop7 {
+                    return .run { send in
+                        try await Task.sleep(nanoseconds: 300_000_000)
+                        await send(.alertAction(.presentDeleteTop7Alert))
+                    }
+                } else {
+                    state.pendingSheetAction = .delete
+                    return .none
+                }
+                
+            /// 게시글 옵션 Sheet 에서 신고하기 버튼을 눌렀을때
             case .sheetAction(.reportSheetIsPresented):
                 state.pendingSheetAction = .report
                 state.isContestOptionSheetPresented = false
@@ -408,6 +436,18 @@ public struct ContestDetailFeature {
                       break
                   }
                 
+                return .none
+            
+            case .sheetAction(.completeReportButtonTapped):
+                state.completeReportSheet = nil
+                return .none
+                
+            case .alertAction(.presentEditTop7Alert):
+                state.alertSheet = .editContainPostToTop7
+                return .none
+                
+            case .alertAction(.presentDeleteTop7Alert):
+                state.alertSheet = .deleteContainPostToTop7
                 return .none
                 
             case .alertAction(.notAuthUserAlert):
