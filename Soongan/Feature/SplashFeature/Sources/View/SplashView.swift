@@ -54,7 +54,7 @@ public struct SplashView: View {
             store.send(.onAppear)
         }
         .fullScreenCover(isPresented: $store.isUpdateAlertPresented) {
-            CustomAlertView(
+            CustomAlertView<AlertType>(
                 type: .forceUpdate,
                 centerButtonAction: {
                     store.send(.updateButtonTapped)

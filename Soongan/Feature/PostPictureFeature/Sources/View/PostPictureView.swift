@@ -131,7 +131,7 @@ public struct PostPictureView: View {
             if let type = store.alertPresentedType {
                 switch type {
                 case .backPostContest, .backEditContest:
-                    CustomAlertView(
+                    CustomAlertView<AlertType>(
                         type: type,
                         leftButtonAction: {
                             store.send(.dismissAlertButtonTapped)
@@ -144,7 +144,7 @@ public struct PostPictureView: View {
                     .presentationBackground(.clear)
                     
                 case .postContestError:
-                    CustomAlertView(
+                    CustomAlertView<AlertType>(
                         type: type,
                         centerButtonAction: {
                             store.send(.dismissAlertButtonTapped)
@@ -154,7 +154,7 @@ public struct PostPictureView: View {
                     .presentationBackground(.clear)
                     
                 case .showLoginView:
-                    CustomAlertView(
+                    CustomAlertView<AlertType>(
                         type: type,
                         centerButtonAction: {
                             store.send(.dismissAlertButtonTapped)

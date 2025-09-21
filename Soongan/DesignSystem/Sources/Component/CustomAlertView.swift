@@ -7,9 +7,17 @@
 
 import SwiftUI
 
-public struct CustomAlertView: View {
+public protocol AlertDisplayable: Identifiable {
+    var title: String { get }
+    var centerButtonTitle: String { get }
+}
+
+// 기존 코드 호환성을 위한 타입 별칭
+public typealias DefaultCustomAlertView = CustomAlertView<AlertType>
+
+public struct CustomAlertView<T: AlertDisplayable>: View {
     
-    private var type: AlertType
+    private var type: T
     private var onBackgroundTap: (() -> Void)?
     private var centerButtonAction: (() -> Void)?
     private var leftButtonAction: (() -> Void)?
@@ -18,7 +26,7 @@ public struct CustomAlertView: View {
     // MARK: - Init
     
     public init(
-        type: AlertType,
+        type: T,
         onBackgroundTap: (() -> Void)? = nil,
         centerButtonAction: (() -> Void)? = nil,
         leftButtonAction: (() -> Void)? = nil,
@@ -117,23 +125,25 @@ public struct CustomAlertView: View {
 }
 
 #Preview {
-    CustomAlertView(type: .postContestError, centerButtonAction: {  })
+    CustomAlertView(type: AlertType.postContestError, centerButtonAction: {  })
 }
 
-public enum AlertType: Identifiable {
+public enum AlertType: AlertDisplayable {
     case postContestError
     case backPostContest
     case backEditContest
     case showLoginView
     case deletePost
     case deletePostComplete
+    case deleteContainPostToTop7
+    case editContainPostToTop7
     case forceUpdate
     
     public var id: Self {
         self
     }
     
-    var title: String {
+    public var title: String {
         switch self {
         case .postContestError:
             return "콘테스트가 마감됐어요."
@@ -147,12 +157,16 @@ public enum AlertType: Identifiable {
             return "정말 작품을\n삭제하시겠습니까?"
         case .deletePostComplete:
             return "삭제가 완료되었습니다"
+        case .deleteContainPostToTop7:
+            return "TOP 7에 선정된 작품은\n삭제할 수 없습니다."
+        case .editContainPostToTop7:
+            return "TOP 7에 선정된 작품은\n수정할 수 없습니다."
         case .forceUpdate:
             return "원활한 앱 활동을 위해\n버전 업데이트가 필요합니다."
         }
     }
     
-    var centerButtonTitle: String {
+    public var centerButtonTitle: String {
         switch self {
         case .showLoginView:
             return "로그인하기"
@@ -162,5 +176,74 @@ public enum AlertType: Identifiable {
             return "확인"
         
         }
+    }
+}
+
+public enum LoginErrorType: AlertDisplayable, Equatable {
+    case socialLogin(title: String)
+    case serverAuth
+    case profileFetch
+    case fcmTokenMissing
+    
+    public var id: String {
+        switch self {
+        case .socialLogin(let title):
+            return "\(title)socialLogin"
+        case .serverAuth:
+            return "serverAuth"
+        case .profileFetch:
+            return "profileFetch"
+        case .fcmTokenMissing:
+            return "fcmTokenMissing"
+        }
+    }
+    
+    public var title: String {
+        switch self {
+        case .socialLogin(let title):
+            return "\(title)에 실패했습니다."
+        case .serverAuth:
+            return "서버 인증에 실패했습니다.\n잠시 후 다시 시도해주세요."
+        case .profileFetch:
+            return "프로필 정보를 가져오는 데에 실패했습니다."
+        case .fcmTokenMissing:
+            return "FCM 인증에 실패했습니다. "
+        }
+    }
+    
+    public var centerButtonTitle: String {
+        return "확인"
+    }
+}
+
+public enum SignupErrorType: AlertDisplayable, Equatable {
+    case checkNicknameFailed
+    case editBrithDayFailed
+    case myprofileFailed
+    
+    public var id: String {
+        switch self {
+        case .checkNicknameFailed:
+            return "checkNicknameFailed"
+        case .editBrithDayFailed:
+            return "editBrithDayFailed"
+        case .myprofileFailed:
+            return "myprofileFailed"
+        }
+    }
+    
+    public var title: String {
+        switch self {
+        case .checkNicknameFailed:
+            return "닉네임 중복체크에 실패했습니다.\n잠시 후 다시 시도해주세요."
+        case .editBrithDayFailed:
+            return "출생연도 입력에 실패했습니다.\n잠시 후 다시 시도해주세요."
+        case .myprofileFailed:
+            return "회원가입에 실패했습니다.\n잠시 후 다시 시도해주세요."
+        }
+    }
+    
+    public var centerButtonTitle: String {
+        return "확인"
     }
 }
