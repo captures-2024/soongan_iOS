@@ -35,6 +35,8 @@ public struct SignupFeature {
         var isNicknameFocused: Bool = false
         var isBirthdayFocused: Bool = false
         
+        var signupErrorAlert: SignupErrorType?
+        
         public init() {}
     }
     
@@ -54,11 +56,17 @@ public struct SignupFeature {
         case showSignupView
         case backButtonTapped
         
-        case checkNicknameResult
-        case editBirthDayResult
+        case checkNicknameSuccess
+        case checkNicknameFailure
+        
+        case completeSignup
+        case editBirthDayFailure
+        case fetchMyprofileFailed
         
         case nickNameError
         case birhDayError
+        
+        case dismissAlert
         
         // Delegate - SignupFeature -> LoginFeature
         case delegate(Delegate)
@@ -116,11 +124,15 @@ public struct SignupFeature {
                         let result: Result<Bool, NetworkError> = await NetworkManager.shared.request(MemberEndpoint.getCheckNickname(dto))
                         
                         switch result {
-                        case .success:
-                            await send(.checkNicknameResult)
+                        case .success(let response):
+                            if response { // 중복일때 false 반환
+                                await send(.checkNicknameSuccess)
+                            } else {
+                                await send(.nickNameError)
+                            }
                             
                         case .failure:
-                            await send(.nickNameError)
+                            await send(.checkNicknameFailure)
                         }
                     }
                 case .inputBirthday:
@@ -149,36 +161,58 @@ public struct SignupFeature {
                             
                             let (birthResult, profileResult) = await (myBirthResult, myprofileResult)
 
-                            if case .success = birthResult, case .success = profileResult {
-                                await send(.editBirthDayResult)
-                            } else {
-                                await send(.birhDayError)
-                            }
+                            switch (birthResult, profileResult) {
+                             case (.success, .success):
+                                 await send(.completeSignup)
+                            case (.success, .failure):
+                                await send(.fetchMyprofileFailed)
+                            case (.failure, .success):
+                                await send(.editBirthDayFailure)
+                             default:
+                                 await send(.editBirthDayFailure)
+                             }
                         }
                     } else {
                         return .send(.birhDayError)
                     }
                 }
                 
-            case .checkNicknameResult:
+            case .checkNicknameSuccess:
                 state.signupState = .inputBirthday
                 state.isButtonEnabled = false
                 
                 return .none
                 
-            case .editBirthDayResult:
+            case .checkNicknameFailure:
+                state.signupErrorAlert = .checkNicknameFailed
+                return .none
+                
+            case .fetchMyprofileFailed:
+                state.signupErrorAlert = .myprofileFailed
+                return .none
+                
+            case .editBirthDayFailure:
+                state.signupErrorAlert = .editBrithDayFailed
+                return .none
+                
+            case .completeSignup:
                 return .run { [nickname = state.nickname] send in
                     await userDefaultsClient.setString(nickname, forKey: UserDefaultKeys.User.username.rawValue)
                     await send(.delegate(.didCompleteSignup(nickname: nickname)))
                 }
                 
             case .nickNameError:
-                
+                state.nicknameState = .error(message: .duplication)
+                state.isButtonEnabled = false
                 return .none
                 
             case .birhDayError:
                 state.birthdayState = .error(message: .condition(type: .birthday))
+                state.isButtonEnabled = false
+                return .none
                 
+            case .dismissAlert:
+                state.signupErrorAlert = nil
                 return .none
                 
             case .binding(_):

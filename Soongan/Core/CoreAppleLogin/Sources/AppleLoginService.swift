@@ -34,22 +34,47 @@ extension AppleLoginService: ASAuthorizationControllerDelegate {
         
         guard let credential = authorization.credential as? ASAuthorizationAppleIDCredential else {
             continuation?.resume(throwing: AppleLoginError.noCredential)
+            continuation = nil
             return
         }
         
         guard let identityTokenData = credential.identityToken,
               let identityToken = String(data: identityTokenData, encoding: .utf8) else {
             continuation?.resume(throwing: AppleLoginError.noCredential)
+            continuation = nil
             return
         }
 
         print("애플로그인 결과 반환", identityToken)
 
         continuation?.resume(returning: identityToken)
+        continuation = nil
    }
 
    public func authorizationController(controller: ASAuthorizationController, didCompleteWithError error: Error) {
-       continuation?.resume(throwing: error)
+       let appleError: AppleLoginError
+       
+       if let authError = error as? ASAuthorizationError {
+           switch authError.code {
+           case .canceled:
+               appleError = .userCancelled
+           case .invalidResponse:
+               appleError = .invalidResponse
+           case .notHandled:
+               appleError = .invalidResponse
+           case .failed:
+               appleError = .networkError
+           case .unknown:
+               appleError = .unknown
+           default:
+               appleError = .unknown
+           }
+       } else {
+           appleError = .unknown
+       }
+       
+       continuation?.resume(throwing: appleError)
+       continuation = nil
    }
 }
 

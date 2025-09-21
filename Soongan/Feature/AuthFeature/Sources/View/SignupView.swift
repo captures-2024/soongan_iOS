@@ -86,6 +86,7 @@ public struct SignupView: View {
             isNicknameFieldFocused = true
         }
         .navigationBarBackButtonHidden(true)
+        .background(alertHostingView)
         .toolbar {
             ToolbarItem(placement: .navigationBarLeading) {
                 Button {
@@ -102,6 +103,21 @@ public struct SignupView: View {
                 }
                 .padding(.top, 16)
             }
+        }
+    }
+    
+    @ViewBuilder
+    var alertHostingView: some View {
+        Color.clear .fullScreenCover(item: $store.signupErrorAlert) { alertType in
+            CustomAlertView<SignupErrorType>(
+                type: alertType,
+                centerButtonAction: {
+                    store.send(.dismissAlert)
+                }
+            ).presentationBackground(.clear)
+        }
+        .transaction { transaction in
+            transaction.disablesAnimations = true
         }
     }
 }
