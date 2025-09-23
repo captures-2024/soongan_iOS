@@ -207,7 +207,7 @@ public enum LoginErrorType: AlertDisplayable, Equatable {
         case .profileFetch:
             return "프로필 정보를 가져오는 데에 실패했습니다."
         case .fcmTokenMissing:
-            return "FCM 인증에 실패했습니다. "
+            return "FCM 인증에 실패했습니다."
         }
     }
     

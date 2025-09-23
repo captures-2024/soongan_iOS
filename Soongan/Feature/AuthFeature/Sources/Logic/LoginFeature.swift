@@ -80,12 +80,10 @@ public struct LoginFeature {
         case serverAuthSuccess
         case serverAuthFailure
         
-        case profileFetchSuccess(Bool)  // isSignupComplete
+        case profileFetchSuccess(SearchMyProfileResponseDTO)
         case profileFetchFailure
         
         case fcmFetchFailure
-        
-        case loginFailure(LoginError)
         
         case dismissAlert
 
@@ -180,51 +178,34 @@ public struct LoginFeature {
             case .serverAuthSuccess:
                 return .run { send in
                     let result: Result<SearchMyProfileResponseDTO, NetworkError> = await NetworkManager.shared.request(MemberEndpoint.getMembers)
-                    
                     switch result {
                     case .success(let myResult):
-                        let isSignupComplete = myResult.nickname != nil && myResult.birthYear != nil
-                        await send(.profileFetchSuccess(isSignupComplete))
-                        
-                    case .failure(_):
+                        await send(.profileFetchSuccess(myResult))
+                    case .failure:
                         await send(.profileFetchFailure)
                     }
                 }
-            
-            /// 서버 로그인 실패
+
             case .serverAuthFailure:
                 state.loginErrorAlert = .serverAuth
                 return .none
-                
-            case .profileFetchSuccess(let isSignupComplete):
+
+            case .profileFetchSuccess(let myResult):
+                let isSignupComplete = myResult.nickname != nil && myResult.birthYear != nil
                 if isSignupComplete {
-                    // 프로필 조회 성공 시 닉네임 저장
                     return .run { send in
-                        let result: Result<SearchMyProfileResponseDTO, NetworkError> = await NetworkManager.shared.request(MemberEndpoint.getMembers)
-                        
-                        switch result {
-                        case .success(let myResult):
-                            if let nickname = myResult.nickname {
-                                await userDefaultsClient.setString(nickname, forKey: UserDefaultKeys.User.username.rawValue)
-                            }
-                        case .failure:
-                            break
+                        if let nickname = myResult.nickname {
+                            await userDefaultsClient.setString(nickname, forKey: UserDefaultKeys.User.username.rawValue)
                         }
-                        
                         await send(.delegate(.loginSuccess))
                     }
                 } else {
-                    // 회원가입이 필요한 경우
                     state.path.append(.signup(SignupFeature.State()))
                     return .none
                 }
                 
             case .profileFetchFailure:
                 state.loginErrorAlert = .profileFetch
-                return .none
-                
-            case .loginFailure(let error):
-                state.errorMessage = "로그인 실패: \(error.localizedDescription)"
                 return .none
                 
             case .fcmFetchFailure:

@@ -251,16 +251,7 @@ public struct ContestFeature {
                 
                 state.allPosts.append(contentsOf: newPosts)
 
-                // 임시 배열을 사용하여 마스터 리스트를 기준으로 두 개의 컬럼 리스트를 새로 만듦
-                var tempLeftList = [ContestImageModel]()
-                var tempRightList = [ContestImageModel]()
-                for (index, post) in state.allPosts.enumerated() {
-                    if index % 2 == 0 {
-                        tempLeftList.append(post)
-                    } else {
-                        tempRightList.append(post)
-                    }
-                }
+                let (tempLeftList, tempRightList) = rebuildColumnLists(from: state.allPosts)
                 
                 // 마지막에 한 번만 상태를 업데이트하여 View 리렌더링을 최소화
                 state.leftContestImageList = tempLeftList
@@ -302,15 +293,7 @@ public struct ContestFeature {
                     state.allPosts.removeAll { $0.id == postId }
 
                     // 임시 배열을 사용하여 마스터 리스트를 기준으로 두 개의 컬럼 리스트를 새로 만듦
-                    var tempLeftList = [ContestImageModel]()
-                    var tempRightList = [ContestImageModel]()
-                    for (index, post) in state.allPosts.enumerated() {
-                        if index % 2 == 0 {
-                            tempLeftList.append(post)
-                        } else {
-                            tempRightList.append(post)
-                        }
-                    }
+                    let (tempLeftList, tempRightList) = rebuildColumnLists(from: state.allPosts)
                     
                     // 마지막에 한 번만 상태를 업데이트하여 View 리렌더링을 최소화
                     state.leftContestImageList = tempLeftList
@@ -425,5 +408,21 @@ public struct ContestFeature {
             }
         }
         .forEach(\.path, action: \.path)
+    }
+}
+
+
+private extension ContestFeature {
+    func rebuildColumnLists(from allPosts: [ContestImageModel]) -> (left: [ContestImageModel], right: [ContestImageModel]) {
+        var tempLeftList = [ContestImageModel]()
+        var tempRightList = [ContestImageModel]()
+        for (index, post) in allPosts.enumerated() {
+            if index % 2 == 0 {
+                tempLeftList.append(post)
+            } else {
+                tempRightList.append(post)
+            }
+        }
+        return (tempLeftList, tempRightList)
     }
 }

@@ -58,14 +58,10 @@ extension AppleLoginService: ASAuthorizationControllerDelegate {
            switch authError.code {
            case .canceled:
                appleError = .userCancelled
-           case .invalidResponse:
-               appleError = .invalidResponse
-           case .notHandled:
+           case .invalidResponse, .notHandled:
                appleError = .invalidResponse
            case .failed:
                appleError = .networkError
-           case .unknown:
-               appleError = .unknown
            default:
                appleError = .unknown
            }
