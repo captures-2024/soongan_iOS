@@ -106,6 +106,17 @@ public struct LoginView: View {
             .onAppear {
                 store.send(.onAppear)
             }
+            .fullScreenCover(item: $store.loginErrorAlert) { alertType in
+                CustomAlertView<LoginErrorType>(
+                    type: alertType,
+                    centerButtonAction: {
+                        store.send(.dismissAlert)
+                    }
+                ).presentationBackground(.clear)
+            }
+            .transaction { transaction in
+                transaction.disablesAnimations = true
+            }
         } destination: { store in
             switch store.case {
             case .signup(let store):

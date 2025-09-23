@@ -35,6 +35,8 @@ public struct ContestFeature {
     public struct State: Equatable {
         var path = StackState<ContestPath.State>()
         
+        var reportHistories = [Int]()
+        var allPosts = [ContestImageModel]()
         var contestOptions = [ContestIndexModel]()
         var scrollPosition: ScrollPosition = ScrollPosition(idType: ContestImageModel.ID.self)
         
@@ -101,6 +103,7 @@ public struct ContestFeature {
             case loadMoreContestsPosts
             case updateContestPageInfo(PageInfoData)
             case refreshTriggered
+            case getMyProfileSuccess(SearchMyProfileResponseDTO)
         }
         
         public enum UIAction {
@@ -136,13 +139,23 @@ public struct ContestFeature {
             switch action {
             case .onAppear:
                 return .run { send in
-                    let result: Result<SearchContestListResponseDTO, NetworkError> = await NetworkManager.shared.request(WeeklyContestEndpoint.getContestList)
-                    
-                    switch result {
+                    async let contestListResult: Result<SearchContestListResponseDTO, NetworkError> = NetworkManager.shared.request(WeeklyContestEndpoint.getContestList)
+                    async let myProfileResult: Result<SearchMyProfileResponseDTO, NetworkError> = NetworkManager.shared.request(MemberEndpoint.getMembers)
+
+                    let (contestResponse, myProfileResponse) = await (contestListResult, myProfileResult)
+
+                    switch contestResponse {
                     case .success(let response):
                         await send(.networkAction(.getContestListSuccess(response)))
                     case .failure(let error):
-                        print(error.localizedDescription)
+                        print(error.localizedDescription) // TODO: Error Handling
+                    }
+
+                    switch myProfileResponse {
+                    case .success(let response):
+                        await send(.networkAction(.getMyProfileSuccess(response)))
+                    case .failure(let error):
+                        print(error.localizedDescription) // TODO: Error Handling
                     }
                 }
               
@@ -218,45 +231,41 @@ public struct ContestFeature {
                     }
                 }
                 
-            // 게시물 데이터를 성공적으로 받으면 상태를 업데이트합니다.
             case .networkAction(.getContestSuccess(let response)):
+                // 페이지 정보 업데이트
                 state.contestIndex = response.round
                 state.weekTopic = response.subject
-                
                 state.currentPageNum = response.pageInfo.page
                 state.hasNextPage = response.pageInfo.hasNext
-                
+
+                // 첫 페이지거나 새로고침이면 마스터 리스트를 비웁니다.
                 if state.currentPageNum == 0 {
-                    state.leftContestImageList.removeAll()
-                    state.rightContestImageList.removeAll()
+                    state.allPosts.removeAll()
                 }
+
+                // 신고된 게시물을 필터링하고, 마스터 리스트에 새로운 게시물을 추가
+                let reportedIDs = Set(state.reportHistories)
+                let newPosts = response.posts
+                    .filter { !reportedIDs.contains($0.postId) }
+                    .map { ContestImageModel(id: $0.postId, imageUrl: $0.imageUrl, nickname: $0.nickname) }
                 
-                let totalCount = state.leftContestImageList.count + state.rightContestImageList.count
+                state.allPosts.append(contentsOf: newPosts)
+
+                let (tempLeftList, tempRightList) = rebuildColumnLists(from: state.allPosts)
                 
-                var tempLeftConestImageData = [ContestImageModel]()
-                var tempRightConestImageData = [ContestImageModel]()
-                
-                for (index, item) in response.posts.enumerated() {
-                    let model = ContestImageModel(id: item.postId, imageUrl: item.imageUrl, nickname: item.nickname)
-                    
-                    if (totalCount + index) % 2 == 0 {
-                        tempLeftConestImageData.append(model)
-                    } else {
-                        tempRightConestImageData.append(model)
-                    }
-                }
-                
-                state.leftContestImageList += tempLeftConestImageData
-                state.rightContestImageList += tempRightConestImageData
-                
-                state.hasNextPage = response.pageInfo.hasNext
-                state.weekTopic = response.subject
+                // 마지막에 한 번만 상태를 업데이트하여 View 리렌더링을 최소화
+                state.leftContestImageList = tempLeftList
+                state.rightContestImageList = tempRightList
                 
                 return .run { send in
                     try await Task.sleep(for: .seconds(0.7))
                     await send(.view(.hideInitialLoading))
                 }
-
+                
+            case .networkAction(.getMyProfileSuccess(let response)):
+                state.reportHistories = response.reportHistories.compactMap { $0?.targetId }
+                
+                return .none
                 
             case let .path(.element(id: _, action: action)):
                 switch action {
@@ -277,6 +286,20 @@ public struct ContestFeature {
                     )
                     state.path.append(.editPost(editState))
                     return .none
+                    
+                case .contestDetail(.delegate(.reportCompleted(let postId))):
+                    state.path.removeLast()
+                    state.reportHistories.append(postId)
+                    state.allPosts.removeAll { $0.id == postId }
+
+                    // 임시 배열을 사용하여 마스터 리스트를 기준으로 두 개의 컬럼 리스트를 새로 만듦
+                    let (tempLeftList, tempRightList) = rebuildColumnLists(from: state.allPosts)
+                    
+                    // 마지막에 한 번만 상태를 업데이트하여 View 리렌더링을 최소화
+                    state.leftContestImageList = tempLeftList
+                    state.rightContestImageList = tempRightList
+                    return .none
+                    
                 case .editPost(.delegate(.editCompleted)):
                     state.path.removeLast()
                     return .send(.networkAction(.refreshTriggered)) // 수정 완료 후 새로고침
@@ -385,5 +408,21 @@ public struct ContestFeature {
             }
         }
         .forEach(\.path, action: \.path)
+    }
+}
+
+
+private extension ContestFeature {
+    func rebuildColumnLists(from allPosts: [ContestImageModel]) -> (left: [ContestImageModel], right: [ContestImageModel]) {
+        var tempLeftList = [ContestImageModel]()
+        var tempRightList = [ContestImageModel]()
+        for (index, post) in allPosts.enumerated() {
+            if index % 2 == 0 {
+                tempLeftList.append(post)
+            } else {
+                tempRightList.append(post)
+            }
+        }
+        return (tempLeftList, tempRightList)
     }
 }

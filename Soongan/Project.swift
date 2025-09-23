@@ -5,7 +5,7 @@ import ProjectDescription
 let projectSettings: Settings = .settings(
     base: [
         "MARKETING_VERSION": "1.0.0",
-        "CURRENT_PROJECT_VERSION": "1",
+        "CURRENT_PROJECT_VERSION": "3",
         "DEVELOPMENT_TEAM": "9QK3G4VF9N",
         "OTHER_LDFLAGS": ["-all_load"]
     ],
@@ -33,6 +33,7 @@ let project = Project(
             deploymentTargets: .iOS("18.0"),
             infoPlist: .extendingDefault(
                 with: [
+                    "UIUserInterfaceStyle": "Light",
                     "UILaunchScreen": [
                         "UIColorName": "",
                         "UIImageName": "",

@@ -21,7 +21,14 @@ public extension String {
         if self.isEmpty {
             return .empty
         }
-
+        
+        // 특수문자가 존재하는 경우
+        let regex = "^[가-힣a-zA-Z0-9]+$"
+        let predicate = NSPredicate(format: "SELF MATCHES %@", regex)
+        if !predicate.evaluate(with: self) {
+            return .invalidCharacters
+        }
+        
         if self.count < 3 {
             return .tooShort
         }
@@ -35,14 +42,7 @@ public extension String {
         if self.contains(where: { disallowedCharacters.contains($0) }) {
             return .onlyConsonantsOrVowels
         }
-
-        // 특수문자가 존재하는 경우
-        let regex = "^[가-힣a-zA-Z0-9]+$"
-        let predicate = NSPredicate(format: "SELF MATCHES %@", regex)
-        if !predicate.evaluate(with: self) {
-            return .invalidCharacters
-        }
-
+        
         return .valid
     }
     

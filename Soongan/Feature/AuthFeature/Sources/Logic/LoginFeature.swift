@@ -22,6 +22,13 @@ public enum LoginType: String {
     case apple = "APPLE"
 }
 
+public enum LoginError: Error {
+    case socialLogin(type: LoginType, error: Error)     // 소셜 로그인 단계 에러
+    case serverAuth(Error)                              // 서버 인증 단계 에러
+    case profileFetch(Error)                           // 프로필 조회 단계 에러
+    case fcmTokenMissing                              // FCM 토큰 없음
+}
+
 @Reducer
 public struct LoginFeature {
     
@@ -39,6 +46,8 @@ public struct LoginFeature {
     public struct State: Equatable {
         var path = StackState<LoginPath.State>()
         var errorMessage: String = ""
+        
+        var loginErrorAlert: LoginErrorType?
         
         public init() {}
     }
@@ -66,11 +75,17 @@ public struct LoginFeature {
         case appleButtonTapped
         
         case socialLoginSuccessResponse(type: LoginType, token: String)
-        case socialLoginFailureResponse(Error)
+        case socialLoginFailureResponse(type: LoginType, error: Error)
         
-        case loginSuccess
-        case isSignupComplete(Bool)
-        case loginFailure(Error)
+        case serverAuthSuccess
+        case serverAuthFailure
+        
+        case profileFetchSuccess(SearchMyProfileResponseDTO)
+        case profileFetchFailure
+        
+        case fcmFetchFailure
+        
+        case dismissAlert
 
         case skippLoginButtonTapped
         case termsOfUseButtonTapped
@@ -88,6 +103,8 @@ public struct LoginFeature {
     // MARK: - Body
     
     public var body: some ReducerOf<Self> {
+        BindingReducer()
+        
         Reduce { state, action in
             switch action {
             case .onAppear:
@@ -104,7 +121,7 @@ public struct LoginFeature {
                         let oauthToken = try await appleLoginService.login()
                         await send(.socialLoginSuccessResponse(type: .apple, token: oauthToken))
                     } catch {
-                        await send(.socialLoginFailureResponse(error))
+                        await send(.socialLoginFailureResponse(type: .apple, error: error))
                     }
                 }
                 
@@ -114,13 +131,16 @@ public struct LoginFeature {
                         let idToken = try await kakaoLoginService.login()
                         await send(.socialLoginSuccessResponse(type: .kakao, token: idToken))
                     } catch {
-                        await send(.socialLoginFailureResponse(error))
+                        await send(.socialLoginFailureResponse(type: .kakao, error: error))
                     }
                 }
                 
             case let .socialLoginSuccessResponse(type, token):
                 return .run { send in
-                    guard let fcmToken = KeychainManager.shared.load(key: .fcmToken) else { return }
+                    guard let fcmToken = KeychainManager.shared.load(key: .fcmToken) else { 
+                        await send(.fcmFetchFailure)
+                        return
+                    }
 
                     let result: Result<AuthedResponseDTO, NetworkError> = await NetworkManager.shared.request(
                         AuthEndpoint.postLogin(
@@ -137,43 +157,59 @@ public struct LoginFeature {
                         KeychainManager.shared.save(key: .accessToken, value: authedResult.accessToken)
                         KeychainManager.shared.save(key: .refreshToken, value: authedResult.refreshToken)
                         
-                        await send(.loginSuccess)
+                        await send(.serverAuthSuccess)
                         
-                    case .failure(let error):
-                        await send(.loginFailure(error))
+                    case .failure(_):
+                        await send(.serverAuthFailure)
                     }
                 }
                 
-            case .loginSuccess:
+            case .socialLoginFailureResponse(let type, let error):
+                switch type {
+                case .apple:
+                    state.loginErrorAlert = .socialLogin(title: "애플 로그인")
+                case .kakao:
+                    state.loginErrorAlert = .socialLogin(title: "카카오 로그인")
+                }
+
+                return .none
+                
+            /// 서버 로그인 성공
+            case .serverAuthSuccess:
                 return .run { send in
-                    let reulst: Result<SearchMyProfileResponseDTO, NetworkError> = await NetworkManager.shared.request(MemberEndpoint.getMembers)
-                    
-                    switch reulst {
+                    let result: Result<SearchMyProfileResponseDTO, NetworkError> = await NetworkManager.shared.request(MemberEndpoint.getMembers)
+                    switch result {
                     case .success(let myResult):
-                        if myResult.nickname == nil && myResult.birthYear == nil {
-                            await send(.isSignupComplete(false))
-                        } else {
-                            if let nickname = myResult.nickname {
-                                await userDefaultsClient.setString(nickname, forKey: UserDefaultKeys.User.username.rawValue)
-                            }
-                            await send(.isSignupComplete(true))
-                        }
-                        
-                    case .failure(let error):
-                        await send(.loginFailure(error))
+                        await send(.profileFetchSuccess(myResult))
+                    case .failure:
+                        await send(.profileFetchFailure)
                     }
                 }
 
-            case .isSignupComplete(let isSignup):
-                if isSignup {
-                    return .send(.delegate(.loginSuccess))
+            case .serverAuthFailure:
+                state.loginErrorAlert = .serverAuth
+                return .none
+
+            case .profileFetchSuccess(let myResult):
+                let isSignupComplete = myResult.nickname != nil && myResult.birthYear != nil
+                if isSignupComplete {
+                    return .run { send in
+                        if let nickname = myResult.nickname {
+                            await userDefaultsClient.setString(nickname, forKey: UserDefaultKeys.User.username.rawValue)
+                        }
+                        await send(.delegate(.loginSuccess))
+                    }
                 } else {
                     state.path.append(.signup(SignupFeature.State()))
                     return .none
                 }
                 
-            case .loginFailure(let error):
-                state.errorMessage = "로그인 실패: \(error.localizedDescription)"
+            case .profileFetchFailure:
+                state.loginErrorAlert = .profileFetch
+                return .none
+                
+            case .fcmFetchFailure:
+                state.loginErrorAlert = .fcmTokenMissing
                 return .none
 
             case .termsOfUseButtonTapped:
@@ -212,6 +248,10 @@ public struct LoginFeature {
                 return .none
 
             case .path:
+                return .none
+                
+            case .dismissAlert:
+                state.loginErrorAlert = nil
                 return .none
                 
             default:

@@ -313,7 +313,7 @@ private extension HomeView {
     @ViewBuilder
     var alertHostingView: some View {
         Color.clear.fullScreenCover(isPresented: $store.isAlertPresented) {
-            CustomAlertView(
+            CustomAlertView<AlertType>(
                 type: .showLoginView,
                 onBackgroundTap: {
                     store.send(.alertAction(.dismissLoginAlert))

@@ -35,7 +35,7 @@ public struct ContestDetailView: View {
             .background(InteractivePopGestureEnabler())
             .fullScreenCover(item: $store.alertSheet) { alertType in
                 if alertType == .deletePost {
-                    CustomAlertView(
+                    CustomAlertView<AlertType>(
                         type: alertType,
                         leftButtonAction: {
                             store.send(.alertAction(.dismissAlert))
@@ -47,10 +47,28 @@ public struct ContestDetailView: View {
                 }
                 
                 if alertType == .deletePostComplete {
-                    CustomAlertView(
+                    CustomAlertView<AlertType>(
                         type: alertType,
                         centerButtonAction: {
                             store.send(.deleteCompletedButtonTapped)
+                        }
+                    ).presentationBackground(.clear)
+                }
+                
+                if alertType == .deleteContainPostToTop7 {
+                    CustomAlertView<AlertType>(
+                        type: alertType,
+                        centerButtonAction: {
+                            store.send(.alertAction(.dismissAlert))
+                        }
+                    ).presentationBackground(.clear)
+                }
+                
+                if alertType == .editContainPostToTop7 {
+                    CustomAlertView<AlertType>(
+                        type: alertType,
+                        centerButtonAction: {
+                            store.send(.alertAction(.dismissAlert))
                         }
                     ).presentationBackground(.clear)
                 }
@@ -94,8 +112,14 @@ public struct ContestDetailView: View {
                     store.send(.sheetAction(.reportReasonButtonTapped(type: reportType, reason: reasonText)))
                 }
             }
-            .sheet(item : $store.completeReportSheet) { sheetType in
-                CustomSheetView<ContestReportReasonType>(type: sheetType) { _ in }
+            .sheet(item: $store.completeReportSheet, onDismiss: {
+                if store.completeReportSheet == nil {
+                    store.send(.delegate(.reportCompleted(postId: store.postId)))
+                }
+            }) { sheetType in
+                CustomSheetView<ContestReportReasonType>(type: sheetType) { _ in
+                    store.send(.sheetAction(.completeReportButtonTapped))
+                }
             }
             .fullScreenCover(
                 isPresented: $store.isFullSizeImageSheetPresented.sending(\.dismissFullSizeImageSheet)
@@ -202,7 +226,7 @@ public struct ContestDetailView: View {
     @ViewBuilder
     var alertHostingView: some View {
         Color.clear.fullScreenCover(isPresented: $store.isLoginAlertPresented) {
-            CustomAlertView(
+            CustomAlertView<AlertType>(
                 type: .showLoginView,
                 onBackgroundTap: {
                     store.send(.alertAction(.dismissLoginAlert))

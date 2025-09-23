@@ -90,7 +90,7 @@ public struct CustomTextFieldView: View {
                     alignment: .trailing
                 )
             
-            if isFocused.wrappedValue == true || (type == .changeNickname || type == .introduce) {
+            if isFocused.wrappedValue == true || (type == .changeNickname || type == .introduce) || state == .error(message: .duplication) {
                 HStack(spacing: 0) {
                     switch state {
                     case .error(let errorMessage):

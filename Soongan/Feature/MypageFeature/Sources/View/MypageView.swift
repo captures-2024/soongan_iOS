@@ -229,7 +229,7 @@ private extension MypageView {
     @ViewBuilder
     var alertHostingView: some View {
         Color.clear.fullScreenCover(isPresented: $store.isLoginAlertPresented) {
-            CustomAlertView(
+            CustomAlertView<AlertType>(
                 type: .showLoginView,
                 onBackgroundTap: {
                     store.send(.dismissLoginAlert)
