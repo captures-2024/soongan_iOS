@@ -179,7 +179,7 @@ public struct EditProfileFeature {
                 return .none
                 
             case .isEditButtonEnabledChanged:
-                state.editButtonState = state.isNicknameButtonEnabled
+                state.editButtonState = state.isNicknameButtonEnabled && state.isIntroduceButtonEnabled
                 
                 return .none
                 
@@ -218,12 +218,15 @@ private extension EditProfileFeature {
     }
 
     func validateIntroduce(state: inout State) {
-        if state.introduce.count > 0 && state.introduce.count <= 25 {
+        if state.introduce.count > 25 {
+            state.introduceState = .normal
+            state.isIntroduceButtonEnabled = false
+        } else if state.introduce.count > 0 && state.introduce.count <= 25 {
             state.introduceState = .possible
             state.isIntroduceButtonEnabled = true
         } else {
             state.introduceState = .normal
-            state.isIntroduceButtonEnabled = false
+            state.isIntroduceButtonEnabled = true
         }
     }
 }
