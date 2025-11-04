@@ -85,7 +85,10 @@ public struct EditProfileFeature {
                     state.introduce = introduce
                 }
                 
-                return .none
+                validateNickname(state: &state)
+                validateIntroduce(state: &state)
+                
+                return .send(.isEditButtonEnabledChanged)
                 
             case .editMyProfileButtonTapped:
                 let dto = EditMyProfileRequestDTO(
@@ -134,35 +137,11 @@ public struct EditProfileFeature {
                 return .none
                 
             case .binding(\.nickname):
-                switch state.nickname.nicknameValidationState {
-                case .empty, .tooShort, .tooLong:
-                    state.nicknameState = .normal
-                    state.isNicknameButtonEnabled = false
-                    
-                case .invalidCharacters:
-                    state.nicknameState = .error(message: .specialCharacter)
-                    state.isNicknameButtonEnabled = false
-                    
-                case .valid:
-                    state.nicknameState = .possible
-                    state.isNicknameButtonEnabled = true
-                    
-                case .onlyConsonantsOrVowels:
-                    state.nicknameState = .error(message: .onlyConsonantsOrVowels)
-                    state.isNicknameButtonEnabled = false
-                }
-                
+                validateNickname(state: &state)
                 return .send(.isEditButtonEnabledChanged)
                 
             case .binding(\.introduce):
-                if state.introduce.count > 0 && state.introduce.count <= 25 {
-                    state.introduceState = .possible
-                    state.isIntroduceButtonEnabled = true
-                } else {
-                    state.introduceState = .normal
-                    state.isIntroduceButtonEnabled = false
-                }
-                
+                validateIntroduce(state: &state)
                 return .send(.isEditButtonEnabledChanged)
                 
             case .binding(\.selectedItem):
@@ -200,7 +179,7 @@ public struct EditProfileFeature {
                 return .none
                 
             case .isEditButtonEnabledChanged:
-                state.editButtonState = state.isNicknameButtonEnabled && state.isIntroduceButtonEnabled
+                state.editButtonState = state.isNicknameButtonEnabled
                 
                 return .none
                 
@@ -211,6 +190,40 @@ public struct EditProfileFeature {
             default:
                 return .none
             }
+        }
+    }
+}
+
+// MARK: - Private func Extension
+
+private extension EditProfileFeature {
+    func validateNickname(state: inout State) {
+        switch state.nickname.nicknameValidationState {
+        case .empty, .tooShort, .tooLong:
+            state.nicknameState = .normal
+            state.isNicknameButtonEnabled = false
+            
+        case .invalidCharacters:
+            state.nicknameState = .error(message: .specialCharacter)
+            state.isNicknameButtonEnabled = false
+            
+        case .valid:
+            state.nicknameState = .possible
+            state.isNicknameButtonEnabled = true
+            
+        case .onlyConsonantsOrVowels:
+            state.nicknameState = .error(message: .onlyConsonantsOrVowels)
+            state.isNicknameButtonEnabled = false
+        }
+    }
+
+    func validateIntroduce(state: inout State) {
+        if state.introduce.count > 0 && state.introduce.count <= 25 {
+            state.introduceState = .possible
+            state.isIntroduceButtonEnabled = true
+        } else {
+            state.introduceState = .normal
+            state.isIntroduceButtonEnabled = false
         }
     }
 }
