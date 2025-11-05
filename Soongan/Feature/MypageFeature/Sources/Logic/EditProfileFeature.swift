@@ -221,11 +221,8 @@ private extension EditProfileFeature {
         if state.introduce.count > 25 {
             state.introduceState = .normal
             state.isIntroduceButtonEnabled = false
-        } else if state.introduce.count > 0 && state.introduce.count <= 25 {
-            state.introduceState = .possible
-            state.isIntroduceButtonEnabled = true
         } else {
-            state.introduceState = .normal
+            state.introduceState = .possible
             state.isIntroduceButtonEnabled = true
         }
     }
