@@ -57,6 +57,7 @@ public struct CustomTextFieldView: View {
                 .focused(isFocused)
                 .font(DesignSystem.Font.regular18)
                 .padding()
+                .padding(.trailing, 35)
                 .tint(.black100)
                 .background(
                     backgroundShape
@@ -68,25 +69,21 @@ public struct CustomTextFieldView: View {
                 .foregroundColor(.black100)
                 .overlay(
                     Group {
-                        Button(action: {
+                        switch state {
+                        case .normal:
+                            Image.checkCircle
                             
-                        }) {
-                            switch state {
-                            case .normal:
-                                Image.checkCircle
-                                
-                            case .possible:
-                                Image.completeCheckCircle
-                                
-                            case .valid:
-                                Image.checkCircle
-                                
-                            case .error:
-                                Image.errorDeleteCircle
-                            }
+                        case .possible:
+                            Image.completeCheckCircle
+                            
+                        case .valid:
+                            Image.checkCircle
+                            
+                        case .error:
+                            Image.errorDeleteCircle
                         }
-                        .padding(.trailing, 12)
-                    },
+                    }
+                    .padding(.trailing, 12),
                     alignment: .trailing
                 )
             
