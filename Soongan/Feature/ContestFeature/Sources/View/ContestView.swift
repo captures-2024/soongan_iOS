@@ -163,35 +163,37 @@ public struct ContestView: View {
     }
     
     func navigationTitle(contestIndex: Int, weekTopic: String) -> some View {
-        ZStack(alignment: .trailing) {
-            ZStack(alignment: .leading) {
-                HStack{
-                    Text("\(contestIndex)회차")
-                    
-                    Text("|")
-                    
-                    Text(weekTopic)
-                }
-                .frame(width: 150)
-                
+        ZStack {
+            HStack {
                 Button(action: {
                     store.send(.sheet(.present))
                 }) {
                     Image.downArrow
                         .scaleEffect(x: 1, y: store.isContestSheetPresented ? -1 : 1)
                 }
+                
+                HStack {
+                    Text("\(contestIndex)회차")
+                    
+                    Text("|")
+                    
+                    Text(weekTopic)
+                }
             }
-            .frame(maxWidth: .infinity)
+            .offset(x: -10)
             
-            Button {
-                store.send(.uiAction(.sortContestContentTapped))
-            } label: {
-                Image.sortOption
-                    .padding(.trailing, 14)
+            HStack {
+                Spacer()
+                Button {
+                    store.send(.uiAction(.sortContestContentTapped))
+                } label: {
+                    Image.sortOption
+                }
+                .padding(.trailing, 14)
             }
         }
         .font(DesignSystem.Font.bold20)
-        .foregroundStyle(Color.black100)
+        .foregroundStyle(DesignSystem.Color.black100)
         .padding(.vertical, 14)
         .background(DesignSystem.Color.soonganBG)
     }

@@ -45,6 +45,10 @@ public struct PostPictureView: View {
                 }
             
             VStack(spacing: 0) {
+                CustomNavigationBarView(navigationCase: .postImage(round: store.round, weekTopic: store.weekTopic)) {
+                    store.send(.backButtonTapped)
+                }
+                
                 postPictureSection()
                     .padding(.bottom, 36)
                 
@@ -97,24 +101,6 @@ public struct PostPictureView: View {
             ) {
                 CustomSheetView<NeverOption>(type: .postPicture(name: store.postPictureName)) {
                     store.send(.postButtonTappedInSheet)
-                }
-            }
-            .toolbar {
-                ToolbarItem(placement: .navigationBarLeading) {
-                    Button {
-                        store.send(.backButtonTapped)
-                    } label: {
-                        Image.arrowBack
-                            .padding(.trailing, 5)
-                    }
-                    .padding(.top, 26)
-                    .padding(.bottom, 10)
-                }
-                
-                ToolbarItem(placement: .principal) {
-                    navigationTitle(round: store.round, weekTopic: store.weekTopic)
-                        .padding(.top, 26)
-                        .padding(.bottom, 10)
                 }
             }
         }

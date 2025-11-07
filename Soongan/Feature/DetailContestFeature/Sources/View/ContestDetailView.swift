@@ -129,25 +129,16 @@ public struct ContestDetailView: View {
             .background(alertHostingView)
             .toolbar(.hidden, for: .tabBar)
             .navigationBarBackButtonHidden(true)
-            .toolbar {
-                ToolbarItem(placement: .navigationBarLeading) {
-                    Button {
-                        store.send(.backButtonTapped)
-                    } label: {
-                        HStack(spacing: 0) {
-                            Image.arrowBack
-                                .padding(.trailing, 5)
-                        }
-                    }
-                    .padding(.top, 16)
-                }
-            }
     }
     
     @ViewBuilder
     private var baseView: some View {
         ZStack(alignment: .bottom) {
             VStack(spacing: 0) {
+                CustomNavigationBarView(navigationCase: .backButton) {
+                    store.send(.backButtonTapped)
+                }
+                
                 Spacer()
                 
                 if let url = store.imageUrl {

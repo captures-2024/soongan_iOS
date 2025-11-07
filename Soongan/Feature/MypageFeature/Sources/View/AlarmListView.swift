@@ -28,6 +28,10 @@ public struct AlarmListView: View {
     
     public var body: some View {
         VStack(spacing: 0) {
+            CustomNavigationBarView(navigationCase: .title("알림")) {
+                store.send(.backButtonTapped)
+            }
+            
             HStack(spacing: 18) {
                 TopTabButtonView(
                     title: "대회 알림" + (store.unreadNotificationCount[.contest].flatMap { $0 > 0 ? " \($0)" : nil } ?? ""),
@@ -67,26 +71,6 @@ public struct AlarmListView: View {
         .background(DesignSystem.Color.soonganBG)
         .background(InteractivePopGestureEnabler())
         .navigationBarBackButtonHidden(true)
-        .toolbar {
-            ToolbarItem(placement: .navigationBarLeading) {
-                Button {
-                    store.send(.backButtonTapped)
-                } label: {
-                    HStack(spacing: 0) {
-                        Image.arrowBack
-                            .padding(.trailing, 5)
-                    }
-                }
-                .padding(.top, 16)
-            }
-            
-            ToolbarItem(placement: .principal) {
-                Text("알림")
-                    .font(DesignSystem.Font.bold16, lineHeight: 20)
-                    .foregroundColor(DesignSystem.Color.black100)
-                    .padding(.top, 16)
-            }
-        }
     }
     
     @ViewBuilder
