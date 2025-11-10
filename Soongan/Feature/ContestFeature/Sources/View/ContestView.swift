@@ -164,7 +164,7 @@ public struct ContestView: View {
     
     func navigationTitle(contestIndex: Int, weekTopic: String) -> some View {
         ZStack {
-            HStack {
+            HStack(spacing: 8) {
                 Button(action: {
                     store.send(.sheet(.present))
                 }) {
@@ -172,16 +172,17 @@ public struct ContestView: View {
                         .scaleEffect(x: 1, y: store.isContestSheetPresented ? -1 : 1)
                 }
                 
-                HStack {
+                HStack(spacing: 4) {
                     Text("\(contestIndex)회차")
-                    
                     Text("|")
-                    
                     Text(weekTopic)
                 }
+                
+                // 왼쪽 버튼과 동일한 공간을 차지하는 보이지 않는 뷰 (균형 유지용)
+                Image.downArrow
+                    .hidden()
             }
-            .offset(x: -10)
-            
+
             HStack {
                 Spacer()
                 Button {
@@ -189,8 +190,8 @@ public struct ContestView: View {
                 } label: {
                     Image.sortOption
                 }
-                .padding(.trailing, 14)
             }
+            .padding(.trailing, 14)
         }
         .font(DesignSystem.Font.bold20)
         .foregroundStyle(DesignSystem.Color.black100)

@@ -64,7 +64,7 @@ public struct CustomNavigationBarView: View {
                 if let titleFont = navigationCase.titleFont {
                     Text(titleString)
                         .font(titleFont, lineHeight: 20)
-                        .foregroundColor(DesignSystem.Color.black100)
+                        .foregroundStyle(DesignSystem.Color.black100)
                 }
                 
             case .backButton, .signup:
