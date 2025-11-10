@@ -28,6 +28,10 @@ struct QuestionsListView: View {
     
     var body: some View {
         VStack(spacing: 0) {
+            CustomNavigationBarView(navigationCase: .title("FAQ")) {
+                store.send(.backButtonTapped)
+            }
+            
             HStack(alignment: .bottom, spacing: 18) {
                 TopTabButtonView(
                     title: "기본",
@@ -79,26 +83,6 @@ struct QuestionsListView: View {
         .navigationBarBackButtonHidden(true)
         .onAppear {
             store.send(.onAppear)
-        }
-        .toolbar {
-            ToolbarItem(placement: .navigationBarLeading) {
-                Button {
-                    store.send(.backButtonTapped)
-                } label: {
-                    HStack(spacing: 0) {
-                        Image.arrowBack
-                            .padding(.trailing, 5)
-                    }
-                }
-                .padding(.top, 16)
-            }
-            
-            ToolbarItem(placement: .principal) {
-                Text("FAQ")
-                    .font(DesignSystem.Font.bold16, lineHeight: 20)
-                    .foregroundColor(DesignSystem.Color.black100)
-                    .padding(.top, 16)
-            }
         }
     }
     

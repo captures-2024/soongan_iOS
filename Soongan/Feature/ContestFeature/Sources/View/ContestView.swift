@@ -163,35 +163,38 @@ public struct ContestView: View {
     }
     
     func navigationTitle(contestIndex: Int, weekTopic: String) -> some View {
-        ZStack(alignment: .trailing) {
-            ZStack(alignment: .leading) {
-                HStack{
-                    Text("\(contestIndex)회차")
-                    
-                    Text("|")
-                    
-                    Text(weekTopic)
-                }
-                .frame(width: 150)
-                
+        ZStack {
+            HStack(spacing: 8) {
                 Button(action: {
                     store.send(.sheet(.present))
                 }) {
                     Image.downArrow
                         .scaleEffect(x: 1, y: store.isContestSheetPresented ? -1 : 1)
                 }
+                
+                HStack(spacing: 4) {
+                    Text("\(contestIndex)회차")
+                    Text("|")
+                    Text(weekTopic)
+                }
+                
+                // 왼쪽 버튼과 동일한 공간을 차지하는 보이지 않는 뷰 (균형 유지용)
+                Image.downArrow
+                    .hidden()
             }
-            .frame(maxWidth: .infinity)
-            
-            Button {
-                store.send(.uiAction(.sortContestContentTapped))
-            } label: {
-                Image.sortOption
-                    .padding(.trailing, 14)
+
+            HStack {
+                Spacer()
+                Button {
+                    store.send(.uiAction(.sortContestContentTapped))
+                } label: {
+                    Image.sortOption
+                }
             }
+            .padding(.trailing, 14)
         }
         .font(DesignSystem.Font.bold20)
-        .foregroundStyle(Color.black100)
+        .foregroundStyle(DesignSystem.Color.black100)
         .padding(.vertical, 14)
         .background(DesignSystem.Color.soonganBG)
     }

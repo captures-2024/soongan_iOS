@@ -48,6 +48,10 @@ public struct EditProfileView: View {
                 }
             
             VStack {
+                CustomNavigationBarView(navigationCase: .backButton) {
+                    store.send(.backButtonTapped)
+                }
+                
                 profileImageSection()
                     .padding(.top, 42)
                     .padding(.bottom, 40)
@@ -67,19 +71,6 @@ public struct EditProfileView: View {
         }
         .background(InteractivePopGestureEnabler())
         .navigationBarBackButtonHidden(true)
-        .toolbar {
-            ToolbarItem(placement: .navigationBarLeading) {
-                Button {
-                    store.send(.backButtonTapped)
-                } label: {
-                    HStack(spacing: 0) {
-                        Image.arrowBack
-                            .padding(.trailing, 5)
-                    }
-                }
-                .padding(.top, 16)
-            }
-        }
         .onAppear {
             store.send(.onAppear)
         }
