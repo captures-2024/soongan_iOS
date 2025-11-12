@@ -8,9 +8,9 @@
 import Foundation
 
 public struct NotificationsSettingRequestDTO: Encodable, QueryParameterConvertible {
-    let contestPush: Bool
-    let activityPush: Bool
-    let noticePush: Bool
+    public let contestPush: Bool
+    public let activityPush: Bool
+    public let noticePush: Bool
     
     public init(contestPush: Bool, activityPush: Bool, noticePush: Bool) {
         self.contestPush = contestPush
