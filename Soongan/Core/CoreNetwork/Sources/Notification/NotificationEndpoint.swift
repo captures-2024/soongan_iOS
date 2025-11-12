@@ -10,6 +10,8 @@ import Foundation
 
 public enum NotificationEndpoint {
     case postReadNotification(ReadNotificationsRequestDTO)
+    case getNotificationSetting
+    case patchNotificationsSetting(NotificationsSettingRequestDTO)
     case getNotifications(SearchNotificationsRequestDTO)
     case getUnreadNotificationCount
     case deleteNotification(notificationId: Int)
@@ -24,6 +26,8 @@ extension NotificationEndpoint: APIEndpoint {
         switch self {
         case .postReadNotification(let notificationId):
             return basePath.rawValue + "/\(notificationId)/read"
+        case .getNotificationSetting, .patchNotificationsSetting:
+            return basePath.rawValue + "/settings"
         case .getNotifications:
             return basePath.rawValue
         case .getUnreadNotificationCount:
@@ -37,10 +41,12 @@ extension NotificationEndpoint: APIEndpoint {
         switch self {
         case .postReadNotification:
             return .post
-        case .getNotifications, .getUnreadNotificationCount:
+        case .getNotificationSetting, .getNotifications, .getUnreadNotificationCount:
             return .get
         case .deleteNotification:
             return .delete
+        case .patchNotificationsSetting:
+            return .patch
         }
     }
     
@@ -64,6 +70,11 @@ extension NotificationEndpoint: APIEndpoint {
     }
     
     public var body: (any Encodable)? {
-        return nil
+        switch self {
+        case .patchNotificationsSetting(let dto):
+            return dto
+        default:
+            return nil
+        }
     }
 }
