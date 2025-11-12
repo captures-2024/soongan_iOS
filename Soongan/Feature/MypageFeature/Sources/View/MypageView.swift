@@ -183,7 +183,7 @@ private extension MypageView {
             Button(action: {
                 store.send(.uiAction(.alarmButtonTapped))
             }){
-                Image.alarmIcon
+                (store.isUnReadNotification ? Image.alarmIcon : Image.noneAlarmIcon)
                     .resizable()
                     .scaledToFit()
                     .frame(width: 20, height: 20)
