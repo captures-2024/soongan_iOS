@@ -141,6 +141,10 @@ public extension Image {
         return ResourceAsset.Image.alarmIcon.swiftUIImage
     }
     
+    static var noneAlarmIcon: Image {
+        return ResourceAsset.Image.noneAlarmIcon.swiftUIImage
+    }
+    
     static var optionIcon: Image {
         return ResourceAsset.Image.optionIcon.swiftUIImage
     }

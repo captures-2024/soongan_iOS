@@ -59,6 +59,8 @@ public struct MypageFeature {
         var activeSheet: SheetContentType?
         var successSheet: SheetContentType?
         
+        var isUnReadNotification: Bool = false
+        
         // CustomTabBar 가시성
         public var isTabBarVisible: Bool {
             path.isEmpty
@@ -125,8 +127,10 @@ public struct MypageFeature {
     public enum NetworkAction {
         case onAppearMyInfoSuccess(SearchMyProfileResponseDTO)
         case onAppearMyContestInfoSuccess(SearchMyContestResponseDTO)
+        case onAppearUnReadNotificationSuccess([UnreadNotificationsResponseDTO])
         case onAppearMyInfoFailure(NetworkError)
         case onAppearMyContestInfoFailure(NetworkError)
+        case onAppearUnReadNotificationFailure(NetworkError)
     }
     
     public enum UIAction {
@@ -152,9 +156,12 @@ public struct MypageFeature {
                 
                 return .run { send in
                     async let myInfoResult: Result<SearchMyProfileResponseDTO, NetworkError> = NetworkManager.shared.request(MemberEndpoint.getMembers)
+                    
                     async let myContestInfoResult: Result<SearchMyContestResponseDTO, NetworkError> = NetworkManager.shared.request(WeeklyContestEndpoint.getMyContest(dto))
                     
-                    let (infoResult, contestResult) = await (myInfoResult, myContestInfoResult)
+                    async let unReadNotificationsResult: Result<[UnreadNotificationsResponseDTO], NetworkError> = NetworkManager.shared.request(NotificationEndpoint.getUnreadNotificationCount)
+                    
+                    let (infoResult, contestResult, unreadResult) = await (myInfoResult, myContestInfoResult, unReadNotificationsResult)
                     
                     switch infoResult {
                     case .success(let info):
@@ -168,6 +175,13 @@ public struct MypageFeature {
                         await send(.networkAction(.onAppearMyContestInfoSuccess(contest)))
                     case .failure(let error):
                         await send(.networkAction(.onAppearMyContestInfoFailure(error)))
+                    }
+                    
+                    switch unreadResult {
+                    case .success(let unread):
+                        await send(.networkAction(.onAppearUnReadNotificationSuccess(unread)))
+                    case .failure(let error):
+                        await send(.networkAction(.onAppearUnReadNotificationFailure(error)))
                     }
                 }
                 
@@ -197,6 +211,10 @@ public struct MypageFeature {
 
                 return .none
                 
+            case .networkAction(.onAppearUnReadNotificationSuccess(let response)):
+                state.isUnReadNotification = response.contains { $0.count > 0 }
+                return .none
+                
             case .networkAction(.onAppearMyInfoFailure):
                 state.userName = "정보 없음"
                 state.userIntroduce = "본인을 소개시켜주세요"
@@ -205,6 +223,10 @@ public struct MypageFeature {
             case .networkAction(.onAppearMyContestInfoFailure):
                 state.leftContestImageList.removeAll()
                 state.rightContestImageList.removeAll()
+                return .none
+                
+            case .networkAction(.onAppearUnReadNotificationFailure):
+                state.isUnReadNotification = false
                 return .none
                 
             case let .path(.element(id: _, action: action)):
