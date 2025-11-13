@@ -13,6 +13,7 @@ public struct SearchHomeInfoResponseDTO: Decodable {
 }
 
 public struct ContestInfoData: Decodable {
+    public let status: String
     public let contestType: String
     public let subject: String
     public let startAt: String

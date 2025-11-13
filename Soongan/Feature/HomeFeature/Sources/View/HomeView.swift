@@ -37,10 +37,6 @@ public struct HomeView: View {
                 DesignSystem.Color.soonganBG.ignoresSafeArea()
                 
                 VStack(spacing: 0) {
-                    topheaderView()
-                        .padding(.horizontal, 36)
-                        .padding(.bottom, 60)
-                    
                     switch store.homeState {
                     case .loading:
                         VStack {
@@ -53,8 +49,10 @@ public struct HomeView: View {
                         }
                     case .inProgress:
                         inProgressMainSection()
-                    case .endTopic:
+                    case .endTopic, .upcoming:
                         endTopicMainSection()
+                    case .error:
+                        erorrMainSection()
                     }
                 }
                 .padding(.top, 69)
@@ -100,6 +98,8 @@ private extension HomeView {
                 .resizable()
                 .frame(width: 33, height: 50)
         }
+        .padding(.horizontal, 36)
+        .padding(.bottom, 60)
     }
     
     func weekTopicTopHeader() -> some View {
@@ -117,6 +117,8 @@ private extension HomeView {
 
     func inProgressMainSection() -> some View {
         VStack(spacing: 0) {
+            topheaderView()
+            
             if store.postImageData.isEmpty {
                 Button(action: {
                     store.send(.uiAction(.addPictureButtonTapped))
@@ -167,6 +169,8 @@ private extension HomeView {
     
     func endTopicMainSection() -> some View {
         VStack(spacing: 0) {
+            topheaderView()
+            
             Spacer()
             
             VStack(spacing: 0) {
@@ -181,6 +185,34 @@ private extension HomeView {
                 store.send(.uiAction(.showContestButtonTapped))
             }) {
                 Text("보러가기")
+                    .font(DesignSystem.Font.regular15)
+                    .foregroundStyle(DesignSystem.Color.black100)
+                    .underline(color: DesignSystem.Color.black100)
+            }
+            .padding(.bottom, 100)
+            
+            Spacer()
+        }
+    }
+    
+    func erorrMainSection() -> some View {
+        VStack(spacing: 0) {
+            topheaderView()
+            
+            Spacer()
+            
+            VStack(spacing: 0) {
+                Text("데이터를 불러오는 중 문제가 발생했어요.\n잠시 후에 다시 시도해 보세요.")
+                    .multilineTextAlignment(.center)
+            }
+            .font(DesignSystem.Font.regular15)
+            .foregroundStyle(DesignSystem.Color.black100)
+            .padding(.bottom, 50)
+            
+            Button(action: {
+                store.send(.onAppear)
+            }) {
+                Text("다시 불러오기")
                     .font(DesignSystem.Font.regular15)
                     .foregroundStyle(DesignSystem.Color.black100)
                     .underline(color: DesignSystem.Color.black100)

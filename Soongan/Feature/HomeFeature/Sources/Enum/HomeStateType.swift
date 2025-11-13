@@ -9,6 +9,8 @@ import Foundation
 
 enum HomeStateType {
     case loading
-    case endTopic
+    case upcoming
     case inProgress
+    case endTopic
+    case error
 }
