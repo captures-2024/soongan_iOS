@@ -130,37 +130,40 @@ public struct HomeFeature {
                 let contestData = result.contestInfo
                 let postData = result.postInfo
                 state.isAddPostImage = postData.count == 3
-                
-                if let endDate = Self.dateFormatter.date(from: contestData.endAt) {
-                    if endDate < Date() {
-                        state.weekTopic = "-회차 종료-"
-                        state.homeState = .endTopic
-                    } else {
-                        state.startPeriod = contestData.startAt.toFormattedDateString()
-                        state.endPeriod = contestData.endAt.toFormattedDateString()
-                        
-                        state.postImageData = postData.map {
-                            PostImageModel(
-                                id: $0.postId,
-                                imageURL: $0.imageUrl,
-                                likeCount: $0.likeCount,
-                                commentCount: $0.commentCount,
-                                isLiked: $0.isLiked
-                            )
-                        }
-                        
-                        state.homeState = .inProgress
-                        state.weekTopic = contestData.subject
+
+                // status에 따른 HomeStateType 변환
+                switch contestData.status {
+                case "IN_PROGRESS":
+                    state.homeState = .inProgress
+                    state.weekTopic = contestData.subject
+                    state.startPeriod = contestData.startAt
+                    state.endPeriod = contestData.endAt
+                    
+                    state.postImageData = postData.map {
+                        PostImageModel(
+                            id: $0.postId,
+                            imageURL: $0.imageUrl,
+                            likeCount: $0.likeCount,
+                            commentCount: $0.commentCount,
+                            isLiked: $0.isLiked
+                        )
                     }
-                } else {
-                    state.weekTopic = "-회차 종료-"
+                    
+                case "CLOSED", "UPCOMING":
                     state.homeState = .endTopic
+                    state.weekTopic = "-회차 종료-"
+                    
+                default:
+                    state.homeState = .error
+                    state.weekTopic = "-알수 없음-"
                 }
 
                 return .none
                 
-            case .networkAction(.homeInfoFailure(let error)):
-                print(error)
+            case .networkAction(.homeInfoFailure(_)):
+                state.homeState = .error
+                state.weekTopic = "-알수 없음-"
+                
                 return .none
                 
             case .showExplain(let reportId, let targetType):

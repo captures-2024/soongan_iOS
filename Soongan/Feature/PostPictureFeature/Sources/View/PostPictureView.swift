@@ -49,6 +49,8 @@ public struct PostPictureView: View {
                     store.send(.backButtonTapped)
                 }
                 
+                Spacer()
+                
                 postPictureSection()
                     .padding(.bottom, 36)
                 
@@ -89,7 +91,7 @@ public struct PostPictureView: View {
                 .padding(.horizontal, 136)
                 .padding(.bottom, 95)
             }
-            .padding(.top, 50)
+//            .padding(.top, 50)
             .frame(maxHeight: .infinity, alignment: .top)
             .toolbar(.hidden, for: .tabBar)
             .navigationBarBackButtonHidden(true)
