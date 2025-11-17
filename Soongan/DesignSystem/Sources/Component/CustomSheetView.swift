@@ -24,6 +24,10 @@ public struct CustomSheetView<T: Equatable & CaseIterable>: View {
     private var isSelectType: SortContestDataType?
     private var reportAction: ((ContestReportReasonType, String) -> Void)? = nil
     
+    // 알림 설정 관련
+    private var notificationStates: [AlaramSettingOptionType: Bool]? = nil
+    private var notificationAction: ((AlaramSettingOptionType, Bool) -> Void)? = nil
+    
     // MARK: - Init
     
     public init(
@@ -59,6 +63,17 @@ public struct CustomSheetView<T: Equatable & CaseIterable>: View {
     ) {
         self.type = type
         self.reportAction = reportAction
+    }
+    
+    // 알림 설정을 위한 init
+    public init(
+        type: SheetContentType,
+        notificationStates: [AlaramSettingOptionType: Bool],
+        notificationAction: @escaping (AlaramSettingOptionType, Bool) -> Void
+    ) {
+        self.type = type
+        self.notificationStates = notificationStates
+        self.notificationAction = notificationAction
     }
     
     // MARK: - Body
@@ -112,7 +127,14 @@ public struct CustomSheetView<T: Equatable & CaseIterable>: View {
                 .padding(.top, 30)
                 
             case .alarmSetting:
-                pushAlarmSettingContentSection()
+                if let states = notificationStates, let action = notificationAction {
+                    PushAlarmSettingContentView(
+                        notificationStates: states,
+                        notificationAction: action
+                    )
+                } else {
+                    PushAlarmSettingContentView()
+                }
                 
             case .contestReport:
                 contestReportContentSection(action: { optionType in
@@ -197,7 +219,7 @@ public struct CustomSheetView<T: Equatable & CaseIterable>: View {
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         .presentationDetents(type.height)
         .presentationBackground(DesignSystem.Color.soonganBG)
-        .presentationCornerRadius(20)
+//        .presentationCornerRadius(20)
     }
 }
 
@@ -436,39 +458,7 @@ private extension CustomSheetView {
     }
     
     func pushAlarmSettingContentSection() -> some View {
-        @State var toggle1On = false
-        
-        return VStack {
-            ForEach(AlaramSettingOptionType.allCases, id: \.self) { option in
-                VStack(spacing: 0) {
-                    Toggle(isOn: $toggle1On) {
-                        VStack(alignment: .leading, spacing: 6) {
-                            Text(option.title)
-//                                .font(DesignSystem.Font.semibold16, lineHeight: 20)
-                                .foregroundStyle(Color.black100)
-                            
-                            if !option.subTitle.isEmpty {
-                                Text(option.subTitle)
-                                    .font(DesignSystem.Font.regular12)
-                                    .foregroundStyle(Color.black100)
-                            }
-                        }
-                    }
-                    .padding(.vertical, 20)
-                    .padding(.leading, 40)
-                    .padding(.trailing, 24)
-                    .tint(.primary)
-                    
-                    if option != AlaramSettingOptionType.allCases.last {
-                        Rectangle()
-                            .fill(Color(red: 187/255, green: 187/255, blue: 187/255))
-                            .frame(maxWidth: .infinity)
-                            .frame(height: 0.7)
-                            .padding(.horizontal, 24)
-                    }
-                }
-            }
-        }
+        PushAlarmSettingContentView()
     }
     
     func detailContestOptionSection(isWriter: Bool, action: @escaping (DetailContestOptionType) -> Void) -> some View {
@@ -847,6 +837,81 @@ struct ReportInputReasonConestSection: View {
         }
         .onAppear {
             isFocused = true
+        }
+    }
+}
+
+struct PushAlarmSettingContentView: View {
+    @State private var toggleStates: [AlaramSettingOptionType: Bool] = [:]
+    
+    let notificationStates: [AlaramSettingOptionType: Bool]?
+    let notificationAction: ((AlaramSettingOptionType, Bool) -> Void)?
+    
+    init() {
+        self.notificationStates = nil
+        self.notificationAction = nil
+    }
+    
+    init(notificationStates: [AlaramSettingOptionType: Bool], notificationAction: @escaping (AlaramSettingOptionType, Bool) -> Void) {
+        self.notificationStates = notificationStates
+        self.notificationAction = notificationAction
+    }
+    
+    var body: some View {
+        VStack {
+            ForEach(AlaramSettingOptionType.allCases, id: \.self) { option in
+                VStack(spacing: 0) {
+                    Toggle(isOn: Binding(
+                        get: {
+                            if let states = notificationStates {
+                                return states[option] ?? false
+                            }
+                            return toggleStates[option] ?? false
+                        },
+                        set: { newValue in
+                            if let action = notificationAction {
+                                action(option, newValue)
+                            } else {
+                                toggleStates[option] = newValue
+                            }
+                        }
+                    )) {
+                        VStack(alignment: .leading, spacing: 6) {
+                            Text(option.title)
+                                .font(DesignSystem.Font.semibold16)
+                                .foregroundStyle(Color.black100)
+                            
+                            if !option.subTitle.isEmpty {
+                                Text(option.subTitle)
+                                    .font(DesignSystem.Font.regular12)
+                                    .foregroundStyle(Color.black100)
+                            }
+                        }
+                    }
+                    .padding(.vertical, 20)
+                    .padding(.leading, 40)
+                    .padding(.trailing, 24)
+                    .tint(.primary)
+                    
+                    if option != AlaramSettingOptionType.allCases.last {
+                        Rectangle()
+                            .fill(Color(red: 187/255, green: 187/255, blue: 187/255))
+                            .frame(maxWidth: .infinity)
+                            .frame(height: 0.7)
+                            .padding(.horizontal, 24)
+                    }
+                }
+            }
+        }
+        .onAppear {
+            if notificationStates == nil {
+                // 기본 초기값 설정
+                for option in AlaramSettingOptionType.allCases {
+                    if toggleStates[option] == nil {
+                        toggleStates[option] = false
+                    }
+                }
+            }
         }
     }
 }
