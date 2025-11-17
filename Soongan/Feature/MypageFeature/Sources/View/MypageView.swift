@@ -78,8 +78,26 @@ public struct MypageView: View {
                 }
             }
             .sheet(item: $store.activeSheet) { sheetType in
-                CustomSheetView<MyprofileOptionType>(type: sheetType) { optionType in
-                    store.send(.profileOptionTapped(optionType))
+                switch sheetType {
+                case .alarmSetting:
+                    let notificationStates: [AlaramSettingOptionType: Bool] = [
+                        .allAlarm: store.contestPush && store.activityPush && store.noticePush,
+                        .contestAlarm: store.contestPush,
+                        .activeAlarm: store.activityPush,
+                        .noticeAlarm: store.noticePush
+                    ]
+                    
+                    CustomSheetView<AlaramSettingOptionType>(
+                        type: sheetType,
+                        notificationStates: notificationStates
+                    ) { settingType, isEnabled in
+                        store.send(.notification(.updateNotificationSetting(settingType, isEnabled)))
+                    }
+                    
+                default:
+                    CustomSheetView<MyprofileOptionType>(type: sheetType) { optionType in
+                        store.send(.profileOptionTapped(optionType))
+                    }
                 }
             }
             .sheet(item: $store.successSheet) { sheetType in

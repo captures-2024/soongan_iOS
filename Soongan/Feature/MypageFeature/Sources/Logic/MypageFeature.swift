@@ -61,6 +61,20 @@ public struct MypageFeature {
         
         var isUnReadNotification: Bool = false
         
+        // 알림 설정 (자식 Feature)
+        var notificationState = NotificationSettingFeature.State()
+        
+        // 알림 설정 상태 접근자
+        var contestPush: Bool {
+            notificationState.contestPush
+        }
+        var activityPush: Bool {
+            notificationState.activityPush
+        }
+        var noticePush: Bool {
+            notificationState.noticePush
+        }
+        
         // CustomTabBar 가시성
         public var isTabBarVisible: Bool {
             path.isEmpty
@@ -84,6 +98,7 @@ public struct MypageFeature {
         case path(StackActionOf<MypagePath>)
         
         case binding(BindingAction<State>)
+        case notification(NotificationSettingFeature.Action)
         
         case onAppear
         case showExplain(reportId: Int, targetType: String)
@@ -143,6 +158,10 @@ public struct MypageFeature {
     public var body: some ReducerOf<Self> {
         BindingReducer()
         
+        Scope(state: \.notificationState, action: \.notification) {
+            NotificationSettingFeature()
+        }
+        
         Reduce { state, action in
             switch action {
             case .onAppear:
@@ -183,6 +202,9 @@ public struct MypageFeature {
                     case .failure(let error):
                         await send(.networkAction(.onAppearUnReadNotificationFailure(error)))
                     }
+                    
+                    // 알림 설정 로드
+                    await send(.notification(.onAppear))
                 }
                 
             case .showExplain(let reportId, let targetType):
@@ -227,6 +249,16 @@ public struct MypageFeature {
                 
             case .networkAction(.onAppearUnReadNotificationFailure):
                 state.isUnReadNotification = false
+                return .none
+                
+            // MARK: - Notification Feature Delegate
+                
+            case .notification(.delegate(.settingsLoaded(let contestPush, let activityPush, let noticePush))):
+                // 자식 Feature에서 설정이 로드되었음을 알림 (UI는 자동으로 업데이트됨)
+                return .none
+                
+            case .notification(.delegate(.settingsUpdated(let contestPush, let activityPush, let noticePush))):
+                // 자식 Feature에서 설정이 업데이트되었음을 알림 (UI는 자동으로 업데이트됨)
                 return .none
                 
             case let .path(.element(id: _, action: action)):
@@ -482,7 +514,19 @@ public struct MypageFeature {
                 
                 return .none
                 
-                
+//            case .logoutSuccess:
+//                return .none
+//                
+//            case .withdrawSuccess:
+//                return .none
+//                
+//            case .presentSheet(let sheetType):
+//                state.activeSheet = sheetType
+//                return .none
+//                
+//            case .notification(_):
+//                return .none
+//                
             default:
                 return .none
             }
