@@ -51,7 +51,7 @@ struct QuestionsListView: View {
                     action: { store.send(.topMenuButtonTapped(.copyright)) }
                 )
             }
-            .padding(.top, 26)
+            .padding(.top, 14)
             .background(DesignSystem.Color.soonganBG)
             
             Divider()
