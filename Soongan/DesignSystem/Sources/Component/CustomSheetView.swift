@@ -219,7 +219,6 @@ public struct CustomSheetView<T: Equatable & CaseIterable>: View {
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         .presentationDetents(type.height)
         .presentationBackground(DesignSystem.Color.soonganBG)
-//        .presentationCornerRadius(20)
     }
 }
 
@@ -455,10 +454,6 @@ private extension CustomSheetView {
             .padding(.top, 40)
         }
         .padding(.horizontal, 20)
-    }
-    
-    func pushAlarmSettingContentSection() -> some View {
-        PushAlarmSettingContentView()
     }
     
     func detailContestOptionSection(isWriter: Bool, action: @escaping (DetailContestOptionType) -> Void) -> some View {

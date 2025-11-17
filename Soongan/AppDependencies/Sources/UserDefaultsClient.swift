@@ -45,17 +45,14 @@ public extension UserDefaultsClient {
     
     /// Bool 값을 저장하는 편의 메서드
     func setBool(_ value: Bool, forKey key: String) async {
-        let data = withUnsafeBytes(of: value) { Data($0) }
-        await self.setData(data, key)
+        await self.set(value, forKey: key)
     }
     
     /// Bool 값을 불러오는 편의 메서드
     func bool(forKey key: String) async -> Bool {
-        guard let data = await self.getData(key), data.count == MemoryLayout<Bool>.size else { return false }
-        return data.withUnsafeBytes { $0.load(as: Bool.self) }
+        await self.get(forKey: key, as: Bool.self) ?? false
     }
 }
-
 
 extension UserDefaultsClient: DependencyKey {
     public static let liveValue: Self = {
