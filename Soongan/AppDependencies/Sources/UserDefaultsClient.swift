@@ -1,5 +1,5 @@
 //
-//  UserDefaultKeys.swift
+//  UserDefaultsClient.swift
 //  CoreUserDefault
 //
 //  Created by ParkJunHyuk on 7/6/25.
@@ -41,6 +41,18 @@ public extension UserDefaultsClient {
     func get<T: Codable>(forKey key: String, as type: T.Type) async -> T? {
         guard let data = await self.getData(key) else { return nil }
         return try? JSONDecoder().decode(type, from: data)
+    }
+    
+    /// Bool 값을 저장하는 편의 메서드
+    func setBool(_ value: Bool, forKey key: String) async {
+        let data = withUnsafeBytes(of: value) { Data($0) }
+        await self.setData(data, key)
+    }
+    
+    /// Bool 값을 불러오는 편의 메서드
+    func bool(forKey key: String) async -> Bool {
+        guard let data = await self.getData(key), data.count == MemoryLayout<Bool>.size else { return false }
+        return data.withUnsafeBytes { $0.load(as: Bool.self) }
     }
 }
 
