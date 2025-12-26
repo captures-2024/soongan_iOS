@@ -16,6 +16,11 @@ import ExplainFeature
 import ComposableArchitecture
 import Kingfisher
 
+// 기존 Direction enum - 주석처리된 코드에서 필요 (추후 완전 제거 예정)
+enum Direction {
+    case left, right
+}
+
 public struct MypageView: View {
     
     @Bindable var store: StoreOf<MypageFeature>
@@ -57,10 +62,49 @@ public struct MypageView: View {
                 }
                 .padding(EdgeInsets(top: 21, leading: 18, bottom: 26, trailing: 28))
                 
-                if store.leftContestImageList.isEmpty {
-                    notJoinContestSection()
+                if let posts = store.allPosts {
+                    if posts.isEmpty {
+                        notJoinContestSection()
+                    } else {
+                        WaterfallImageGridView(
+                            posts: posts,
+                            hasMorePages: store.hasNextPage,
+                            isLoading: store.isNextPageLoading,
+                            isInitialLoading: false, // 로딩 완료
+                            onRefresh: {
+                                store.send(.refreshTriggered)
+                            },
+                            onLoadMore: {
+                                store.send(.updateMoreNextPage(true))
+                            },
+                            onImageTap: { id in
+                                store.send(.contestDetailImageTapped(id))
+                            },
+                            onScrollPositionChange: { offsetY in
+                                store.send(.updateTopButtonVisibility(offsetY))
+                            }
+                        )
+                    }
                 } else {
-                    contestImageSection()
+                    // 상태 1: 초기 로딩 중 (nil)
+                    WaterfallImageGridView(
+                        posts: [], // 로딩 중에는 빈 배열 전달
+                        hasMorePages: false,
+                        isLoading: false,
+                        isInitialLoading: true,
+                        onRefresh: {
+                            store.send(.refreshTriggered)
+                        },
+                        onLoadMore: {
+                            // 필요시 로직 추가
+                        },
+                        onImageTap: { _ in
+                            // 로딩 중에는 탭 동작 없음
+                        },
+                        onScrollPositionChange: { _ in
+                            // 필요시 로직 추가
+                        }
+                    )
                 }
             }
             .frame(maxHeight: .infinity)
@@ -122,72 +166,6 @@ public struct MypageView: View {
                 ExplainView(store: store)
             case .completeExplain(let store):
                 CompleteExplainView(store: store)
-            }
-        }
-    }
-    
-    func contestImageSection() -> some View {
-        GeometryReader { geometry in
-            ZStack(alignment: .bottomTrailing) {
-                ScrollView {
-                    HStack(alignment: .top, spacing: 8) {
-                        imageGridSection(imageList: store.leftContestImageList, geometry: geometry, direction: .left)
-                        imageGridSection(imageList: store.rightContestImageList, geometry: geometry, direction: .right)
-                    }
-                    .padding(.horizontal, 8)
-                    .scrollTargetLayout()
-                }
-                .scrollPosition($store.scrollPosition, anchor: .bottom)
-                .onScrollGeometryChange(for: CGFloat.self,
-                    of: { geometry in
-                        return geometry.bounds.origin.y
-                    },
-                    action: { oldValue, newValue in
-                        withAnimation {
-                            store.scrollOffset = newValue
-                        }
-                    }
-                )
-                
-                Button {
-                    withAnimation(.easeInOut) {
-                        store.scrollPosition.scrollTo(edge: .top)
-                    }
-                } label: {
-                    Image(systemName: "arrow.up")
-                        .padding()
-                        .background(Color.white)
-                        .foregroundColor(DesignSystem.Color.black100)
-                        .clipShape(Circle())
-                        .shadow(radius: 4)
-                        .padding()
-                }
-                .opacity(store.scrollOffset > 200 ? 1 : 0)
-                .allowsHitTesting(store.scrollOffset > 200)
-                .animation(.easeInOut, value: store.scrollOffset > 200)
-            }
-            .padding(.bottom, 50)
-        }
-    }
-    
-    func imageGridSection(imageList: [ContestImageModel], geometry: GeometryProxy, direction: Direction) -> some View {
-        LazyVStack(spacing: 8) {
-            ForEach(imageList) { model in
-                ContestImageView(
-                    model: model,
-                    geometry: geometry,
-                    onSuccessAction: { modelId, calculatedHeight in
-                        switch direction {
-                        case .left:
-                            store.send(.updateLeftImageModel(modelId, calculatedHeight))
-                        case .right:
-                            store.send(.updateRightImageModel(modelId, calculatedHeight))
-                        }
-                    },
-                    onTapAction: { modelId in
-                        store.send(.contestDetailImageTapped(modelId))
-                    }
-                )
             }
         }
     }

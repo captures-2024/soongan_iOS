@@ -18,4 +18,6 @@ public struct SearchMyContestInfoData: Decodable {
     public let postId: Int
     public let imageUrl: String
     public let likeCount: Int
+    public let reportCount: Int
+    public let ratio: Double
 }

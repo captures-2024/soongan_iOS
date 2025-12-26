@@ -11,17 +11,20 @@ public struct ContestImageModel: Identifiable, Hashable {
     public var id: Int
     public let imageUrl: String
     public let nickname: String?
-    public var height: CGFloat?
+    public let reportCount: Int
+    public let ratio: Double
     
     public init(
         id: Int,
         imageUrl: String,
-        nickname: String? = nil,
-        height: CGFloat? = nil
+        nickname: String?,
+        reportCount: Int,
+        ratio: Double
     ) {
         self.id = id
         self.imageUrl = imageUrl
         self.nickname = nickname
-        self.height = height
+        self.reportCount = reportCount
+        self.ratio = ratio
     }
 }
