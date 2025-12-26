@@ -40,8 +40,10 @@ public struct MypageFeature {
         @Shared(.appStorage("AuthState")) var authState: AuthType = .loggedOut
         var path = StackState<MypagePath.State>()
         
-        var leftContestImageList = [ContestImageModel]()
-        var rightContestImageList = [ContestImageModel]()
+        var allPosts: [ContestImageModel]? = nil
+        var initPageLoading: Bool = true
+        var hasNextPage: Bool = false
+        var isNextPageLoading: Bool = false
         
         var scrollPosition: ScrollPosition = ScrollPosition(idType: ContestIndexModel.ID.self)
         var scrollOffset: CGFloat = 0
@@ -122,8 +124,9 @@ public struct MypageFeature {
         case successSheetComplete(MypageSuccessSheetType)
         case contestDetailImageTapped(Int)
         
-        case updateLeftImageModel(Int, CGFloat)
-        case updateRightImageModel(Int, CGFloat)
+        case updateMoreNextPage(Bool)
+        case updateTopButtonVisibility(CGFloat)
+        case refreshTriggered
         
         case deleteMyInfomation
         
@@ -165,9 +168,11 @@ public struct MypageFeature {
         Reduce { state, action in
             switch action {
             case .onAppear:
+                state.allPosts = nil // 로딩 상태 시작
                 if state.authState == .skipped {
                     state.userName = "로그인이 필요해요"
                     state.userIntroduce = "로그인 후 본인을 소개해주세요"
+                    state.allPosts = [] // 로그인 안했을 시 빈 화면으로
                     return .none
                 }
 
@@ -219,18 +224,17 @@ public struct MypageFeature {
                 return .none
                 
             case .networkAction(.onAppearMyContestInfoSuccess(let response)):
-                state.leftContestImageList.removeAll()
-                state.rightContestImageList.removeAll()
-                
-                for (index, item) in response.postInfo.enumerated() {
-                    let model = ContestImageModel(id: item.postId, imageUrl: item.imageUrl)
-                    if index % 2 == 0 {
-                        state.leftContestImageList.append(model)
-                    } else {
-                        state.rightContestImageList.append(model)
-                    }
+                state.allPosts = response.postInfo.map { item in
+                    ContestImageModel(
+                        id: item.postId,
+                        imageUrl: item.imageUrl,
+                        nickname: nil,
+                        reportCount: item.reportCount,
+                        ratio: item.ratio
+                    )
                 }
 
+                state.initPageLoading = false
                 return .none
                 
             case .networkAction(.onAppearUnReadNotificationSuccess(let response)):
@@ -243,8 +247,7 @@ public struct MypageFeature {
                 return .none
                 
             case .networkAction(.onAppearMyContestInfoFailure):
-                state.leftContestImageList.removeAll()
-                state.rightContestImageList.removeAll()
+                state.allPosts = [] // 요청 실패 시 빈 배열로 설정
                 return .none
                 
             case .networkAction(.onAppearUnReadNotificationFailure):
@@ -500,33 +503,18 @@ public struct MypageFeature {
                 state.isLoginAlertPresented = true
                 return .none
                 
-            case .updateLeftImageModel(let modelId, let imageRatio):
-                if let index = state.leftContestImageList.firstIndex(where: { $0.id == modelId }) {
-                    state.leftContestImageList[index].height = imageRatio
-                }
-                
+            case .updateMoreNextPage(let isLoading):
+                state.isNextPageLoading = isLoading
                 return .none
                 
-            case .updateRightImageModel(let modelId, let imageRatio):
-                if let index = state.rightContestImageList.firstIndex(where: { $0.id == modelId }) {
-                    state.rightContestImageList[index].height = imageRatio
-                }
-                
+            case .updateTopButtonVisibility(let offset):
+                state.scrollOffset = offset
                 return .none
                 
-//            case .logoutSuccess:
-//                return .none
-//                
-//            case .withdrawSuccess:
-//                return .none
-//                
-//            case .presentSheet(let sheetType):
-//                state.activeSheet = sheetType
-//                return .none
-//                
-//            case .notification(_):
-//                return .none
-//                
+            case .refreshTriggered:
+                // 새로고침 로직 (필요시 네트워크 호출)
+                return .none
+                
             default:
                 return .none
             }

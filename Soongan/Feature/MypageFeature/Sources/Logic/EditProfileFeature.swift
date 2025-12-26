@@ -45,6 +45,10 @@ public struct EditProfileFeature {
     // MARK: - Init
 
     public init() {}
+    
+    // MARK: - Dependency
+    
+    @Dependency(\.userDefaultsClient) var userDefaultsClient
 
     // MARK: - Action
 
@@ -110,7 +114,10 @@ public struct EditProfileFeature {
                 }
                 
             case .editMyProfileSuccess(_):
-                return .send(.delegate(.backButtonTapped))
+                return .run { [nickname = state.nickname] send in
+                    await userDefaultsClient.setString(nickname, forKey: UserDefaultKeys.User.username.rawValue)
+                    await send(.delegate(.backButtonTapped))
+                }
             
             case .baseProfileOptionTapped:
                 state.selectedItem = nil
