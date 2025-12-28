@@ -683,7 +683,6 @@ struct PostPictureContentSectionView: View {
             HStack(spacing: 0) {
                 Button(action: {
                     isChecked.toggle()
-                    print("버튼 눌림", isChecked)
                 }) {
                     ZStack {
                         Rectangle()
@@ -710,6 +709,8 @@ struct PostPictureContentSectionView: View {
             }
             .padding(.horizontal, 20)
             
+            Spacer()
+            
             CustomBottomButton(
                 type: .complete,
                 isEnable: $isChecked,
@@ -718,7 +719,7 @@ struct PostPictureContentSectionView: View {
                     dismiss()
                 }
             )
-            .padding(.top, 16)
+            //.padding(.top, 16)
         }
         .font(DesignSystem.Font.regular16, lineHeight: 24)
         .foregroundStyle(Color.black)

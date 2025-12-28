@@ -226,6 +226,8 @@ private extension HomeView {
     func postImageSection(postImageList: [PostImageModel]) -> some View {
         ScrollView(.horizontal, showsIndicators: false) {
             HStack(alignment: .top, spacing: 16) {
+                Spacer(minLength: 20)
+                
                 Button(action: {
                     store.send(.uiAction(.addPictureButtonTapped))
                 }) {
@@ -281,7 +283,7 @@ private extension HomeView {
                                     .frame(height: 257)
                                     .shadow(
                                         color: Color.black.opacity(0.25),
-                                        radius: 5, x: 0, y: 4)
+                                        radius: 7, x: 2, y: 4)
                                     .onTapGesture {
                                         store.send(.uiAction(.pictureTapped(image.id)))
                                     }
@@ -316,7 +318,6 @@ private extension HomeView {
                 
                 Spacer(minLength: 20)
             }
-            .padding(.leading, 20)
         }
     }
     

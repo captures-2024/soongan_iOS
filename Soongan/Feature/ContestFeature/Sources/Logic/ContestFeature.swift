@@ -38,23 +38,15 @@ public struct ContestFeature {
         var reportHistories = [Int]()
         var allPosts = [ContestImageModel]()
         var contestOptions = [ContestIndexModel]()
-        var scrollPosition: ScrollPosition = ScrollPosition(idType: ContestImageModel.ID.self)
         
         var isTopButtonVisibility: Bool = false
         
         var contestIndex: Int = 0
         var weekTopic: String = ""
         
-        var leftContestImageList = [ContestImageModel]()
-        var rightContestImageList = [ContestImageModel]()
+        var selectedContestIndex: Int = 0
         
-        var selectedContestIndex: Int = 0 {
-            didSet {
-                print("selectedContestIndex", selectedContestIndex)
-            }
-        }
-        
-        var initPageLoading: Bool = false
+        var initPageLoading: Bool = true
         var isNextPageLoading: Bool = false
         
         var isContestSheetPresented: Bool = false
@@ -120,11 +112,9 @@ public struct ContestFeature {
         
         // 뷰 상태나 레이아웃 관련
         public enum ViewAction {
-            case changeContestIndex
+            case changeContestIndex(to: Int)
             case changeSortContestType(SortContestDataType)
             case updateTopButtonVisibility(CGFloat)
-            case updateLeftImageModel(Int, CGFloat)
-            case updateRightImageModel(Int, CGFloat)
             case updateMoreNextPage(Bool)
             case hideInitialLoading
         }
@@ -165,9 +155,17 @@ public struct ContestFeature {
                     ContestIndexModel(id: $0.id, round: $0.round, subject: $0.subject)
                 }
                 
-                state.contestIndex = state.contestOptions.last?.round ?? 0
-                state.weekTopic = state.contestOptions.last?.subject ?? "정보없음"
-                state.selectedContestIndex = state.contestOptions.count - 1
+                // API에서 첫 번째 값이 최신 콘테스트라는 것을 바탕으로 첫 번째 요소를 사용
+                if let latestContest = state.contestOptions.first {
+                    state.contestIndex = latestContest.round
+                    state.weekTopic = latestContest.subject
+                    state.selectedContestIndex = 0 // 첫 번째 요소가 선택되었으므로 인덱스는 0
+                } else {
+                    // 콘테스트가 없는 경우의 기본값 처리
+                    state.contestIndex = 0
+                    state.weekTopic = "정보없음"
+                    state.selectedContestIndex = 0
+                }
                 
                 return .send(.networkAction(.fetchContestPosts))
                 
@@ -184,7 +182,6 @@ public struct ContestFeature {
                     break
                 }
                 
-                state.scrollPosition.scrollTo(edge: .top)
                 state.currentPageNum = 0
                 
                 let order = state.sortSelectType.rawValue
@@ -247,15 +244,9 @@ public struct ContestFeature {
                 let reportedIDs = Set(state.reportHistories)
                 let newPosts = response.posts
                     .filter { !reportedIDs.contains($0.postId) }
-                    .map { ContestImageModel(id: $0.postId, imageUrl: $0.imageUrl, nickname: $0.nickname) }
+                    .map { ContestImageModel(id: $0.postId, imageUrl: $0.imageUrl, nickname: $0.nickname, reportCount: $0.reportCount, ratio: $0.ratio) }
                 
                 state.allPosts.append(contentsOf: newPosts)
-
-                let (tempLeftList, tempRightList) = rebuildColumnLists(from: state.allPosts)
-                
-                // 마지막에 한 번만 상태를 업데이트하여 View 리렌더링을 최소화
-                state.leftContestImageList = tempLeftList
-                state.rightContestImageList = tempRightList
                 
                 return .run { send in
                     try await Task.sleep(for: .seconds(0.7))
@@ -291,13 +282,6 @@ public struct ContestFeature {
                     state.path.removeLast()
                     state.reportHistories.append(postId)
                     state.allPosts.removeAll { $0.id == postId }
-
-                    // 임시 배열을 사용하여 마스터 리스트를 기준으로 두 개의 컬럼 리스트를 새로 만듦
-                    let (tempLeftList, tempRightList) = rebuildColumnLists(from: state.allPosts)
-                    
-                    // 마지막에 한 번만 상태를 업데이트하여 View 리렌더링을 최소화
-                    state.leftContestImageList = tempLeftList
-                    state.rightContestImageList = tempRightList
                     return .none
                     
                 case .editPost(.delegate(.editCompleted)):
@@ -352,7 +336,8 @@ public struct ContestFeature {
                 
                 return .none
                 
-            case .view(.changeContestIndex):
+            case .view(.changeContestIndex(to: let newIndex)):
+                state.selectedContestIndex = newIndex
                 let contest = state.contestOptions[state.selectedContestIndex]
                 
                 state.contestIndex = contest.round
@@ -368,19 +353,6 @@ public struct ContestFeature {
                 
                 return .send(.networkAction(.fetchContestPosts))
                 
-            case .view(.updateLeftImageModel(let modelId, let imageRatio)):
-                if let index = state.leftContestImageList.firstIndex(where: { $0.id == modelId }) {
-                    state.leftContestImageList[index].height = imageRatio
-                }
-                
-                return .none
-                
-            case .view(.updateRightImageModel(let modelId, let imageRatio)):
-                if let index = state.rightContestImageList.firstIndex(where: { $0.id == modelId }) {
-                    state.rightContestImageList[index].height = imageRatio
-                }
-                
-                return .none
                 
             case .view(.updateTopButtonVisibility(let scrollOffset)):
                 state.isTopButtonVisibility = scrollOffset > 200
@@ -408,21 +380,5 @@ public struct ContestFeature {
             }
         }
         .forEach(\.path, action: \.path)
-    }
-}
-
-
-private extension ContestFeature {
-    func rebuildColumnLists(from allPosts: [ContestImageModel]) -> (left: [ContestImageModel], right: [ContestImageModel]) {
-        var tempLeftList = [ContestImageModel]()
-        var tempRightList = [ContestImageModel]()
-        for (index, post) in allPosts.enumerated() {
-            if index % 2 == 0 {
-                tempLeftList.append(post)
-            } else {
-                tempRightList.append(post)
-            }
-        }
-        return (tempLeftList, tempRightList)
     }
 }

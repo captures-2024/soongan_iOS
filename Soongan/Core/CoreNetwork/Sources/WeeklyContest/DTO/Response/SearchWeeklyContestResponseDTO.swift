@@ -19,6 +19,8 @@ public struct PostInfoData: Decodable {
     public let profileImageUrl: String
     public let postId: Int
     public let imageUrl: String
+    public let reportCount: Int
+    public let ratio: Double
 }
 
 public struct PageInfoData: Decodable {
