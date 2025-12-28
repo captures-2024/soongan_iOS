@@ -176,7 +176,7 @@ public struct MypageFeature {
                     return .none
                 }
 
-                let dto = SearchMyContestRequestDTO(page: 0, pageSize: 50)
+                let dto = SearchMyContestRequestDTO(page: 0, pageSize: 20)
                 
                 return .run { send in
                     async let myInfoResult: Result<SearchMyProfileResponseDTO, NetworkError> = NetworkManager.shared.request(MemberEndpoint.getMembers)
@@ -512,8 +512,18 @@ public struct MypageFeature {
                 return .none
                 
             case .refreshTriggered:
-                // 새로고침 로직 (필요시 네트워크 호출)
-                return .none
+                let dto = SearchMyContestRequestDTO(page: 0, pageSize: 20)
+                
+                return .run { send in
+                    let myContestInfoResult: Result<SearchMyContestResponseDTO, NetworkError> = await NetworkManager.shared.request(WeeklyContestEndpoint.getMyContest(dto))
+                    
+                    switch myContestInfoResult {
+                    case .success(let contest):
+                        await send(.networkAction(.onAppearMyContestInfoSuccess(contest)))
+                    case .failure(let error):
+                        await send(.networkAction(.onAppearMyContestInfoFailure(error)))
+                    }
+                }
                 
             default:
                 return .none

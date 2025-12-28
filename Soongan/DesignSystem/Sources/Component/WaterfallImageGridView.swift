@@ -8,14 +8,14 @@
 import SwiftUI
 import Shared
 
-// MARK: - ScrollPositionState
-
-struct ScrollPositionState: Equatable {
-    let offsetY: CGFloat
-    let reachedBottom: Bool
-}
-
 public struct WaterfallImageGridView: View {
+    
+    // MARK: - ScrollPositionState
+    
+    private struct ScrollPositionState: Equatable {
+        let offsetY: CGFloat
+        let reachedBottom: Bool
+    }
     
     // MARK: - Properties
     
@@ -133,27 +133,22 @@ public struct WaterfallImageGridView: View {
                         onRefresh?()
                     }
                     .onAppear {
-                        print("onAppear - posts 개수: \(posts.count)")
                         screenWidth = geometry.size.width
-                        print("onAppear - screenWidth: \(screenWidth)")
+                        
                         if !posts.isEmpty && screenWidth > 0 {
-                            print("onAppear에서 distributePosts 호출")
                             distributePosts(posts)
                         }
                     }
                     .onChange(of: geometry.size.width) { _, newWidth in
                         screenWidth = newWidth
-                        print("현재 width:", screenWidth)
+                        
                         if !posts.isEmpty {
                             distributePosts(posts)
                         }
                     }
                     .onChange(of: posts) { _, newPosts in
-                        print("onChange(posts) - 개수: \(newPosts.count), screenWidth: \(screenWidth)")
                         if screenWidth > 0 {
                             distributePosts(newPosts)
-                        } else {
-                            print("screenWidth가 0이라서 distributePosts 건너뜀")
                         }
                     }
                     .scrollPosition($scrollPosition, anchor: .bottom)
@@ -204,6 +199,11 @@ public struct WaterfallImageGridView: View {
     ///
     /// - Parameter posts: 분배할 게시글 배열
     private func distributePosts(_ posts: [ContestImageModel]) {
+        // 레이아웃 관련 상수 정의
+        let horizontalPadding: CGFloat = 9
+        let columnSpacing: CGFloat = 7
+        let itemSpacing: CGFloat = 8
+
         // 좌우 컬럼의 누적 높이 추적 변수
         var leftHeight: CGFloat = 0
         var rightHeight: CGFloat = 0
@@ -212,26 +212,24 @@ public struct WaterfallImageGridView: View {
         var leftItems: [ContestImageModel] = []
         var rightItems: [ContestImageModel] = []
         
-        let columnWidth = (screenWidth - 25) / 2
+        let totalHorizontalSpacing = horizontalPadding * 2 + columnSpacing
+        let columnWidth = (screenWidth - totalHorizontalSpacing) / 2
         
         // 모든 게시글을 순차적으로 처리
         for post in posts {
             // ratio는 width/height 비율
             // 실제 화면에서 표시될 이미지 높이 계산
-            // - 현재 뷰의 폭에서 좌우 패딩(9*2) + 컬럼간격(7) = 25 제외
-            // - 남은 폭을 2로 나누어 각 컬럼 폭 구하기
-            // - 컬럼 폭을 ratio로 나누어서 실제 표시 높이 계산 (width/ratio = height)
             let imageHeight = columnWidth / CGFloat(post.ratio)
             
             // 현재 좌우 컬럼의 높이를 비교하여 더 낮은 쪽에 배치
             if leftHeight <= rightHeight {
                 // 왼쪽이 더 낮거나 같으면 왼쪽에 추가
                 leftItems.append(post)
-                leftHeight += imageHeight + 8 // 이미지 높이 + 컬럼 내 간격
+                leftHeight += imageHeight + itemSpacing // 이미지 높이 + 컬럼 내 간격
             } else {
                 // 오른쪽이 더 낮으면 오른쪽에 추가
                 rightItems.append(post)
-                rightHeight += imageHeight + 8 // 이미지 높이 + 컬럼 내 간격
+                rightHeight += imageHeight + itemSpacing // 이미지 높이 + 컬럼 내 간격
             }
         }
         

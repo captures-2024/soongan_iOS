@@ -16,11 +16,6 @@ import ExplainFeature
 import ComposableArchitecture
 import Kingfisher
 
-// 기존 Direction enum - 주석처리된 코드에서 필요 (추후 완전 제거 예정)
-enum Direction {
-    case left, right
-}
-
 public struct MypageView: View {
     
     @Bindable var store: StoreOf<MypageFeature>
